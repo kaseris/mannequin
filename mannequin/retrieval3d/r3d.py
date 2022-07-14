@@ -146,38 +146,31 @@ def infer(input_filename: Union[str, Path],
     return retrieved_paths
 
 
-if __name__ == '__main__':
-    # train_bow(dataset_base_dir='/home/kaseris/Documents/3DGarments')
-    # print('HI')
-    # dataset = retrieval3d.dataset.OBJDataset(base_dir=retrieval3d.dataset.DATASET_BASE_DIR)
-    # data_loader = retrieval3d.dataset.OBJDataLoader(dataset=dataset,
-    #                                                 batch_size=1)
-    #
-    # cluster_centers = np.genfromtxt('cluster_centers_256.csv', delimiter=',')
-    # histograms = []
-    # print('Starting extracting global descriptors...')
-    # st = time.monotonic()
-    # for idx, el in enumerate(data_loader):
-    #     print(f'Element: {idx + 1}\t Elapsed time: {time.monotonic() - st:.3f}s from start.', flush=True)
-    #     # Find the cluster participation of the FPFH descriptors
-    #     indices = find_cluster_indices(fpfh_features=el, cluster_centers=cluster_centers)
-    #     # Describe the point cloud with a global histogram
-    #     pc_histogram = compute_histogram(indices=indices, hist_size=256,
-    #                                      normalize=True)
-    #     histograms.append(pc_histogram)
-    # et = time.monotonic() - st
-    # print(f'Completed in {et:.3f}s.')
-    # print('Saving the global descriptors.....')
-    # histograms = np.vstack(histograms)
-    # np.savetxt('/home/kaseris/Documents/mannequin/global_descriptors_256.csv', histograms, delimiter=',')
-    # print('Done.')
-    retrieved = infer('/home/kaseris/Documents/3DGarments/dress_sleeveless_2550/dress_sleeveless_WQH14U9OKF/dress_sleeveless_WQH14U9OKF_sim.obj',
-                      cluster_centers_filename='/home/kaseris/Documents/mannequin/cluster_centers_256.csv',
-                      global_descriptors_filename='/home/kaseris/Documents/mannequin/global_descriptors_256.csv',
-                      hist_size=256)
+def extract_global_descriptors(dataset_dir: Union[str, Path],
+                               cluster_centers_file: Union[str, Path],
+                               batch_size: int = 1):
+    dataset = mannequin.retrieval3d.dataset.OBJDataset(base_dir=mannequin.retrieval3d.dataset.DATASET_BASE_DIR)
+    data_loader = mannequin.retrieval3d.dataset.OBJDataLoader(dataset=dataset,
+                                                              batch_size=1)
+    cluster_centers = np.genfromtxt(cluster_centers_file, delimiter=',')
+    histograms = []
+    print('Starting extracting global descriptors...')
+    st = time.monotonic()
+    for idx, el in enumerate(data_loader):
+        print(f'Element: {idx + 1}\t Elapsed time: {time.monotonic() - st:.3f}s from start.', flush=True)
+        # Find the cluster participation of the FPFH descriptors
+        indices = find_cluster_indices(fpfh_features=el, cluster_centers=cluster_centers)
+        # Describe the point cloud with a global histogram
+        pc_histogram = compute_histogram(indices=indices, hist_size=256,
+                                         normalize=True)
+        histograms.append(pc_histogram)
+    et = time.monotonic() - st
+    print(f'Completed in {et:.3f}s.')
+    print('Saving the global descriptors.....')
+    histograms = np.vstack(histograms)
+    np.savetxt('/home/kaseris/Documents/mannequin/global_descriptors_256.csv', histograms, delimiter=',')
+    print('Done.')
 
-    visualize_point_cloud('/home/kaseris/Documents/3DGarments/dress_sleeveless_2550/dress_sleeveless_WQH14U9OKF/dress_sleeveless_WQH14U9OKF_sim.obj')
-    visualize_point_cloud(retrieved[1])
-    visualize_point_cloud(retrieved[2])
-    visualize_point_cloud(retrieved[3])
-    visualize_point_cloud(retrieved[4])
+
+if __name__ == '__main__':
+    pass
