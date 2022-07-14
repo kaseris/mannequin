@@ -54,8 +54,8 @@ def compute_fpfh(point_cloud: o3d.geometry.PointCloud,
 def train_bow(dataset_base_dir: Union[str, Path],
               batch_size: int = 16,
               num_clusters: int = 256):
-    dataset = retrieval3d.dataset.OBJDataset(base_dir=dataset_base_dir)
-    data_loader = retrieval3d.dataset.OBJDataLoader(dataset=dataset,
+    dataset = mannequin.retrieval3d.dataset.OBJDataset(base_dir=dataset_base_dir)
+    data_loader = mannequin.retrieval3d.dataset.OBJDataLoader(dataset=dataset,
                                 batch_size=batch_size)
     mini_batch_kmeans = MiniBatchKMeans(n_clusters=num_clusters,
                                         batch_size=1000)
