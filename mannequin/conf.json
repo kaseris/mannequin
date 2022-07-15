@@ -1,0 +1,7 @@
+{
+  "datasets": {
+    "3DGarments": "/home/kaseris/Documents/3DGarments",
+    "clusters": "data/r3d/clusters",
+    "global_descriptors": "data/r3d/descriptors"
+  }
+}
