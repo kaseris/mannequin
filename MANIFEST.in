@@ -1,0 +1,3 @@
+include *.csv
+graft data
+recursive-include data *.csv *.txt
