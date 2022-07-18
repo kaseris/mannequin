@@ -3,5 +3,11 @@
     "3DGarments": "/home/kaseris/Documents/3DGarments",
     "clusters": "data/r3d/clusters",
     "global_descriptors": "data/r3d/descriptors"
-  }
+  },
+  "pattern_db": "/home/aboumpakis/Desktop/EKETA_python/Mannequin/shape context/python/database",
+  "categories": ["blouse", "skirt", "dress"],
+  "pattern_available_choices": {"blouse":  ["front", "back"], "skirt": ["skirt_front", "skirt_back"],
+    "dress": ["front", "back", "skirt_front", "skirt_back"]},
+  "editable_regions": {"front": ["collar", "sleeve"], "back": ["collar", "sleeve"], "skirt_front": ["info"],
+  "skirt_back": ["info"]}
 }
