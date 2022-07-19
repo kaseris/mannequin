@@ -1,10 +1,8 @@
 import os
 import os.path as osp
 import random
-import time
 
 import numpy as np
-import yaml
 
 from pathlib import Path
 from typing import Union, Iterable, List
@@ -66,11 +64,13 @@ class OBJDataLoader:
     def __init__(self,
                  dataset: OBJDataset,
                  batch_size: int = 100,
-                 shuffle: bool = True):
+                 shuffle: bool = True,
+                 voxel_size=12.0):
         self._dataset = dataset
         self._dataset_len = len(dataset)
         self.batch_size = batch_size
         self.shuffle = shuffle
+        self.voxel_size = voxel_size
 
         self.num = 0
 
@@ -94,11 +94,12 @@ class OBJDataLoader:
         for element in batch:
             pc = mannequin.retrieval3d.r3d.generate_point_cloud(element)
             pc = mannequin.retrieval3d.r3d.generate_point_cloud_object(pc)
-            pc = mannequin.retrieval3d.r3d.downsample_point_cloud(pc, voxel_size=12.0)
+            pc = mannequin.retrieval3d.r3d.downsample_point_cloud(pc, voxel_size=self.voxel_size)
             fpfh = mannequin.retrieval3d.r3d.compute_fpfh(pc).T
             fpfh_feat_list.append(fpfh)
         return np.vstack(fpfh_feat_list)
 
 
 if __name__ == '__main__':
-    pass
+    dataset = OBJDataset(base_dir='/home/kaseris/Documents/PK3DDataset/data_refined')
+    print(dataset[0])
