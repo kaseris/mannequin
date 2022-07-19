@@ -93,10 +93,10 @@ class OBJDataLoader:
         batch = self._dataset[start:end]
         fpfh_feat_list = []
         for element in batch:
-            pc = retrieval3d.r3d.generate_point_cloud(element)
-            pc = retrieval3d.r3d.generate_point_cloud_object(pc)
-            pc = retrieval3d.r3d.downsample_point_cloud(pc, voxel_size=12.0)
-            fpfh = retrieval3d.r3d.compute_fpfh(pc).T
+            pc = mannequin.retrieval3d.r3d.generate_point_cloud(element)
+            pc = mannequin.retrieval3d.r3d.generate_point_cloud_object(pc)
+            pc = mannequin.retrieval3d.r3d.downsample_point_cloud(pc, voxel_size=12.0)
+            fpfh = mannequin.retrieval3d.r3d.compute_fpfh(pc).T
             # print(fpfh)
             # fpfh_norm = fpfh / fpfh.sum(axis=1)[:, None]
             fpfh_feat_list.append(fpfh)
