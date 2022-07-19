@@ -10,7 +10,7 @@ from pathlib import Path
 from typing import Union, Iterable, List
 
 from mannequin.fileio import check_obj
-import mannequin.retrieval3d#.r3d import downsample_point_cloud, generate_point_cloud, generate_point_cloud_object, compute_fpfh
+import mannequin.retrieval3d
 
 # Change the directory accordingly
 DATASET_BASE_DIR = '/home/kaseris/Documents/3DGarments'
@@ -81,7 +81,6 @@ class OBJDataLoader:
         if self.num >= self._dataset_len - 1:
             raise StopIteration
         else:
-            # self.num += self.batch_size
             start = self.num
             end = self.num + self.batch_size
             print(f'Start: {start}, end: {end}')
@@ -97,8 +96,6 @@ class OBJDataLoader:
             pc = mannequin.retrieval3d.r3d.generate_point_cloud_object(pc)
             pc = mannequin.retrieval3d.r3d.downsample_point_cloud(pc, voxel_size=12.0)
             fpfh = mannequin.retrieval3d.r3d.compute_fpfh(pc).T
-            # print(fpfh)
-            # fpfh_norm = fpfh / fpfh.sum(axis=1)[:, None]
             fpfh_feat_list.append(fpfh)
         return np.vstack(fpfh_feat_list)
 
