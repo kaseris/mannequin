@@ -74,26 +74,23 @@ class ApplicationWindow:
                 category = 'dress'
                 self._category = category
                 pattern = data['pattern_available_choices'][category][self.var.get()]
-                # print(pattern)
             elif 'blouse' in self._pattern_directory:
                 category = 'blouse'
                 self._category = category
                 pattern = data['pattern_available_choices'][category][self.var.get()]
-                # print(pattern)
             elif 'skirt' in self._pattern_directory:
                 category = 'skirt'
                 self._category = category
                 pattern = data['pattern_available_choices'][category][self.var.get()]
-                # print(pattern)
 
             # TODO: To automate this
             print(list(filter(lambda x: pattern in x, os.listdir(data[f'{category}_figs_dir']))))
             self._pattern_selection = pattern
 
-
         def quit_window():
             _slave_window.destroy()
-            show_grid_selection_window(self.window, data[f'{self._category}_figs_dir'], pattern=self._pattern_selection)
+            show_grid_selection_window(self.window, data[f'{self._category}_figs_dir'], pattern=self._pattern_selection,
+                                       category=self._category)
 
         _slave_window = Toplevel(self.window)
         _slave_window.geometry("243x130+800+500")
