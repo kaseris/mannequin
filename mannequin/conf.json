@@ -4,10 +4,17 @@
     "clusters": "data/r3d/clusters",
     "global_descriptors": "data/r3d/descriptors"
   },
-  "pattern_db": "/home/aboumpakis/Desktop/EKETA_python/Mannequin/shape context/python/database",
+  "pattern_db": "/home/kaseris/Documents/GANAS_GUI/database",
+  "blouse_figs_dir": "/home/kaseris/Documents/GANAS_GUI/database/blouse/figs/",
+  "skirt_figs_dir": "/home/kaseris/Documents/GANAS_GUI/database/skirt/figs/",
+  "dress_figs_dir": "/home/kaseris/Documents/GANAS_GUI/database/dress/figs/",
   "categories": ["blouse", "skirt", "dress"],
-  "pattern_available_choices": {"blouse":  ["front", "back"], "skirt": ["skirt_front", "skirt_back"],
-    "dress": ["front", "back", "skirt_front", "skirt_back"]},
-  "editable_regions": {"front": ["collar", "sleeve"], "back": ["collar", "sleeve"], "skirt_front": ["info"],
+  "pattern_available_choices": {
+    "blouse":  ["front", "back"],
+    "skirt": ["front", "back", "both"],
+    "dress": ["front", "back", "skirt front", "skirt back"]},
+  "editable_regions": {"front": ["collar", "sleeve"],
+    "back": ["collar", "sleeve"],
+    "skirt_front": ["info"],
   "skirt_back": ["info"]}
 }
