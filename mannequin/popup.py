@@ -131,13 +131,17 @@ class my_frm_select:
         return
 
 
-def show_grid_selection_window(_root, figs_dir, pattern=None):
+def show_grid_selection_window(_root, figs_dir, pattern: str = None, category=None):
     img_folder = figs_dir
     image_files_list = [os.path.join(img_folder, f) \
                         for f in os.listdir(img_folder) \
                         if os.path.isfile(os.path.join(img_folder, f))]
-
     filtered_images = list(filter(lambda x: pattern in x, image_files_list))
+    if len(pattern.split(' ')) == 1:
+        print('mpika sto if')
+        filtered_images_ = list(filter(lambda x: f'skirt {pattern}' in x, filtered_images))
+        print(f'filtered images : {filtered_images_}')
+        filtered_images = [item for item in filtered_images if item not in filtered_images_]
 
     print(f"num of images = {len(filtered_images)}\n") #\narray=\n{image_files_list}")
 
