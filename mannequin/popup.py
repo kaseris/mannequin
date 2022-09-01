@@ -13,8 +13,8 @@ class c_my_wnd_main_window:
         ## create array holding skeleton form of the objects of required frame types
         self.frame_arr = []
         for r_idx in range(_n_rows):
-            self.wnd.columnconfigure(r_idx, weight=1, minsize=50)
-            self.wnd.columnconfigure(r_idx, weight=1, minsize=50)
+            self.wnd.columnconfigure(r_idx, weight=1, minsize=100)
+            self.wnd.columnconfigure(r_idx, weight=1, minsize=100)
             temp_array = []
             for c_idx in range(_n_cols):
                 frame_name_str = ''.join( ['frm_', str(r_idx+1), '_', str(c_idx+1)] )
@@ -53,6 +53,7 @@ class c_my_wnd_main_window:
                                                               padx=5, pady=5
                                                              )
                     self.frame_arr[r_idx][c_idx].btn_select.pack(padx=5, pady=5)
+                    self.frame_arr[r_idx][c_idx].select_this_image = self.frame_arr[r_idx - 2][c_idx].image_with_path
         self.wnd.mainloop()
 
 class my_frm_image:
@@ -88,6 +89,7 @@ class my_frm_enlarge:
 
     def do_enlarge_btn_press_functionality(self):
         #print(f"Would have enlarged image: {self.enlarge_this_image}")
+        print(os.path.basename(self.enlarge_this_image))
         img_orig = ImageTk.PhotoImage(Image.open(self.enlarge_this_image))
         wnd_enlarged_img = tk.Toplevel()
         wnd_enlarged_img.title(f"Enlarged image: {os.path.basename(self.enlarge_this_image)}")
@@ -112,6 +114,7 @@ class my_frm_select:
             relief=tk.RAISED,
             borderwidth=4)
         self.frame_name = _frame_name
+        self.select_this_image = None
         self.btn_select = tk.Button(
             master=self.frm_select,
             text=f"Select",
@@ -121,10 +124,12 @@ class my_frm_select:
         self.btn_select.pack(padx=5, pady=5)
 
     def do_select_btn_press_functionality(self):
-        #print(f"Pressed Select button: {self.frame_name}")
+        # print(f"Pressed Select button: {self.frame_name}")
+
         if self.btn_select["text"] == 'Select':
             ## Sink button and change text to Deselect
             self.btn_select.configure(text=f"Deselect", relief=tk.SUNKEN, bg="yellow", fg="black")
+            print(self.select_this_image)
         else:
             ## Raise button and change text to Select
            self.btn_select.configure(text=f"Select", relief=tk.RAISED, bg="black", fg="white")
@@ -138,9 +143,7 @@ def show_grid_selection_window(_root, figs_dir, pattern: str = None, category=No
                         if os.path.isfile(os.path.join(img_folder, f))]
     filtered_images = list(filter(lambda x: pattern in x, image_files_list))
     if len(pattern.split(' ')) == 1:
-        print('mpika sto if')
         filtered_images_ = list(filter(lambda x: f'skirt {pattern}' in x, filtered_images))
-        print(f'filtered images : {filtered_images_}')
         filtered_images = [item for item in filtered_images if item not in filtered_images_]
 
     print(f"num of images = {len(filtered_images)}\n") #\narray=\n{image_files_list}")
