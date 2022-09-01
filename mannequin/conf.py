@@ -70,4 +70,4 @@ KEYPOINTS_LABELS = {
                             [729.4668, 554.6280],
                             [759.4738, 200.7070]]
 }
-DATA_DIR = 'data'
+DATA_DIR = '../data'
