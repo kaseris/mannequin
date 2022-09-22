@@ -94,7 +94,7 @@ class OBJDataLoader:
         for element in batch:
             pc = mannequin.retrieval3d.r3d.generate_point_cloud(element)
             pc = mannequin.retrieval3d.r3d.generate_point_cloud_object(pc)
-            pc = mannequin.retrieval3d.r3d.downsample_point_cloud(pc, voxel_size=self.voxel_size)
+            # pc = mannequin.retrieval3d.r3d.downsample_point_cloud(pc, voxel_size=self.voxel_size)
             fpfh = mannequin.retrieval3d.r3d.compute_fpfh(pc).T
             fpfh_feat_list.append(fpfh)
         return np.vstack(fpfh_feat_list)
@@ -102,4 +102,10 @@ class OBJDataLoader:
 
 if __name__ == '__main__':
     dataset = OBJDataset(base_dir='/home/kaseris/Documents/PK3DDataset/data_refined')
-    print(dataset[0])
+    print(f'Dataset size: {len(dataset)}')
+    dataloader = OBJDataLoader(dataset=dataset, batch_size=1, voxel_size=8.0)
+    sizes = []
+    for el in dataloader:
+        print(el.shape)
+        sizes.append(el.shape[0])
+    print(f'minimum amount of samples: {min(sizes)}\nmax amount: {max(sizes)}')
