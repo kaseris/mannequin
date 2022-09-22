@@ -56,9 +56,9 @@ def train_bow(dataset_base_dir: Union[str, Path],
               num_clusters: int = 256):
     dataset = mannequin.retrieval3d.dataset.OBJDataset(base_dir=dataset_base_dir)
     data_loader = mannequin.retrieval3d.dataset.OBJDataLoader(dataset=dataset,
-                                batch_size=batch_size)
+                                                              batch_size=batch_size)
     mini_batch_kmeans = MiniBatchKMeans(n_clusters=num_clusters,
-                                        batch_size=1000)
+                                        batch_size=11000)
     print('Starting MiniBatch K-Means...')
     st = time.monotonic()
     st_batch = time.monotonic()
@@ -68,7 +68,7 @@ def train_bow(dataset_base_dir: Union[str, Path],
         st_batch = time.monotonic()
     print(f'Finished training of the MiniBatch K-Means. Elapsed Time: {time.monotonic() - st:.3f}s')
     print('Saving clusters')
-    np.savetxt('/home/kaseris/Documents/mannequin/cluster_centers_256.csv',
+    np.savetxt('/home/kaseris/Documents/mannequin/cluster_centers_pk_256.csv',
                mini_batch_kmeans.cluster_centers_,
                delimiter=',')
 
@@ -81,7 +81,6 @@ def find_cluster_indices(fpfh_features: np.ndarray,
 
         :param fpfh_features: A :math:`N \times 33` array of FPFH local descriptors
         :param cluster_centers: The word dictionary.
-
     """
     dists = cdist(fpfh_features, cluster_centers)
     return np.argmin(dists, axis=1)
@@ -111,11 +110,13 @@ def visualize_point_cloud(input_filename: Union[str, Path]):
 def infer(input_filename: Union[str, Path],
           cluster_centers_filename: Union[str, Path],
           global_descriptors_filename: Union[str, Path],
+          data_path: Union[str, Path],
           n_retrieved: int = 5,
           voxel_size: float = 12.0,
           hist_size: int = 128):
+
     input_file = input_filename
-    print(f'Running inference for input: {osp.basename(input_file)}')
+    # print(f'Running inference for input: {osp.basename(input_file)}')
     input_pc = generate_point_cloud(input_file)
     input_pc = generate_point_cloud_object(input_pc)
     input_pc = downsample_point_cloud(input_pc, voxel_size=voxel_size)
@@ -138,10 +139,10 @@ def infer(input_filename: Union[str, Path],
     retrieved_indices = np.argsort(dists)[0][1:n_retrieved+1]
 
     # Create the dataset object in order to return the filenames
-    _ds = mannequin.retrieval3d.dataset.OBJDataset(base_dir=mannequin.retrieval3d.dataset.DATASET_BASE_DIR)
+    _ds = mannequin.retrieval3d.dataset.OBJDataset(data_path)
     retrieved_paths = []
     for retrieved_index in retrieved_indices:
-        print(_ds[retrieved_index])
+        # print(_ds[retrieved_index])
         retrieved_paths.append(_ds[retrieved_index])
     return retrieved_paths
 
@@ -149,7 +150,7 @@ def infer(input_filename: Union[str, Path],
 def extract_global_descriptors(dataset_dir: Union[str, Path],
                                cluster_centers_file: Union[str, Path],
                                batch_size: int = 1):
-    dataset = mannequin.retrieval3d.dataset.OBJDataset(base_dir=mannequin.retrieval3d.dataset.DATASET_BASE_DIR)
+    dataset = mannequin.retrieval3d.dataset.OBJDataset(base_dir=dataset_dir)
     data_loader = mannequin.retrieval3d.dataset.OBJDataLoader(dataset=dataset,
                                                               batch_size=1)
     cluster_centers = np.genfromtxt(cluster_centers_file, delimiter=',')
@@ -168,9 +169,15 @@ def extract_global_descriptors(dataset_dir: Union[str, Path],
     print(f'Completed in {et:.3f}s.')
     print('Saving the global descriptors.....')
     histograms = np.vstack(histograms)
-    np.savetxt('/home/kaseris/Documents/mannequin/global_descriptors_256.csv', histograms, delimiter=',')
+    np.savetxt('/home/kaseris/Documents/mannequin/global_descriptors_pk_256.csv', histograms, delimiter=',')
     print('Done.')
 
 
 if __name__ == '__main__':
-    pass
+    input_file = '/home/kaseris/Documents/PK3DDataset/data_refined/blouses/CJ12566_simple/CJ12566_simple.obj'
+    clusters_filename = '/home/kaseris/Documents/mannequin/cluster_centers_pk_256.csv'
+    global_descriptors = '/home/kaseris/Documents/mannequin/global_descriptors_pk_256.csv'
+    infer(input_filename=input_file, cluster_centers_filename=clusters_filename,
+          global_descriptors_filename=global_descriptors, hist_size=256)
+    # extract_global_descriptors(dataset_dir='/home/kaseris/Documents/PK3DDataset/data_refined',
+    #                            cluster_centers_file='/home/kaseris/Documents/mannequin/cluster_centers_pk_256.csv')
