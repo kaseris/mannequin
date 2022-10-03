@@ -20,6 +20,7 @@ customtkinter.set_appearance_mode("System")  # Modes: "System" (standard), "Dark
 customtkinter.set_default_color_theme("blue")  # Themes: "blue" (standard), "green", "dark-blue"
 
 PATH = '/home/kaseris/Documents/dev/mannequin/tools'
+DATABASE_PATH = '/home/kaseris/Documents/GANAS_GUI/database'
 
 
 def similarity(query, retrieved, ss_mat):
@@ -28,10 +29,10 @@ def similarity(query, retrieved, ss_mat):
     return ss_mat[retrieved, query]
 
 
-def create_ss_matrix():
-    with open('/home/kaseris/Documents/ss_dress.txt', 'r') as f:
+def create_ss_matrix(path):
+    with open(path, 'r') as f:
         for idx, line in enumerate(f):
-            l = line.strip().split(',\t')
+            l = line.strip().split(',')
             if idx == 0:
                 ss = np.zeros((len(l) + 1, len(l) + 1))
             ss[idx, idx + 1:] = [float(el) for el in l]
@@ -39,27 +40,93 @@ def create_ss_matrix():
     return ss
 
 
-ss_dict_name_to_idx = {'DD0332': 0,
-                       'GNSS': 1,
-                       'Q5751Á': 2,
-                       'Q6089': 3,
-                       'Q6109': 4,
-                       'Q6117': 5,
-                       'Q6362': 6,
-                       'Q6435': 7,
-                       'Q6446': 8,
-                       'Q6856': 9}
+ss_dict_name_to_idx = {'dress': {'DD0332': 0,
+                                 'GNSS': 1,
+                                 'Q5751Á': 2,
+                                 'Q6089': 3,
+                                 'Q6109': 4,
+                                 'Q6117': 5,
+                                 'Q6362': 6,
+                                 'Q6435': 7,
+                                 'Q6446': 8,
+                                 'Q6856': 9},
+                       'blouse': {'CJ12566': 0,
+                                  'LAURIE': 1,
+                                  'Q5134': 2,
+                                  'Q6431': 3,
+                                  'Q7180': 4,
+                                  'Q8634': 5,
+                                  'Q9383': 6,
+                                  'Q9393': 7,
+                                  'Q9398': 8,
+                                  'Q9407': 9,
+                                  'Q9410': 10,
+                                  'Q9414': 11,
+                                  'Q9416': 12,
+                                  'Q9432': 13,
+                                  'Q9434': 14,
+                                  'Q9435': 15,
+                                  'Q9437': 16,
+                                  'Q9409': 17,
+                                  'Q9020': 18},
+                       'skirt': {'Q7276': 0,
+                                 'Q6281': 1,
+                                 'Q6549': 2,
+                                 'Q6797': 3,
+                                 'Q7062': 4,
+                                 'Q7063': 5,
+                                 'Q7082': 6,
+                                 'Q7092': 7,
+                                 'Q7127': 8,
+                                 'Q7343': 9,
+                                 'Q7398': 10,
+                                 'a3600': 11,
+                                 'Q7064': 12,
+                                 'Q7835': 13}}
 
-ss_dict_idx_to_name = {0: 'DD0332',
-                       1: 'GNSS',
-                       2: 'Q5751',
-                       3: 'Q6089',
-                       4: 'Q6109',
-                       5: 'Q6117',
-                       6: 'Q6362',
-                       7: 'Q6435',
-                       8: 'Q6446',
-                       9: 'Q6856'}
+ss_dict_idx_to_name = {'dress': {0: 'DD0332',
+                                 1: 'GNSS',
+                                 2: 'Q5751',
+                                 3: 'Q6089',
+                                 4: 'Q6109',
+                                 5: 'Q6117',
+                                 6: 'Q6362',
+                                 7: 'Q6435',
+                                 8: 'Q6446',
+                                 9: 'Q6856'},
+                       'blouse': {0: 'CJ12566',
+                                  1: 'LAURIE',
+                                  2: 'Q5134',
+                                  3: 'Q6431',
+                                  4: 'Q7180',
+                                  5: 'Q8634',
+                                  6: 'Q9383',
+                                  7: 'Q9393',
+                                  8: 'Q9398',
+                                  9: 'Q9407',
+                                  10: 'Q9410',
+                                  11: 'Q9414',
+                                  12: 'Q9416',
+                                  13: 'Q9432',
+                                  14: 'Q9434',
+                                  15: 'Q9435',
+                                  16: 'Q9437',
+                                  17: 'Q9409',
+                                  18: 'Q9020'},
+                       'skirt': {0: 'Q7276',
+                                 1: 'Q6281',
+                                 2: 'Q6549',
+                                 3: 'Q6797',
+                                 4: 'Q7062',
+                                 5: 'Q7063',
+                                 6: 'Q7082',
+                                 7: 'Q7092',
+                                 8: 'Q7127',
+                                 9: 'Q7343',
+                                 10: 'Q7398',
+                                 11: 'a3600',
+                                 12: 'Q7064',
+                                 13: 'Q7835'}}
 
 
 class App(customtkinter.CTk):
@@ -122,7 +189,7 @@ class App(customtkinter.CTk):
                                                          text_font=("Roboto", "14"))
         self.instructions_title.grid(row=5, column=0, pady=(140, 0))
         self.instructions = customtkinter.CTkLabel(self.frame_left,
-                                                   text="\u2022Left Click on"
+                                                   text="\u2022 Left Click on"
                                                         " a retrieved image\n to view garmen"
                                                         "t's infomation\n and its respective patterns.\n\n"
                                                         "\u2022 Click 'Enlarge' to enlarge\n the selected garment.\n\n"
@@ -167,7 +234,9 @@ class App(customtkinter.CTk):
         self.img_query = ImageTk.PhotoImage(Image.open("test_images/bg_image.png").resize((300, 300)))
         self.query_img = customtkinter.CTkLabel(self.frame_info, image=self.img_query)
         self.query_img.grid(row=1, column=0, pady=(10, 40), padx=10)
+
         self.retrieved_label = customtkinter.CTkLabel(master=self.frame_right_right, text="Retrieved garments", text_font=('Roboto', 16)).grid(columnspan=4, pady=10)
+
 
         for i in range(4):
             setattr(self, f'frame_info_{i + 1}', customtkinter.CTkFrame(master=self.frame_right_right))
@@ -182,12 +251,8 @@ class App(customtkinter.CTk):
                                                                       command=partial(self.onClickGarmentButton, i+1)))
             getattr(self, f'out_img_{i + 1}').grid(row=5, column=0, pady=10, padx=10)
 
-        # self.details_button = customtkinter.CTkButton(master=self.frame_right_right, text="Details")
-        # self.details_button.grid(row=6, column=0, columnspan=4, pady=(10, 0))
         self.enlarge_button = customtkinter.CTkButton(master=self.frame_right_right, text="Enlarge")
         self.enlarge_button.grid(row=6, column=0, pady=(10, 0), columnspan=4)
-        # self.select_button = customtkinter.CTkButton(master=self.frame_right_right, text="Select")
-        # self.select_button.grid(row=6, column=2, pady=(10, 0), padx=(7, 0), sticky='w')
 
         self.optionmenu_1.set("Dark")
 
@@ -245,13 +310,13 @@ class App(customtkinter.CTk):
         self.pattern_preview = FigureCanvasTkAgg(self.f, master=self.frame_lower_right_right)
         self.pattern_preview.get_tk_widget().grid(sticky='n', padx=(370), column=1)
 
+
     def upload_image(self):
         query_img = filedialog.askopenfilename(filetypes=[("JPEG Images", "*.jpg"), ("PNG Images", "*.png")],
                                                initialdir='/home/kaseris/Documents/fir')
         try:
             img = Image.open(query_img)
         except AttributeError:
-            print("den epelekses tipota")
             return
         self.img_query = ImageTk.PhotoImage(Image.open(query_img).resize((300, 300)))
         self.query_img.configure(image=self.img_query)
@@ -273,7 +338,6 @@ class App(customtkinter.CTk):
             retrieved_path, _ = item
             retrieved_img = ImageTk.PhotoImage(Image.open(retrieved_path).resize((250, 250)))
             getattr(self, f'out_img_{str(idx+1)}').configure(image=retrieved_img)
-            # getattr(self, f'out_img_{str(idx + 1)}').configure(command=partial(enlarge_image, retrieved_path))
 
     def upload_3d(self):
         pass
@@ -342,16 +406,63 @@ class App(customtkinter.CTk):
         self.onClickDetails(index)
         # self.details_button.configure(command=partial(self.onClickDetails, index - 1))
         img_path = self._retrieved[index-1][0]
+        #print(img_path)
         img_obj = Image.open(img_path).resize((180, 180))
         photo_img = ImageTk.PhotoImage(img_obj)
         self.selected_image_preview_obj = photo_img
         self.selected_image_preview.configure(image=self.selected_image_preview_obj)
+
+    def onClickRelevantGarmentButton(self, index):
+        print(f'You clicked button number: {index}')
+        self._index = index
+        print(self.filenames)
+        found = [a for a in self.filenames if os.path.basename(self._suggested[index]) in a]
+        # self.enlarge_button.configure(command=partial(self.onClickEnlarge, self._suggested[index - 1][0]))
+        self.onClickDetails(index)
+        # self.details_button.configure(command=partial(self.onClickDetails, index - 1))
+        img_path = osp.join(str(Path(found[0]).parent), self._suggested[index]) + '.jpg'
+        #print(img_path)
+        img_obj = Image.open(img_path).resize((180, 180))
+        photo_img = ImageTk.PhotoImage(img_obj)
+        self.selected_image_preview_obj = photo_img
+        self.selected_image_preview.configure(image=self.selected_image_preview_obj)
+
+        p = Path(found[0]).parent
+        for cat in ['dress', 'skirt', 'blouse']:
+            if cat in str(p):
+                self.pattern_category.configure(text=cat)
+        # Read the individual patterns
+        ind_patterns = os.path.join(p, 'individual patterns')
+        pattern_files = ['front.xyz', 'back.xyz', 'skirt back.xyz', 'skirt front.xyz', 'sleever.xyz', 'sleevel.xyz',
+                         'cuffl.xyz', 'cuffr.xyz', 'collar.xyz']
+        coords_list = []
+        for f in pattern_files:
+            if f in os.listdir(ind_patterns):
+                coords_list.append(read_coords_from_txt(os.path.join(ind_patterns, f), delimiter=','))
+        self.pattern_number.configure(text=str(len(coords_list)))
+        self.f.clf()
+        self.f.subplots_adjust(top=1, bottom=0, right=1, left=0, hspace=0, wspace=0)
+        self.f.tight_layout()
+        ax = self.f.add_subplot(autoscale_on=False, xlim=(0, 0), ylim=(0, 0))
+        for pattern in coords_list:
+            ax.plot(pattern[:, 0], pattern[:, 1], c='tab:blue')
+
+        ax.set_facecolor('#343638')
+        ax.set_xticks([])
+        ax.set_yticks([])
+        ax.axis('tight')
+        ax.axis('off')
+        ax.set_aspect('equal')
+        self.pattern_preview.draw()
 
     def onDoubleClickCanvas(self, event):
         if event.dblclick:
             child = customtkinter.CTkToplevel()
             child.title('Relevant Patterns')
             child.geometry('1220x380+670+65')
+
+            child.finalize_button = customtkinter.CTkButton(master=child, text="Finalize")
+            child.finalize_button.grid(row=6, column=0, pady=(10, 0), columnspan=4)
 
             for i in range(4):
                 setattr(child, f'frame_info_{i + 1}', customtkinter.CTkFrame(master=child))
@@ -364,37 +475,37 @@ class App(customtkinter.CTk):
                                                                            corner_radius=5, width=265, height=265,
                                                                            fg_color="#6687d9",
                                                                            hover_color="#1751e3",
-                                                                           command=None))
+                                                                           command=partial(self.onClickRelevantGarmentButton, i)))
                 getattr(child, f'out_img_{i + 1}').grid(row=5, column=0, pady=10, padx=10)
 
-            selected_idx = ss_dict_name_to_idx[osp.basename(self._retrieved[self._index-1][0]).split('.')[0]]
-            ss_mat = create_ss_matrix()
+            path_to_ss = osp.join(DATABASE_PATH, self.pattern_category.text, f'ss_{self.pattern_category.text}.txt')
+            selected_idx = ss_dict_name_to_idx[self.pattern_category.text][osp.basename(self._retrieved[self._index-1][0]).split('.')[0]]
+            ss_mat = create_ss_matrix(path_to_ss)
 
             list_similarities = []
-            for i in range(10):
+            for i in range(len(ss_mat)):
                 list_similarities.append(similarity(selected_idx, i, ss_mat))
             arr = np.asarray(list_similarities)
             suggested = arr.argsort()[-4:]
-            s = [ss_dict_idx_to_name[idx] for idx in suggested]
-            #========================
+            self._suggested = [ss_dict_idx_to_name[self.pattern_category.text][idx] for idx in suggested]
             database = '/home/kaseris/Documents/GANAS_GUI/database'
-            filenames = []
+            self._suggested[0] = self.pattern_name.text
+            self.filenames = []
             for root, dirs, files in os.walk(database):
                 for name in files:
-                    filenames.append(os.path.join(root, name))
-            print(s)
+                    self.filenames.append(os.path.join(root, name))
+            # print("11111111111111111111111111111", self.filenames)
+            print("22222222222222222222222222222", self._suggested)
             paths = []
-            for idx, _ in enumerate(s):
-                found = [a for a in filenames if os.path.basename(s[idx]) in a]
-                # paths.append(str(Path(found[0]).parent))
-                # setattr(child,
-                #         f'img_out_{idx + 1}',
-                #         ImageTk.PhotoImage(Image.open(str(Path(found[0]).parent)
-                #                                       + f'/{s[idx]}.jpg').resize((250, 250))))
-                photo_img = ImageTk.PhotoImage(Image.open(str(Path(found[0]).parent) + f'/{s[idx]}.jpg').resize((250, 250)))
-                getattr(child, f'out_img_{idx + 1}').configure(image=photo_img)
+            for idx, _ in enumerate(self._suggested):
+                found = [a for a in self.filenames if os.path.basename(self._suggested[idx]) in a]
+                print("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@", found)
+                photo_img = ImageTk.PhotoImage(Image.open(str(Path(found[0]).parent) + f'/{self._suggested[idx]}.jpg').resize((250, 250)))
+                if idx == 0:
+                    getattr(child, f'out_img_{idx + 1}').configure(image=self.selected_image_preview_obj)
+                else:
+                    getattr(child, f'out_img_{idx + 1}').configure(image=photo_img)
 
-            # ========================
             child.mainloop()
 
 
