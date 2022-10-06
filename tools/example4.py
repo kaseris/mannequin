@@ -334,6 +334,7 @@ class Controller:
         self.model.load_file(file_name, object_type=object_type)
         self.view.plot()
         self.parent.clear_images()
+        self.parent.clear_info()
         self.parent._scanned_file = file_name
 
     def exit(self):
@@ -614,6 +615,14 @@ class App(customtkinter.CTk):
         ax.axis('off')
         ax.set_aspect('equal')
         self.pattern_preview.draw()
+
+    def clear_info(self):
+        self.pattern_name.configure(text="")
+        self.pattern_category.configure(text="")
+        self.pattern_path.configure(text="")
+        self.pattern_number.configure(text="")
+        self.selected_image_preview_obj = ImageTk.PhotoImage(Image.open('test_images/bg_image.png').resize((180, 180)))
+        self.selected_image_preview.configure(image=self.selected_image_preview_obj)
 
     def onClickGarmentButton(self, index):
         print(f'You clicked button number: {index}')
