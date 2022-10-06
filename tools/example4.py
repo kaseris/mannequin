@@ -347,7 +347,6 @@ class Controller:
         self.file_name = filename
 
     def apply(self):
-        # TODO: Edw na ginei eniaio, mia routina retrieve sketo
         self.parent.retrieve()
 
 
@@ -549,34 +548,6 @@ class App(customtkinter.CTk):
                                                 command=self.controller.open)
         self.button_1.grid(row=2, column=0, pady=(50, 10), padx=20)
 
-    # def upload_image(self):
-    #     query_img = filedialog.askopenfilename(filetypes=[("JPEG Images", "*.jpg"), ("PNG Images", "*.png")],
-    #                                            initialdir='/home/kaseris/Documents/fir')
-    #     try:
-    #         img = Image.open(query_img)
-    #     except AttributeError:
-    #         return
-    #     self.img_query = ImageTk.PhotoImage(Image.open(query_img).resize((300, 300)))
-    #     self.query_img.configure(image=self.img_query)
-    #
-    #     if not not self._retrieved:
-    #         for i in range(4):
-    #             getattr(self, f'out_img_{str(i+1)}').configure(image=None)
-    #
-    #     # ====
-    #     # TODO: Threading
-    #     f = dump_single_feature(query_img, self.extractor)
-    #
-    #     # number 4 in the args possibly refers to the number of imgs to retrieve
-    #     result = naive_query(f, self.deep_feats, self.color_feats, self.labels, 4)
-    #     result_kmeans = kmeans_query(self.clf, f, self.deep_feats, self.color_feats, self.labels, 4)
-    #     self._retrieved = result_kmeans
-    #     # ====
-    #     for idx, item in enumerate(result_kmeans):
-    #         retrieved_path, _ = item
-    #         retrieved_img = ImageTk.PhotoImage(Image.open(retrieved_path).resize((250, 250)))
-    #         getattr(self, f'out_img_{str(idx+1)}').configure(image=retrieved_img)
-
     def modify_scanned_file(self, filename):
         self._scanned_file = filename
 
@@ -653,10 +624,10 @@ class App(customtkinter.CTk):
         else:
             self.enlarge_button.configure(command=partial(self.onClickEnlarge, self._retrieved[index - 1]))
             img_path = self._retrieved[index - 1]
+            img_path = get_model_name(img_path)
+            img_path = osp.join(IMAGES_PATH, img_path) + '.jpg'
+        logging.info(f'img_path: {img_path}')
         self.onClickDetails(index)
-
-
-
         img_obj = Image.open(img_path).resize((180, 180))
         photo_img = ImageTk.PhotoImage(img_obj)
         self.selected_image_preview_obj = photo_img
@@ -723,24 +694,6 @@ class App(customtkinter.CTk):
         for idx, retrieved_path in enumerate(results):
             retrieved_img = ImageTk.PhotoImage(Image.open(retrieved_path).resize((250, 250)))
             getattr(self, f'out_img_{str(idx+1)}').configure(image=retrieved_img)
-
-    # def retrieve_3d(self):
-    #     print(f'retrieve for: {self._scanned_file}')
-    #     self.clear_images()
-    #
-    #     self._retrieved_3d = infer(self._scanned_file)
-    #     results = []
-    #     for path in self._retrieved_3d:
-    #         for name in os.listdir(IMAGES_PATH):
-    #             if get_model_name(path) in name:
-    #                 logging.info(f'{osp.join(IMAGES_PATH, name)}')
-    #                 results.append(osp.join(IMAGES_PATH, name))
-    #
-    #     self._retrieved = results
-    #     for idx, item in enumerate(results):
-    #         retrieved_path = item
-    #         retrieved_img = ImageTk.PhotoImage(Image.open(retrieved_path).resize((250, 250)))
-    #         getattr(self, f'out_img_{str(idx+1)}').configure(image=retrieved_img)
 
     def retrieve(self):
         self.clear_images()
