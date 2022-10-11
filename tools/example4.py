@@ -32,9 +32,9 @@ customtkinter.set_appearance_mode("System")  # Modes: "System" (standard), "Dark
 customtkinter.set_default_color_theme("blue")  # Themes: "blue" (standard), "green", "dark-blue"
 
 PATH = '/home/kaseris/Documents/dev/mannequin/tools'
-DATABASE_PATH = '/home/kaseris/Documents/GANAS_GUI/database'
+DATABASE_PATH = '/home/kaseris/Documents/database/'
 IMAGES_PATH = '/home/kaseris/Documents/fir/DIMIS'
-
+NEW_DATABASE_PATH = '/home/kaseris/Documents/database/'
 
 def similarity(query, retrieved, ss_mat):
     if ss_mat[retrieved, query] <= 0.0:
@@ -298,12 +298,13 @@ class Controller:
     def dragging(self, event):
         if event.widget is self.parent:
             if self.drag_id == '':
-                logging.info(f'gamas?')
+                # logging.info(f'gamas?')
+                pass
             else:
                 self.parent.after_cancel(self.drag_id)
                 x = self.parent.winfo_x()
                 y = self.parent.winfo_y()
-                logging.info(f"Window position({x}, {y})")
+                # logging.info(f"Window position({x}, {y})")
                 self.root.geometry(f'400x300+{x + Controller.TOP_LEVEL_OFFSET_X}+{y + Controller.TOP_LEVEL_OFFSET_Y}')
             self.drag_id = self.parent.after(1000, self.stop_drag)
 
@@ -323,12 +324,12 @@ class Controller:
                                                                   ("JPEG Image", "*.jpg"),
                                                                   ("JPEG Image", "*.jpeg"),
                                                                   ("all files", "*.*")))
-        logging.info(f'file_name: {file_name}')
+        # logging.info(f'file_name: {file_name}')
         if Path(file_name).suffix == '.obj' or Path(file_name).suffix == '.stl':
             object_type = 'mesh'
         else:
             object_type = 'image'
-        logging.info(f'object_type: {object_type}')
+        # logging.info(f'object_type: {object_type}')
         self.parent.modify_scanned_file(file_name)
         self.model.clear()
         self.model.load_file(file_name, object_type=object_type)
@@ -370,9 +371,18 @@ class App(customtkinter.CTk):
 
     def __init__(self, model=None, view=None, controller=None):
         super().__init__()
-        self.extractor = load_test_model()
-        self.deep_feats, self.color_feats, self.labels = load_feat_db()
-        self.clf = load_kmeans_model()
+
+        self.garment_paths = {'image_path': [],
+                              'obj_path': [],
+                              'category': [],
+                              'name': []}
+        with open(osp.join(NEW_DATABASE_PATH, 'paths/garment_paths.txt'), 'r') as f:
+            for idx, line in enumerate(f):
+                l = line.strip().split(', ')
+                self.garment_paths['image_path'].append(osp.join(NEW_DATABASE_PATH, l[0][2:]))
+                self.garment_paths['obj_path'].append(osp.join(NEW_DATABASE_PATH, l[1][2:]))
+                self.garment_paths['category'].append(l[2])
+                self.garment_paths['name'].append(l[3])
 
         self.title("i-Mannequin")
         self.attributes('-zoomed', True)
@@ -571,7 +581,7 @@ class App(customtkinter.CTk):
         enlarged_image_window.mainloop()
 
     def onClickDetails(self, idx):
-        logging.info(f'self._retrieved[idx-1]: {self._retrieved[idx - 1]}')
+        # logging.info(f'self._retrieved[idx-1]: {self._retrieved[idx - 1]}')
         if not isinstance(self._retrieved[idx - 1], str):
             self.pattern_path.configure(text=self._retrieved[idx - 1][0])
             self.pattern_name.configure(text=osp.basename(self._retrieved[idx - 1][0]).split('.')[0])
@@ -580,20 +590,13 @@ class App(customtkinter.CTk):
             self.pattern_path.configure(text=self._retrieved[idx - 1])
             self.pattern_name.configure(text=osp.basename(self._retrieved[idx - 1]).split('.')[0])
             _selected = self._retrieved[idx - 1]
-        logging.info(f'_selected: {_selected}')
-        database = '/home/kaseris/Documents/GANAS_GUI/database'
-        filenames = []
-        for root, dirs, files in os.walk(database):
-            for name in files:
-                filenames.append(os.path.join(root, name))
+        _categories = [self.garment_paths['category'][i] for i in self.ind]
+        _names = [self.garment_paths['name'][i] for i in self.ind]
 
-        found = [a for a in filenames if os.path.basename(_selected) in a]
-        p = Path(found[0]).parent
-        for cat in ['dress', 'skirt', 'blouse']:
-            if cat in str(p):
-                self.pattern_category.configure(text=cat)
-        # Read the individual patterns
-        ind_patterns = os.path.join(p, 'individual patterns')
+        self.pattern_category.configure(text=_categories[idx - 1])
+        self.pattern_name.configure(text=_names[idx - 1])
+        # logging.info(f'_selected: {_selected}')
+        ind_patterns = os.path.join(Path(_selected).parent, 'individual patterns')
         pattern_files = ['front.xyz', 'back.xyz', 'skirt back.xyz', 'skirt front.xyz', 'sleever.xyz', 'sleevel.xyz',
                          'cuffl.xyz', 'cuffr.xyz', 'collar.xyz']
         coords_list = []
@@ -625,7 +628,7 @@ class App(customtkinter.CTk):
         self.selected_image_preview.configure(image=self.selected_image_preview_obj)
 
     def onClickGarmentButton(self, index):
-        print(f'You clicked button number: {index}')
+        # print(f'You clicked button number: {index}')
         self._index = index
         if not isinstance(self._retrieved[index - 1], str):
             self.enlarge_button.configure(command=partial(self.onClickEnlarge, self._retrieved[index - 1][0]))
@@ -633,9 +636,7 @@ class App(customtkinter.CTk):
         else:
             self.enlarge_button.configure(command=partial(self.onClickEnlarge, self._retrieved[index - 1]))
             img_path = self._retrieved[index - 1]
-            img_path = get_model_name(img_path)
-            img_path = osp.join(IMAGES_PATH, img_path) + '.jpg'
-        logging.info(f'img_path: {img_path}')
+        # logging.info(f'img_path: {img_path}')
         self.onClickDetails(index)
         img_obj = Image.open(img_path).resize((180, 180))
         photo_img = ImageTk.PhotoImage(img_obj)
@@ -643,9 +644,9 @@ class App(customtkinter.CTk):
         self.selected_image_preview.configure(image=self.selected_image_preview_obj)
 
     def onClickRelevantGarmentButton(self, index):
-        print(f'You clicked button number: {index}')
+        # print(f'You clicked button number: {index}')
         self._index = index
-        print(self.filenames)
+        # print(self.filenames)
         found = [a for a in self.filenames if os.path.basename(self._suggested[index]) in a]
         self.onClickDetails(index)
         img_path = osp.join(str(Path(found[0]).parent), self._suggested[index]) + '.jpg'
@@ -688,26 +689,16 @@ class App(customtkinter.CTk):
                 getattr(self, f'out_img_{str(i+1)}').configure(image=None)
 
     def update_images(self):
-        results = []
-        for idx, item in enumerate(self._retrieved):
-            if not isinstance(item, tuple):
-                retrieved_path = item
-                for name in os.listdir(IMAGES_PATH):
-                    if get_model_name(retrieved_path) in name:
-                        logging.info(f'{osp.join(IMAGES_PATH, name)}')
-                        results.append(osp.join(IMAGES_PATH, name))
-            else:
-                retrieved_path, _ = item
-                results.append(retrieved_path)
-        logging.info(f'retrieved_path: {results}')
-        for idx, retrieved_path in enumerate(results):
+        for idx, retrieved_path in enumerate(self._retrieved):
             retrieved_img = ImageTk.PhotoImage(Image.open(retrieved_path).resize((250, 250)))
             getattr(self, f'out_img_{str(idx+1)}').configure(image=retrieved_img)
 
     def retrieve(self):
         self.clear_images()
 
-        self._retrieved = infer(self._scanned_file, k=4, object_type=self.controller.model.object_type)
+        self._retrieved, self.ind = infer(self._scanned_file, k=4, object_type=self.controller.model.object_type,
+                                          gallery_paths=self.garment_paths['image_path'])
+        self._retrieved = [self.garment_paths['image_path'][i] for i in self.ind]
 
         self.update_images()
 
@@ -716,9 +707,6 @@ class App(customtkinter.CTk):
             child = customtkinter.CTkToplevel()
             child.title('Relevant Patterns')
             child.geometry('1220x380+670+65')
-
-            #child.finalize_button = customtkinter.CTkButton(master=child, text="Finalize")
-            #child.finalize_button.grid(row=6, column=0, pady=(10, 0), columnspan=4)
 
             for i in range(4):
                 setattr(child, f'frame_info_{i + 1}', customtkinter.CTkFrame(master=child))
@@ -735,7 +723,7 @@ class App(customtkinter.CTk):
                 getattr(child, f'out_img_{i + 1}').grid(row=5, column=0, pady=10, padx=10)
 
             path_to_ss = osp.join(DATABASE_PATH, self.pattern_category.text, f'ss_{self.pattern_category.text}.txt')
-            selected_idx = ss_dict_name_to_idx[self.pattern_category.text][osp.basename(self._retrieved[self._index-1][0]).split('.')[0]]
+            selected_idx = ss_dict_name_to_idx[self.pattern_category.text][osp.basename(self._retrieved[self._index-1]).split('.')[0]]
             ss_mat = create_ss_matrix(path_to_ss)
 
             list_similarities = []
@@ -744,7 +732,7 @@ class App(customtkinter.CTk):
             arr = np.asarray(list_similarities)
             suggested = arr.argsort()[-4:]
             self._suggested = [ss_dict_idx_to_name[self.pattern_category.text][idx] for idx in suggested]
-            database = '/home/kaseris/Documents/GANAS_GUI/database'
+            database = '/home/kaseris/Documents/database'
             self._suggested[0] = self.pattern_name.text
             self.filenames = []
             for root, dirs, files in os.walk(database):
