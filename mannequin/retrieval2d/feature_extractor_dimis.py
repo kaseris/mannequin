@@ -46,9 +46,9 @@ def dump():
         )
         dump_dataset(inshop_loader, deep_feats, color_feats, labels)
 
-    feat_all = os.path.join(DIMIS_DATASET_BASE, 'all_feat_dimis.npy')
-    color_feat_all = os.path.join(DIMIS_DATASET_BASE, 'all_color_feat_dimis.npy')
-    feat_list = os.path.join(DIMIS_DATASET_BASE, 'all_feat_dimis.list')
+    feat_all = os.path.join(DIMIS_DATASET_BASE, 'embeddings/all_feat_dimis.npy')
+    color_feat_all = os.path.join(DIMIS_DATASET_BASE, 'embeddings/all_color_feat_dimis.npy')
+    feat_list = os.path.join(DIMIS_DATASET_BASE, 'embeddings/all_feat_dimis.list')
     with open(feat_list, "w") as fw:
         fw.write("\n".join(labels))
     np.save(feat_all, np.vstack(deep_feats))

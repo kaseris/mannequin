@@ -22,7 +22,7 @@ def dump_model(model, epoch, batch_idx="final"):
 def load_model(path=None):
     if not path:
         return None
-    full = os.path.join(DATASET_BASE, 'models', path)
+    full = os.path.join(DIMIS_DATASET_BASE, 'embeddings/models', path)
     for i in [path, full]:
         if os.path.isfile(i):
             return torch.load(i)
@@ -30,7 +30,7 @@ def load_model(path=None):
 
 
 def dump_feature(feat, img_path):
-    feat_folder = os.path.join(DATASET_BASE, 'features')
+    feat_folder = os.path.join(DIMIS_DATASET_BASE, 'embeddings/features')
     if not os.path.isdir(feat_folder):
         os.mkdir(feat_folder)
     np_path = img_path.replace("/", "+")
@@ -39,7 +39,7 @@ def dump_feature(feat, img_path):
 
 
 def load_feature(img_path):
-    feat_folder = os.path.join(DATASET_BASE, 'features')
+    feat_folder = os.path.join(DIMIS_DATASET_BASE, 'embeddings/features')
     np_path = img_path.replace("/", "+")
     np_path = os.path.join(feat_folder, np_path + '.npy')
     if os.path.isfile(np_path):

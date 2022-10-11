@@ -213,12 +213,14 @@ class DimisDataset(data.Dataset):
         self.path_to_dataset = DIMIS_DATASET_BASE
         self.transforms = transforms
 
-        with open(os.path.join(DIMIS_DATASET_BASE, 'list_img_names.pkl'), 'rb') as f:
-            self.list_img_names = pickle.load(f)
+        self.list_img_names = []
+        with open(os.path.join(DIMIS_DATASET_BASE, 'paths/garment_paths.txt'), 'r') as f:
+            for idx, line in enumerate(f):
+                self.list_img_names.append(os.path.join(DIMIS_DATASET_BASE, line.split(', ')[0][2:]))
 
     def __getitem__(self, idx):
-        name = self.list_img_names[idx]
-        full_path = os.path.join(DIMIS_DATASET_BASE, name)
+        full_path = self.list_img_names[idx]
+        # full_path = os.path.join(DIMIS_DATASET_BASE, name)
         img = Image.open(full_path).convert('RGB')
         if self.transforms is not None:
             img = self.transforms(img)

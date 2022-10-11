@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+import logging
+
 import joblib
 import os
 import sys
@@ -15,7 +17,7 @@ from mannequin.retrieval2d.net import f_model, c_model, p_model
 
 @timer_with_task("Loading model")
 def load_test_model():
-    if not os.path.isfile(DUMPED_MODEL) and not os.path.isfile(os.path.join(DATASET_BASE, "models", DUMPED_MODEL)):
+    if not os.path.isfile(DUMPED_MODEL) and not os.path.isfile(os.path.join(DIMIS_DATASET_BASE, "embeddings/models", DUMPED_MODEL)):
         print("No trained model file!")
         return
     main_model = f_model(model_path=DUMPED_MODEL).cuda(GPU_ID)
@@ -27,11 +29,11 @@ def load_test_model():
 
 @timer_with_task("Loading feature database")
 def load_feat_db():
-    feat_all = os.path.join(DIMIS_DATASET_BASE, 'all_feat_dimis.npy')
-    feat_list = os.path.join(DIMIS_DATASET_BASE, 'all_feat_dimis.list')
-    color_feat = os.path.join(DIMIS_DATASET_BASE, 'all_color_feat_dimis.npy')
+    feat_all = os.path.join(DIMIS_DATASET_BASE, 'embeddings/all_feat_dimis.npy')
+    feat_list = os.path.join(DIMIS_DATASET_BASE, 'embeddings/all_feat_dimis.list')
+    color_feat = os.path.join(DIMIS_DATASET_BASE, 'embeddings/all_color_feat_dimis.npy')
     if not os.path.isfile(feat_list) or not os.path.isfile(feat_all) or not os.path.isfile(color_feat):
-        print("No feature db file! Please run feature_extractor.py first.")
+        # print("No feature db file! Please run feature_extractor.py first.")
         return
     deep_feats = np.load(feat_all)
     color_feats = np.load(color_feat)
@@ -42,7 +44,7 @@ def load_feat_db():
 
 @timer_with_task("Loading feature K-means model")
 def load_kmeans_model():
-    clf_model_path = os.path.join(DIMIS_DATASET_BASE, r'models', r'kmeans.m')
+    clf_model_path = os.path.join(DIMIS_DATASET_BASE, r'embeddings/models', r'kmeans.m')
     clf = joblib.load(clf_model_path)
     return clf
 
@@ -57,9 +59,9 @@ def read_lines(path):
 
 def get_top_n(dist, labels, retrieval_top_n):
     ind = np.argpartition(dist, -retrieval_top_n)[-retrieval_top_n:][::-1]
-    ret = list(zip([labels[i] for i in ind], dist[ind]))
+    ret = list(zip([labels[i] for i in ind], dist[ind], ind.tolist()))
     ret = sorted(ret, key=lambda x: x[1], reverse=True)
-    return ret
+    return ret, [r[2] for r in ret]
 
 
 def get_similarity(feature, feats, metric='cosine'):
@@ -70,14 +72,14 @@ def get_similarity(feature, feats, metric='cosine'):
 def get_deep_color_top_n(features, deep_feats, color_feats, labels, retrieval_top_n=5):
     deep_scores = get_similarity(features[0], deep_feats, DISTANCE_METRIC[0])
     color_scores = get_similarity(features[1], color_feats, DISTANCE_METRIC[1])
-    results = get_top_n(deep_scores + color_scores * COLOR_WEIGHT, labels, retrieval_top_n)
-    return results
+    results, ind = get_top_n(deep_scores + color_scores * COLOR_WEIGHT, labels, retrieval_top_n)
+    return results, ind
 
 
 @timer_with_task("Doing naive query")
 def naive_query(features, deep_feats, color_feats, labels, retrieval_top_n=5):
-    results = get_deep_color_top_n(features, deep_feats, color_feats, labels, retrieval_top_n)
-    return results
+    results, ind = get_deep_color_top_n(features, deep_feats, color_feats, labels, retrieval_top_n)
+    return results, ind
 
 
 @timer_with_task("Doing query with k-Means")
@@ -87,8 +89,8 @@ def kmeans_query(clf, features, deep_feats, color_feats, labels, retrieval_top_n
     d_feats = deep_feats[ind]
     c_feats = color_feats[ind]
     n_labels = list(np.array(labels)[ind])
-    results = get_deep_color_top_n(features, d_feats, c_feats, n_labels, retrieval_top_n)
-    return results
+    results, ind = get_deep_color_top_n(features, d_feats, c_feats, n_labels, retrieval_top_n)
+    return results, ind
 
 
 @timer_with_task("Extracting image feature")
