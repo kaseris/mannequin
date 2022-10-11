@@ -13,34 +13,35 @@ from model import PointNetCls
 
 from mannequin.retrieval2d.retrieval_dimis import *
 
+
 def resample_point_cloud(points, n_points):
     choice = np.random.choice(len(points), n_points, replace=True)
     return points[choice, :]
 
 
-def infer(query, k, object_type='image'):
+def infer(query, k, gallery_paths, object_type='image'):
     if object_type == 'image':
-        return infer_2d(query, k)
+        return infer_2d(query, k, gallery_paths)
     else:
         return infer_3d(query, retrieval_k=k)
 
-def infer_2d(query_img: Union[str, PathLike], k):
+
+def infer_2d(query_img: Union[str, PathLike], k, gallery_paths):
     extractor = load_test_model()
     deep_feats, color_feats, labels = load_feat_db()
     clf = load_kmeans_model()
 
     f = dump_single_feature(query_img, extractor)
 
-    result = naive_query(f, deep_feats, color_feats, labels, k)
-    result_kmeans = kmeans_query(clf, f, deep_feats, color_feats, labels, k)
-    return result_kmeans
+    result, ind = naive_query(f, deep_feats, color_feats, gallery_paths, k)
+    return result, ind
 
 
 def infer_3d(model: Union[str, PathLike],
           n_points=2500,
           feature_transform=False,
           model_path='/home/kaseris/Documents/pointnet.pytorch/utils/cls/cls_model_99.pth',
-          embeddings_path='/home/kaseris/Documents/embeddings_dimis/',
+          embeddings_path='/home/kaseris/Documents/database/embeddings',
           retrieval_k=4) -> Any:
     pcd = o3d.io.read_triangle_mesh(model)
     pcd = np.asarray(pcd.vertices)
@@ -89,7 +90,7 @@ def infer_3d(model: Union[str, PathLike],
     _, idx = torch.topk(dists, k=retrieval_k+1)
     retrieved = [paths[i] for i in idx[0][1:]]
     print(retrieved)
-    return retrieved
+    return retrieved, idx[0][1:].tolist()
 
 
 if __name__ == '__main__':
