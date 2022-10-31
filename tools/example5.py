@@ -26,6 +26,7 @@ import vispy
 import vispy.scene
 from vispy.io import imread
 
+import fusion
 from infer_retrieval import infer
 from editor import EditorApp
 from utils import get_model_name
