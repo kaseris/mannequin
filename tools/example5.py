@@ -1,3 +1,4 @@
+import copy
 import logging
 import os
 import os.path as osp
@@ -14,6 +15,7 @@ from pathlib import Path
 
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
+from matplotlib.collections import LineCollection
 
 from mannequin.retrieval2d.retrieval_dimis import *
 from mannequin.fileio.fileio import read_coords_from_txt
@@ -25,7 +27,6 @@ from vispy.io import imread
 
 from infer_retrieval import infer
 from editor import EditorApp
-
 from utils import get_model_name
 
 # import vispy.visuals
@@ -643,16 +644,40 @@ class App(customtkinter.CTk):
         pattern_files = ['front.xyz', 'back.xyz', 'skirt back.xyz', 'skirt front.xyz', 'sleever.xyz', 'sleevel.xyz',
                          'cuffl.xyz', 'cuffr.xyz', 'collar.xyz']
         coords_list = []
+        curves = []
         for f in pattern_files:
             if f in os.listdir(ind_patterns):
                 coords_list.append(read_coords_from_txt(os.path.join(ind_patterns, f), delimiter=','))
+                points = read_coords_from_txt(osp.join(ind_patterns, f), ',')
+                curve = []
+                for p in points:
+                    curve.append(tuple(p))
+                curves.append(curve)
+
         self.pattern_number.configure(text=str(len(coords_list)))
         self.f.clf()
         self.f.subplots_adjust(top=1, bottom=0, right=1, left=0, hspace=0, wspace=0)
         self.f.tight_layout()
         ax = self.f.add_subplot(autoscale_on=False, xlim=(0, 0), ylim=(0, 0))
-        for pattern in coords_list:
-            ax.plot(pattern[:, 0], pattern[:, 1], c='tab:blue')
+
+        temp = np.vstack(curves)
+        ax.set_xlim([temp.min(axis=0)[0] - 20.0, temp.max(axis=0)[0] + 20.0])
+        ax.set_ylim([temp.min(axis=0)[1] - 20.0, temp.max(axis=0)[1] + 20.0])
+        ax.set_aspect('equal')
+        ax.set_xticks([])
+        ax.set_yticks([])
+
+        normal_selected_color = np.array([[57 / 255, 139 / 255, 227/255, 1.0],
+                                          [230/255, 67/255, 67/255, 1.0],
+                                          [255/255, 190/255, 59/255, 1.0]])
+        selected = np.zeros(len(curves), dtype=int)
+        colors = normal_selected_color[selected]
+        lines = LineCollection(curves, pickradius=30, colors=colors)
+        lines.set_picker(True)
+
+        ax.add_collection(lines)
+        # for pattern in coords_list:
+        #     ax.plot(pattern[:, 0], pattern[:, 1], c='tab:blue')
 
         ax.set_facecolor('#343638')
         ax.set_xticks([])
@@ -661,6 +686,46 @@ class App(customtkinter.CTk):
         ax.axis('off')
         ax.set_aspect('equal')
         self.pattern_preview.draw()
+
+        def on_pick(evt):
+            if evt.artist is lines:
+                ind = evt.ind[0]
+                # if ind == 1 or ind == 3 or ind == 5:
+                selected[:] = 0
+                selected[ind] = 1
+                    # if ind == 5:
+                    #     selected[ind - 4] = 1
+                    # elif ind == 1:
+                    #     selected[ind + 4] = 1
+
+                lines.set_color(normal_selected_color[selected])
+                self.f.canvas.draw_idle()
+
+                print(selected)
+
+        def on_plot_hover(event):
+            cp = copy.deepcopy(selected)
+            if event.inaxes == ax:
+                cont, ind = lines.contains(event)
+                if cont:
+                    # if (ind['ind'][0] == 1) or (ind['ind'][0] == 5) or (ind['ind'][0] == 3):
+                    cp[np.where(cp == 2)] = 0
+                    cp[ind['ind'][0]] = 2
+                        # if ind == 5:
+                        #     cp[ind['ind'][0] - 4] = 2
+                        # if ind == 1:
+                        #     cp[ind['ind'][0] + 4] = 2
+                        # if ind == 3:
+                        #     cp[ind['ind'][0]] = 2
+                    lines.set_color(normal_selected_color[cp])
+                    self.f.canvas.draw_idle()
+                else:
+                    cp[np.where(cp == 2)] = 0
+                    lines.set_color(normal_selected_color[cp])
+                    self.f.canvas.draw_idle()
+
+        self.f.canvas.mpl_connect("pick_event", on_pick)
+        self.f.canvas.mpl_connect("motion_notify_event", on_plot_hover)
 
     def clear_info(self):
         self.pattern_name.configure(text="")
