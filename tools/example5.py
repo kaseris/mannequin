@@ -637,6 +637,8 @@ class App(customtkinter.CTk):
             _selected = self._retrieved[idx - 1]
         _categories = [self.garment_paths['category'][i] for i in self.ind]
         _names = [self.garment_paths['name'][i] for i in self.ind]
+        self.editor = EditorApp(master=self.frame_lower_right_right, width=300,
+                                category=self.pattern_category.text)
 
         self.pattern_category.configure(text=_categories[idx - 1])
         self.pattern_name.configure(text=_names[idx - 1])
@@ -691,13 +693,11 @@ class App(customtkinter.CTk):
         def on_pick(evt):
             if evt.artist is lines:
                 ind = evt.ind[0]
-                print(ind)
                 selected[:] = 0
                 selected[ind] = 1
                 lines.set_color(normal_selected_color[selected])
                 self.f.canvas.draw_idle()
-
-                print(included[np.where(selected == 1)[0][0]])
+                self.editor.on_click_ok(included[np.where(selected == 1)[0][0]].replace('.xyz', ''))
 
         def on_plot_hover(event):
             cp = copy.deepcopy(selected)
@@ -716,6 +716,7 @@ class App(customtkinter.CTk):
 
         self.f.canvas.mpl_connect("pick_event", on_pick)
         self.f.canvas.mpl_connect("motion_notify_event", on_plot_hover)
+
 
     def clear_info(self):
         self.pattern_name.configure(text="")
@@ -912,8 +913,7 @@ class App(customtkinter.CTk):
             child.mainloop()
 
     def open_editor(self):
-        self.choices = EditorApp(master=self.frame_lower_right_right, width=300,
-                                 category=self.pattern_category.text)
+        pass
 
     def start(self):
         self.controller.render()

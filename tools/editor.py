@@ -9,14 +9,12 @@ class EditorApp(customtkinter.CTkFrame):
     choices = ['front', 'back', 'skirt front', 'skirt back']
     regions = ['armhole', 'collar', 'all', 'sides']
 
-    def __init__(self, master: customtkinter.CTkFrame,
+    def __init__(self,
+                 master: customtkinter.CTkFrame,
                  width,
                  category):
         super(EditorApp, self).__init__(master=master, width=width, corner_radius=25,
                                         fg_color='#2a2d2e')
-
-        self.title = customtkinter.CTkLabel(self, text="Please select the pattern\n you want to change:",
-                                            text_font=('Roboto', EditorApp.FONT_SIZE, 'bold'))
 
         self.radio_var = tkinter.IntVar()
         self.pattern_choice_var = tkinter.IntVar()
@@ -29,33 +27,17 @@ class EditorApp(customtkinter.CTkFrame):
 
         # Define the layout
         if category == 'blouse':
-            self.rb1 = customtkinter.CTkRadioButton(master=self, text="Front", command=None, width=15, height=15,
-                                                    text_font=('Roboto', EditorApp.FONT_SIZE), value=0,
-                                                    variable=self.radio_var)
-            self.rb1.configure(command=self.on_click_ok)
-            self.rb2 = customtkinter.CTkRadioButton(master=self, text="Back", command=None, width=15, height=15,
-                                                    text_font=('Roboto', EditorApp.FONT_SIZE), value=1,
-                                                    variable=self.radio_var)
-            self.rb2.configure(command=self.on_click_ok)
+            self.title = customtkinter.CTkLabel(self, text="Click on the pattern\n you want to change:",
+                                                text_font=('Roboto', EditorApp.FONT_SIZE, 'bold'))
+            self.choices = customtkinter.CTkLabel(self, text="\u2022 Front\n\u2022 Back",
+                                                  text_font=('Roboto', EditorApp.FONT_SIZE))
         elif category == 'dress':
-            self.rb1 = customtkinter.CTkRadioButton(master=self, text="Front", command=None, width=15, height=15,
-                                                    text_font=('Roboto', EditorApp.FONT_SIZE), value=0,
-                                                    variable=self.radio_var)
-            self.rb1.configure(command=self.on_click_ok)
-            self.rb2 = customtkinter.CTkRadioButton(master=self, text="Back", command=None, width=15, height=15,
-                                                    text_font=('Roboto', EditorApp.FONT_SIZE), value=1,
-                                                    variable=self.radio_var)
-            self.rb2.configure(command=self.on_click_ok)
-            self.rb3 = customtkinter.CTkRadioButton(master=self, text="Skirt Front", command=None, width=15,
-                                                    height=15,
-                                                    text_font=('Roboto', EditorApp.FONT_SIZE), value=2,
-                                                    variable=self.radio_var)
-            self.rb3.configure(command=self.on_click_ok)
-            self.rb4 = customtkinter.CTkRadioButton(master=self, text="Skirt Back", command=None, width=15,
-                                                    height=15,
-                                                    text_font=('Roboto', EditorApp.FONT_SIZE), value=3,
-                                                    variable=self.radio_var)
-            self.rb4.configure(command=self.on_click_ok)
+            self.title = customtkinter.CTkLabel(self, text="Click on the pattern\n you want to change:",
+                                                text_font=('Roboto', EditorApp.FONT_SIZE, 'bold'))
+            self.choices = customtkinter.CTkLabel(self, text="\u2022 Front\n\u2022 Back\n\u2022"
+                                                             " Skirt Front\n\u2022 Skirt"
+                                                             " Back",
+                                                  text_font=('Roboto', EditorApp.FONT_SIZE))
         elif category == 'skirt':
             self.title.configure(text='Information')
             self.message = customtkinter.CTkLabel(self,
@@ -67,20 +49,16 @@ class EditorApp(customtkinter.CTkFrame):
 
         if category == 'blouse':
             self.title.grid(row=0, pady=10)
-            self.rb1.grid(row=1)
-            self.rb2.grid(row=2)
+            self.choices.grid(row=1)
         elif category == 'dress':
             self.title.grid(row=0, pady=10)
-            self.rb1.grid(row=1)
-            self.rb2.grid(row=2)
-            self.rb3.grid(row=3)
-            self.rb4.grid(row=4)
+            self.choices.grid(row=1)
         elif category == 'skirt':
             self.title.grid(row=0, pady=10)
             self.message.grid(row=1)
 
-    def on_click_ok(self):
-        choice = EditorApp.choices[self.radio_var.get()]
+    def on_click_ok(self, choice):
+        # choice = EditorApp.choices[self.radio_var.get()]
 
         if self.choice_label is not None:
             if self.choice_label.winfo_exists():
@@ -106,10 +84,14 @@ class EditorApp(customtkinter.CTkFrame):
                                                            variable=self.pattern_choice_var, value=1, width=15,
                                                            height=15)
 
-            self.choice_label.grid(row=8, pady=(35,10))
-            self.choice_rb1.grid(row=9)
-            self.choice_rb2.grid(row=10)
+            self.choice_label.grid(row=3, pady=(35,10))
+            self.choice_rb1.grid(row=4)
+            self.choice_rb2.grid(row=5)
             self.choice_rb1.select()
+
+            self.choice_button = customtkinter.CTkButton(master=self, text='OK', text_font=('Roboto', 11),
+                                                         command=None)
+            self.choice_button.grid(row=12, pady=(150, 0))
 
         elif (choice == 'skirt front') or (choice == 'skirt back'):
             self.choice_label = customtkinter.CTkLabel(master=self, text="Do you want to change:",
@@ -123,16 +105,18 @@ class EditorApp(customtkinter.CTkFrame):
                                                            height=15,
                                                            text_font=('Roboto', 11))
 
-            self.choice_label.grid(pady=(45,10), row=8)
-            self.choice_rb1.grid(row=9)
-            self.choice_rb2.grid(row=10)
+            self.choice_label.grid(pady=(45, 10), row=3)
+            self.choice_rb1.grid(row=4)
+            self.choice_rb2.grid(row=5)
             self.choice_rb1.select()
 
-        self.choice_button = customtkinter.CTkButton(master=self, text='OK', text_font=('Roboto', 11),
-                                                     command=None)
-        self.choice_button.grid(row=12, pady=(150, 0))
-    #
-    #     new_window.mainloop()
+            self.choice_button = customtkinter.CTkButton(master=self, text='OK', text_font=('Roboto', 11),
+                                                         command=None)
+            self.choice_button.grid(row=12, pady=(150, 0))
+        else:
+            self.not_available_info = customtkinter.CTkLabel(master=self, text="You cannot change this pattern",
+                                                             text_font=('Roboto', EditorApp.FONT_SIZE))
+            self.not_available_info.grid(row=3, pady=50)
 
 
 if __name__ == '__main__':
