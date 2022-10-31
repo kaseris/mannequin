@@ -136,9 +136,4 @@ class EditorApp(customtkinter.CTkFrame):
 
 
 if __name__ == '__main__':
-    app = customtkinter.CTk()
-    app.geometry('1000x1000')
-    app.title('Dummy')
-    editor = EditorApp(parent=app, title="AUIDsU", category='dress')
-    app.mainloop()
-    editor.render()
+    pass

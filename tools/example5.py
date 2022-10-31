@@ -13,6 +13,7 @@ import tkinter.font as tkfont
 
 from pathlib import Path
 
+import numpy as np
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
 from matplotlib.collections import LineCollection
@@ -645,11 +646,13 @@ class App(customtkinter.CTk):
                          'cuffl.xyz', 'cuffr.xyz', 'collar.xyz']
         coords_list = []
         curves = []
+        included = []
         for f in pattern_files:
             if f in os.listdir(ind_patterns):
                 coords_list.append(read_coords_from_txt(os.path.join(ind_patterns, f), delimiter=','))
                 points = read_coords_from_txt(osp.join(ind_patterns, f), ',')
                 curve = []
+                included.append(f)
                 for p in points:
                     curve.append(tuple(p))
                 curves.append(curve)
@@ -676,8 +679,6 @@ class App(customtkinter.CTk):
         lines.set_picker(True)
 
         ax.add_collection(lines)
-        # for pattern in coords_list:
-        #     ax.plot(pattern[:, 0], pattern[:, 1], c='tab:blue')
 
         ax.set_facecolor('#343638')
         ax.set_xticks([])
@@ -690,33 +691,22 @@ class App(customtkinter.CTk):
         def on_pick(evt):
             if evt.artist is lines:
                 ind = evt.ind[0]
-                # if ind == 1 or ind == 3 or ind == 5:
+                print(ind)
                 selected[:] = 0
                 selected[ind] = 1
-                    # if ind == 5:
-                    #     selected[ind - 4] = 1
-                    # elif ind == 1:
-                    #     selected[ind + 4] = 1
-
                 lines.set_color(normal_selected_color[selected])
                 self.f.canvas.draw_idle()
 
-                print(selected)
+                print(included[np.where(selected == 1)[0][0]])
 
         def on_plot_hover(event):
             cp = copy.deepcopy(selected)
             if event.inaxes == ax:
                 cont, ind = lines.contains(event)
                 if cont:
-                    # if (ind['ind'][0] == 1) or (ind['ind'][0] == 5) or (ind['ind'][0] == 3):
                     cp[np.where(cp == 2)] = 0
                     cp[ind['ind'][0]] = 2
-                        # if ind == 5:
-                        #     cp[ind['ind'][0] - 4] = 2
-                        # if ind == 1:
-                        #     cp[ind['ind'][0] + 4] = 2
-                        # if ind == 3:
-                        #     cp[ind['ind'][0]] = 2
+
                     lines.set_color(normal_selected_color[cp])
                     self.f.canvas.draw_idle()
                 else:
