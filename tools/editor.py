@@ -39,7 +39,8 @@ class EditorApp(customtkinter.CTkFrame):
                                                              " Back",
                                                   text_font=('Roboto', EditorApp.FONT_SIZE))
         elif category == 'skirt':
-            self.title.configure(text='Information')
+            self.title = customtkinter.CTkLabel(master=self, text='Information',
+                                                text_font=('Roboto', EditorApp.FONT_SIZE, 'bold'))
             self.message = customtkinter.CTkLabel(self,
                                                   text_font=('Roboto', EditorApp.FONT_SIZE),
                                                   text='The \"side\" regions of the front and the\n back pattern'
@@ -72,7 +73,7 @@ class EditorApp(customtkinter.CTkFrame):
                 self.choice_label = None
                 self.choice_button = None
 
-        if (choice == 'front') or (choice == 'back'):
+        if ((choice == 'front') or (choice == 'back')) and ((self.category == 'blouse') or (self.category == 'dress')):
             self.choice_label = customtkinter.CTkLabel(master=self,
                                                        text="Please choose the pattern\n region you want to"
                                                             " replace",
@@ -116,7 +117,7 @@ class EditorApp(customtkinter.CTkFrame):
         else:
             self.not_available_info = customtkinter.CTkLabel(master=self, text="You cannot change this pattern",
                                                              text_font=('Roboto', EditorApp.FONT_SIZE))
-            self.not_available_info.grid(row=3, pady=50)
+            self.not_available_info.grid(row=2, pady=50)
 
 
 if __name__ == '__main__':
