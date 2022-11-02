@@ -67,6 +67,7 @@ def create_ss_matrix(path):
 
     return ss
 
+
 class Model:
 
     def __init__(self, file_name=None):
@@ -799,7 +800,7 @@ class App(customtkinter.CTk):
 
             path_to_ss = osp.join(DATABASE_PATH, self.pattern_category.text, f'ss_{self.pattern_category.text}.txt')
             selected_idx = ss_dict_name_to_idx[self.pattern_category.text][
-                osp.basename(self._retrieved[self._index - 1]).split('.')[0]]
+                osp.basename(self._retrieved[self._index - 1][0]).split('.')[0]] # logika to [0] dne tha doulevei sto 3d
             ss_mat = create_ss_matrix(path_to_ss)
 
             list_similarities = []
