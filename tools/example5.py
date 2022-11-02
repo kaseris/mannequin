@@ -30,6 +30,7 @@ import fusion
 from infer_retrieval import infer
 from editor import EditorApp
 from seam import Seam
+from shape_similarities_idx import ss_dict_name_to_idx, ss_dict_idx_to_name
 from subpath import SubPath
 from utils import get_model_name
 
@@ -65,96 +66,6 @@ def create_ss_matrix(path):
             ss[idx, idx + 1:] = [float(el) for el in l]
 
     return ss
-
-
-ss_dict_name_to_idx = {'dress': {'DD0332': 0,
-                                 'GNSS': 1,
-                                 'Q5751Á': 2,
-                                 'Q6089': 3,
-                                 'Q6109': 4,
-                                 'Q6117': 5,
-                                 'Q6362': 6,
-                                 'Q6435': 7,
-                                 'Q6446': 8,
-                                 'Q6856': 9},
-                       'blouse': {'CJ12566': 0,
-                                  'LAURIE': 1,
-                                  'Q5134': 2,
-                                  'Q6431': 3,
-                                  'Q7180': 4,
-                                  'Q8634': 5,
-                                  'Q9383': 6,
-                                  'Q9393': 7,
-                                  'Q9398': 8,
-                                  'Q9407': 9,
-                                  'Q9410': 10,
-                                  'Q9414': 11,
-                                  'Q9416': 12,
-                                  'Q9432': 13,
-                                  'Q9434': 14,
-                                  'Q9435': 15,
-                                  'Q9437': 16,
-                                  'Q9409': 17,
-                                  'Q9020': 18},
-                       'skirt': {'Q7276': 0,
-                                 'Q6281': 1,
-                                 'Q6549': 2,
-                                 'Q6797': 3,
-                                 'Q7062': 4,
-                                 'Q7063': 5,
-                                 'Q7082': 6,
-                                 'Q7092': 7,
-                                 'Q7127': 8,
-                                 'Q7343': 9,
-                                 'Q7398': 10,
-                                 'a3600': 11,
-                                 'Q7064': 12,
-                                 'Q7835': 13}}
-
-ss_dict_idx_to_name = {'dress': {0: 'DD0332',
-                                 1: 'GNSS',
-                                 2: 'Q5751',
-                                 3: 'Q6089',
-                                 4: 'Q6109',
-                                 5: 'Q6117',
-                                 6: 'Q6362',
-                                 7: 'Q6435',
-                                 8: 'Q6446',
-                                 9: 'Q6856'},
-                       'blouse': {0: 'CJ12566',
-                                  1: 'LAURIE',
-                                  2: 'Q5134',
-                                  3: 'Q6431',
-                                  4: 'Q7180',
-                                  5: 'Q8634',
-                                  6: 'Q9383',
-                                  7: 'Q9393',
-                                  8: 'Q9398',
-                                  9: 'Q9407',
-                                  10: 'Q9410',
-                                  11: 'Q9414',
-                                  12: 'Q9416',
-                                  13: 'Q9432',
-                                  14: 'Q9434',
-                                  15: 'Q9435',
-                                  16: 'Q9437',
-                                  17: 'Q9409',
-                                  18: 'Q9020'},
-                       'skirt': {0: 'Q7276',
-                                 1: 'Q6281',
-                                 2: 'Q6549',
-                                 3: 'Q6797',
-                                 4: 'Q7062',
-                                 5: 'Q7063',
-                                 6: 'Q7082',
-                                 7: 'Q7092',
-                                 8: 'Q7127',
-                                 9: 'Q7343',
-                                 10: 'Q7398',
-                                 11: 'a3600',
-                                 12: 'Q7064',
-                                 13: 'Q7835'}}
-
 
 class Model:
 
@@ -680,7 +591,7 @@ class App(customtkinter.CTk):
                                           [255/255, 190/255, 59/255, 1.0]])
         selected = np.zeros(len(curves), dtype=int)
         colors = normal_selected_color[selected]
-        lines = LineCollection(curves, pickradius=30, colors=colors)
+        lines = LineCollection(curves, pickradius=10, colors=colors)
         lines.set_picker(True)
 
         ax.add_collection(lines)
