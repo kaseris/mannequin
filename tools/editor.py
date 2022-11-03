@@ -27,6 +27,8 @@ class EditorApp(customtkinter.CTkFrame):
         self.choice_label = None
         self.choice_button = None
 
+        self.not_available_info = None
+
         # Define the layout
         if category == 'blouse':
             self.title = customtkinter.CTkLabel(self, text="Click on the pattern\n you want to change:",
@@ -71,10 +73,13 @@ class EditorApp(customtkinter.CTkFrame):
                 self.choice_label.destroy()
                 self.choice_button.destroy()
 
+                self.not_available_info.destroy()
+
                 self.choice_rb1 = None
                 self.choice_rb2 = None
                 self.choice_label = None
                 self.choice_button = None
+                self.not_available_info = None
 
         if ((choice == 'front') or (choice == 'back')) and ((self.category == 'blouse') or (self.category == 'dress')):
             self.choice_label = customtkinter.CTkLabel(master=self,
@@ -120,7 +125,7 @@ class EditorApp(customtkinter.CTkFrame):
         else:
             self.not_available_info = customtkinter.CTkLabel(master=self, text="You cannot change this pattern",
                                                              text_font=('Roboto', EditorApp.FONT_SIZE))
-            self.not_available_info.grid(row=2, pady=50)
+            self.not_available_info.grid(row=3, pady=50)
 
     def on_select(self):
         app = AltCurvesApp(master=self,
