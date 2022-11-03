@@ -3,12 +3,13 @@ import customtkinter
 
 from altcurves import AltCurvesApp
 
+
 class EditorApp(customtkinter.CTkFrame):
     FONT_SIZE = 11
     GEOMETRY = (250, 200)
 
-    choices = ['front', 'back', 'skirt front', 'skirt back']
-    regions = ['armhole', 'collar', 'all', 'sides']
+    choices = ['front', 'back', 'skirt front', 'skirt back'] #patterns
+    regions = ['armhole', 'collar', 'all', 'sides'] #pattern choice var
 
     def __init__(self,
                  master: customtkinter.CTkFrame,
@@ -60,6 +61,8 @@ class EditorApp(customtkinter.CTkFrame):
             self.message.grid(row=1)
 
     def on_click_ok(self, choice):
+
+        self.choice = choice
 
         if self.choice_label is not None:
             if self.choice_label.winfo_exists():
@@ -120,7 +123,10 @@ class EditorApp(customtkinter.CTkFrame):
             self.not_available_info.grid(row=2, pady=50)
 
     def on_select(self):
-        app = AltCurvesApp(master=self)
+        app = AltCurvesApp(master=self,
+                           category=self.category,
+                           choice=EditorApp.regions[self.pattern_choice_var.get()],
+                           pattern_selection=self.choice)
         app.render()
 
 

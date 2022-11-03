@@ -35,7 +35,7 @@ class AltCurvesApp(customtkinter.CTkToplevel):
         self.title('Curve Editor')
 
         self.frame_grid = MplFrameGrid(master=self, data_list=self.curves,
-                                       mpl_width=50, mpl_height=50, column_size=5)
+                                       mpl_width=30, mpl_height=30, column_size=5)
         self.frame_grid.build_grid()
 
     def render(self):

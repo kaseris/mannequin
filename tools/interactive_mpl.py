@@ -1,3 +1,4 @@
+from functools import partial
 from typing import List
 
 import customtkinter
@@ -6,6 +7,15 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
 from matplotlib.collections import LineCollection
 
+
+def on_enter(event):
+    event.widget.f.patch.set_facecolor('#64676b')
+    event.widget.preview.draw()
+
+
+def on_leave(event):
+    event.widget.f.patch.set_facecolor('#343638')
+    event.widget.preview.draw()
 
 class MplFrameGrid:
     def __init__(self,
@@ -40,6 +50,8 @@ class MplFrameGrid:
                                                         figsize=(2, 2),
                                                         data=self.data_list[i * self.rows + j])
                 interactive_frame.grid(row=i, column=j, padx=(20, 20), pady=(20, 20))
+                interactive_frame.bind('<Enter>', on_enter)
+                interactive_frame.bind('<Leave>', on_leave)
                 interactive_frame.render()
                 self.mpl_frames.append(interactive_frame)
 
