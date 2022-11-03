@@ -1,6 +1,7 @@
 import tkinter
 import customtkinter
 
+from altcurves import AltCurvesApp
 
 class EditorApp(customtkinter.CTkFrame):
     FONT_SIZE = 11
@@ -59,7 +60,6 @@ class EditorApp(customtkinter.CTkFrame):
             self.message.grid(row=1)
 
     def on_click_ok(self, choice):
-        # choice = EditorApp.choices[self.radio_var.get()]
 
         if self.choice_label is not None:
             if self.choice_label.winfo_exists():
@@ -91,7 +91,7 @@ class EditorApp(customtkinter.CTkFrame):
             self.choice_rb1.select()
 
             self.choice_button = customtkinter.CTkButton(master=self, text='OK', text_font=('Roboto', 11),
-                                                         command=None)
+                                                         command=self.on_select)
             self.choice_button.grid(row=12, pady=(150, 0))
 
         elif (choice == 'skirt front') or (choice == 'skirt back'):
@@ -112,12 +112,16 @@ class EditorApp(customtkinter.CTkFrame):
             self.choice_rb1.select()
 
             self.choice_button = customtkinter.CTkButton(master=self, text='OK', text_font=('Roboto', 11),
-                                                         command=None)
+                                                         command=self.on_select)
             self.choice_button.grid(row=12, pady=(150, 0))
         else:
             self.not_available_info = customtkinter.CTkLabel(master=self, text="You cannot change this pattern",
                                                              text_font=('Roboto', EditorApp.FONT_SIZE))
             self.not_available_info.grid(row=2, pady=50)
+
+    def on_select(self):
+        app = AltCurvesApp(master=self)
+        app.render()
 
 
 if __name__ == '__main__':
