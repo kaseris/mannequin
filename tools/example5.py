@@ -670,16 +670,35 @@ class App(customtkinter.CTk):
         pattern_files = ['front.xyz', 'back.xyz', 'skirt back.xyz', 'skirt front.xyz', 'sleever.xyz', 'sleevel.xyz',
                          'cuffl.xyz', 'cuffr.xyz', 'collar.xyz']
         coords_list = []
+        curves = []
+        included = []
         for f in pattern_files:
             if f in os.listdir(ind_patterns):
                 coords_list.append(read_coords_from_txt(os.path.join(ind_patterns, f), delimiter=','))
+                points = read_coords_from_txt(osp.join(ind_patterns, f), ',')
+                curve = []
+                included.append(f)
+                for p in points:
+                    curve.append(tuple(p))
+                curves.append(curve)
         self.pattern_number.configure(text=str(len(coords_list)))
         self.f.clf()
         self.f.subplots_adjust(top=1, bottom=0, right=1, left=0, hspace=0, wspace=0)
         self.f.tight_layout()
         ax = self.f.add_subplot(autoscale_on=False, xlim=(0, 0), ylim=(0, 0))
-        for pattern in coords_list:
-            ax.plot(pattern[:, 0], pattern[:, 1], c='tab:blue')
+        normal_selected_color = np.array([[57 / 255, 139 / 255, 227 / 255, 1.0],
+                                          [230 / 255, 67 / 255, 67 / 255, 1.0],
+                                          [255 / 255, 190 / 255, 59 / 255, 1.0]])
+        selected = np.zeros(len(curves), dtype=int)
+        colors = normal_selected_color[selected]
+        lines = LineCollection(curves, pickradius=10, colors=colors)
+        lines.set_picker(True)
+
+        temp = np.vstack(curves)
+        ax.add_collection(lines)
+        ax.set_xlim([temp.min(axis=0)[0] - 20.0, temp.max(axis=0)[0] + 20.0])
+        ax.set_ylim([temp.min(axis=0)[1] - 20.0, temp.max(axis=0)[1] + 20.0])
+        ax.set_aspect('equal')
 
         ax.set_facecolor('#343638')
         ax.set_xticks([])
@@ -688,6 +707,33 @@ class App(customtkinter.CTk):
         ax.axis('off')
         ax.set_aspect('equal')
         self.pattern_preview.draw()
+
+        def on_pick(evt):
+            if evt.artist is lines:
+                ind = evt.ind[0]
+                selected[:] = 0
+                selected[ind] = 1
+                lines.set_color(normal_selected_color[selected])
+                self.f.canvas.draw_idle()
+                self.editor.on_click_ok(included[np.where(selected == 1)[0][0]].replace('.xyz', ''))
+
+        def on_plot_hover(event):
+            cp = copy.deepcopy(selected)
+            if event.inaxes == ax:
+                cont, ind = lines.contains(event)
+                if cont:
+                    cp[np.where(cp == 2)] = 0
+                    cp[ind['ind'][0]] = 2
+
+                    lines.set_color(normal_selected_color[cp])
+                    self.f.canvas.draw_idle()
+                else:
+                    cp[np.where(cp == 2)] = 0
+                    lines.set_color(normal_selected_color[cp])
+                    self.f.canvas.draw_idle()
+
+        self.f.canvas.mpl_connect("pick_event", on_pick)
+        self.f.canvas.mpl_connect("motion_notify_event", on_plot_hover)
 
     def clear_images(self):
         self.view1.parent = None
@@ -731,7 +777,6 @@ class App(customtkinter.CTk):
         self.view4 = self.canvas4.central_widget.add_view(bgcolor='#4a4949')
 
         if self.object_type == 'image':
-            print('@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ retrieve jpg')
             im1 = imread(self._retrieved[0][0])
             im2 = imread(self._retrieved[1][0])
             im3 = imread(self._retrieved[2][0])
@@ -758,7 +803,6 @@ class App(customtkinter.CTk):
                 getattr(self, f'view{i + 1}').camera.set_range()
                 getattr(self, f'view{i + 1}').camera.zoom(1.0, (250, 200))
         else:
-            print('@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ retrieve obj')
             for idx, obj_file in enumerate(self._retrieved):
                 vertices, faces, _, _ = vispy.io.read_mesh(obj_file)
                 m = Mesh(vertices, faces)
