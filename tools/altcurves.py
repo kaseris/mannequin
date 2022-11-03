@@ -30,6 +30,8 @@ class AltCurvesApp(customtkinter.CTkToplevel):
         self.curves = []
         self.get_corresponding_pattern_part()
 
+        self.curve_to_replace = None
+
         # Define the layout
         self.geometry(f'{AltCurvesApp.GEOMETRY[0]}x{AltCurvesApp.GEOMETRY[1]}')
         self.title('Curve Editor')
@@ -61,6 +63,10 @@ class AltCurvesApp(customtkinter.CTkToplevel):
                     self.curves.append(read_bezier_points_from_txt(fname))
             except FileNotFoundError:
                 continue
+
+    def set_curve_to_replace(self, data):
+        self.curve_to_replace = data
+        print(f'data updated with: {self.curve_to_replace}')
 
 
 if __name__ == '__main__':
