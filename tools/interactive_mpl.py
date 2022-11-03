@@ -1,10 +1,47 @@
+from typing import List
+
 import customtkinter
 import numpy as np
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
 from matplotlib.collections import LineCollection
 
-from fusion import read_bezier_points_from_txt
+
+class MplFrameGrid:
+    def __init__(self,
+                 master,
+                 data_list: List[np.ndarray],
+                 mpl_width,
+                 mpl_height,
+                 column_size: int = 5):
+
+        self.master = master
+        self.mpl_width = mpl_width
+        self.mpl_height = mpl_height
+        self.number_of_plots = len(data_list)
+        self.data_list = data_list
+
+        self.columns = len(data_list) if len(data_list) < column_size else column_size
+        self.rows = (self.number_of_plots // column_size) + 1 if (self.number_of_plots % column_size) else 0
+
+        self.grid = None
+
+        self.selected = np.zeros(self.number_of_plots, dtype=np.int)
+
+        self.mpl_frames = []
+
+    def build_grid(self):
+        for i in range(self.rows):
+            for j in range(self.columns):
+                interactive_frame = InteractiveMplFrame(master=self.master,
+                                                        height=self.mpl_height,
+                                                        width=self.mpl_width,
+                                                        bg_color='#343638',
+                                                        figsize=(2, 2),
+                                                        data=self.data_list[i * self.rows + j])
+                interactive_frame.grid(row=i, column=j, padx=(20, 20), pady=(20, 20))
+                interactive_frame.render()
+                self.mpl_frames.append(interactive_frame)
 
 
 class InteractiveMplFrame(customtkinter.CTkFrame):
@@ -18,16 +55,18 @@ class InteractiveMplFrame(customtkinter.CTkFrame):
                  width,
                  height,
                  bg_color,
+                 figsize,
                  data: np.ndarray):
+
+        assert isinstance(figsize, tuple), '`figsize` must be a tuple'
+
         super(InteractiveMplFrame, self).__init__(master=master, width=width, height=height, bg_color=bg_color)
         self.data = data
         self.curves = self.prepare_data()
 
-        self.f = Figure(figsize=(1, 1))
+        self.f = Figure(figsize=figsize)
         self.preview = FigureCanvasTkAgg(self.f, master=self)
         self.preview.get_tk_widget().grid()
-
-        self.render()
 
     def render(self):
         self.f.clf()
@@ -55,12 +94,20 @@ class InteractiveMplFrame(customtkinter.CTkFrame):
 
 
 if __name__ == '__main__':
-    root = customtkinter.CTk()
-    root.geometry('800x700')
-
-    impl = InteractiveMplFrame(master=root, width=500, height=500,
-                               bg_color='#ff0000',
-                               data=read_bezier_points_from_txt('/home/kaseris/Documents/database/dress/d1/DD032/data/txt/front/bezier_front_3.txt'))
-    impl.grid(row=0, column=0)
-    root.mainloop()
-
+    # root = customtkinter.CTk()
+    # root.geometry('800x700')
+    #
+    # impl = InteractiveMplFrame(master=root, width=500, height=500,
+    #                            bg_color='#ff0000',
+    #                            figsize=(3, 3),
+    #                            corner_radius=4,
+    #                            data=read_bezier_points_from_txt('/home/kaseris/Documents/database/dress/d1/DD032/data/txt/front/bezier_front_3.txt'))
+    # impl.grid(row=0, column=0)
+    #
+    # impl.render()
+    # root.mainloop()
+    # grid = MplFrameGrid(data_list=[i for i in range(17)])
+    # print(grid.rows)
+    # print(grid.columns)
+    # print(grid.selected)
+    pass

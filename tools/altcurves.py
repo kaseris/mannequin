@@ -3,13 +3,10 @@ import os.path as osp
 
 from pathlib import Path
 
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
-from matplotlib.figure import Figure
-from matplotlib.collections import LineCollection
-
 import customtkinter
 
 from fusion import get_keypoint_count, get_filename_for_bezier_points, read_bezier_points_from_txt
+from interactive_mpl import InteractiveMplFrame, MplFrameGrid
 from rules import rules_blouse
 
 
@@ -30,17 +27,16 @@ class AltCurvesApp(customtkinter.CTkToplevel):
         self.category = category
         self.pattern_selection = pattern_selection
         self.alt_garments = self.find_garments_based_on_choice()
-        self.get_corresponding_pattern_part()
         self.curves = []
+        self.get_corresponding_pattern_part()
 
         # Define the layout
         self.geometry(f'{AltCurvesApp.GEOMETRY[0]}x{AltCurvesApp.GEOMETRY[1]}')
         self.title('Curve Editor')
 
-        for idx, alt_garment in enumerate(self.alt_garments):
-            setattr(self, f'text_{idx}', customtkinter.CTkLabel(master=self, text_font=('Roboto', 11),
-                                                                text=alt_garment))
-            getattr(self, f'text_{idx}').grid(row=idx + 1, column=0)
+        self.frame_grid = MplFrameGrid(master=self, data_list=self.curves,
+                                       mpl_width=50, mpl_height=50, column_size=5)
+        self.frame_grid.build_grid()
 
     def render(self):
         self.mainloop()
@@ -66,4 +62,15 @@ class AltCurvesApp(customtkinter.CTkToplevel):
 
 
 if __name__ == '__main__':
-    pass
+    root = customtkinter.CTk()
+    root.geometry('1000x1000')
+    root.title('Gamas')
+
+    def on_click():
+        top_level = AltCurvesApp(master=root)
+        top_level.render()
+
+    button = customtkinter.CTkButton(master=root, text='press', command=on_click)
+    button.grid(row=0)
+
+    root.mainloop()
