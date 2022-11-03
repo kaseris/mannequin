@@ -38,6 +38,8 @@ class AltCurvesApp(customtkinter.CTkToplevel):
                                        mpl_width=30, mpl_height=30, column_size=5)
         self.frame_grid.build_grid()
 
+        self.wm_transient(master=master)
+
     def render(self):
         self.mainloop()
 

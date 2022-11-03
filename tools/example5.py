@@ -496,7 +496,7 @@ class App(customtkinter.CTk):
         self.selected_image_preview.grid(row=6, column=0, columnspan=3, pady=(40, 0))
 
         self.finalize_button = customtkinter.CTkButton(master=self.frame_lower_right, text="Finalize",
-                                                       command=self.open_editor)
+                                                       command=None)
         self.finalize_button.grid(row=7, column=0, pady=(20, 0), columnspan=4)
 
         # Frame lower right right
@@ -782,6 +782,7 @@ class App(customtkinter.CTk):
             child = customtkinter.CTkToplevel()
             child.title('Relevant Patterns')
             child.geometry('1220x380+670+65')
+            child.wm_transient(master=self)
 
             for i in range(4):
                 setattr(child, f'frame_info_{i + 1}', customtkinter.CTkFrame(master=child))
@@ -826,9 +827,6 @@ class App(customtkinter.CTk):
                     getattr(child, f'out_img_{idx + 1}').configure(image=photo_img)
 
             child.mainloop()
-
-    def open_editor(self):
-        pass
 
     def start(self):
         self.controller.render()
