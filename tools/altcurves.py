@@ -70,15 +70,4 @@ class AltCurvesApp(customtkinter.CTkToplevel):
 
 
 if __name__ == '__main__':
-    root = customtkinter.CTk()
-    root.geometry('1000x1000')
-    root.title('Gamas')
-
-    def on_click():
-        top_level = AltCurvesApp(master=root)
-        top_level.render()
-
-    button = customtkinter.CTkButton(master=root, text='press', command=on_click)
-    button.grid(row=0)
-
-    root.mainloop()
+    pass

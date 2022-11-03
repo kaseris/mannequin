@@ -141,20 +141,4 @@ class InteractiveMplFrame(customtkinter.CTkFrame):
 
 
 if __name__ == '__main__':
-    # root = customtkinter.CTk()
-    # root.geometry('800x700')
-    #
-    # impl = InteractiveMplFrame(master=root, width=500, height=500,
-    #                            bg_color='#ff0000',
-    #                            figsize=(3, 3),
-    #                            corner_radius=4,
-    #                            data=read_bezier_points_from_txt('/home/kaseris/Documents/database/dress/d1/DD032/data/txt/front/bezier_front_3.txt'))
-    # impl.grid(row=0, column=0)
-    #
-    # impl.render()
-    # root.mainloop()
-    # grid = MplFrameGrid(data_list=[i for i in range(17)])
-    # print(grid.rows)
-    # print(grid.columns)
-    # print(grid.selected)
     pass
