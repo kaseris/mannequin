@@ -7,20 +7,10 @@ from pathlib import Path
 
 import numpy as np
 
+from rules import rules_blouse
 from seam import Seam
 
 FLOAT_2_STRING_PRECISION = 3
-
-rules_blouse = {'armhole': {8: ['1', '5'],
-                            6: ['1', '3'],
-                            -1: ['1', '7']},
-                'collar': {8: ['3'],
-                           6: ['2'],
-                           -1: ['4']},
-                'sleeve': {5: ['0', '4'],
-                           6: ['0', '4'],
-                           3: ['0', '2']}
-                }
 
 
 def sleeves_exist(dirname_to_garment):
