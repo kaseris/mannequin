@@ -8,8 +8,8 @@ class EditorApp(customtkinter.CTkFrame):
     FONT_SIZE = 11
     GEOMETRY = (250, 200)
 
-    choices = ['front', 'back', 'skirt front', 'skirt back'] #patterns
-    regions = ['armhole', 'collar', 'all', 'sides'] #pattern choice var
+    choices = ['front', 'back', 'skirt front', 'skirt back']
+    regions = ['armhole', 'collar', 'all', 'sides']
 
     def __init__(self,
                  master: customtkinter.CTkFrame,
