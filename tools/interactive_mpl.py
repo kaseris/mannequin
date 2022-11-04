@@ -9,6 +9,8 @@ from matplotlib.figure import Figure
 from matplotlib.collections import LineCollection
 
 
+from scrollview import VerticalScrolledFrame
+
 def on_enter(event):
     event.widget.f.patch.set_facecolor('#64676b')
     event.widget.preview.draw()
@@ -51,22 +53,11 @@ class MplFrameGrid:
         self.mpl_frames = []
 
         # Setup Layout
-        self.main_frame = customtkinter.CTkFrame(master=master)
-        self.main_frame.pack(fill=tkinter.BOTH, expand=1)
+        self.holder_frame = customtkinter.CTkFrame(master=master)
+        self.holder_frame.pack(side=tkinter.LEFT, fill=tkinter.BOTH, expand=tkinter.TRUE)
 
-        self.canvas = tkinter.Canvas(master=self.main_frame, bg='#343638')
-        self.canvas.pack(side=tkinter.LEFT, fill=tkinter.BOTH, expand=1)
-
-        self.scrollbar = customtkinter.CTkScrollbar(master=self.main_frame, orientation=tkinter.VERTICAL,
-                                                    command=self.canvas.yview)
-        self.scrollbar.pack(side=tkinter.RIGHT, fill=tkinter.Y)
-
-        self.canvas.configure(yscrollcommand=self.scrollbar.set)
-        self.canvas.bind('<Configure>', lambda event: self.canvas.configure(scrollregion=self.canvas.bbox("all")))
-
-        self.second_frame = customtkinter.CTkFrame(master=self.canvas)
-
-        self.canvas.create_window((0, 0), window=self.second_frame, anchor='nw')
+        self.vs_frame = VerticalScrolledFrame(self.holder_frame)
+        self.vs_frame.pack(side=tkinter.BOTTOM, fill=tkinter.BOTH, expand=tkinter.TRUE)
 
     def build_grid(self):
         for i in range(self.rows):
@@ -74,7 +65,7 @@ class MplFrameGrid:
                 if i * self.rows + j >= self.number_of_plots:
                     break
                 else:
-                    interactive_frame = InteractiveMplFrame(master=self.second_frame,
+                    interactive_frame = InteractiveMplFrame(master=self.vs_frame.interior,
                                                             height=self.mpl_height,
                                                             width=self.mpl_width,
                                                             bg_color='#343638',
