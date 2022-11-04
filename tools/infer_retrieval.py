@@ -47,8 +47,6 @@ def infer_3d(model: Union[str, PathLike],
     pcd = np.asarray(pcd.vertices)
     print(pcd)
     logging.basicConfig(level=logging.DEBUG)
-    logging.info(f'pcd type: {type(pcd)}')
-    logging.info(f'pcd shape: {pcd.shape}')
 
     pcd_resampled = resample_point_cloud(pcd, n_points)
 
