@@ -2,6 +2,7 @@ from functools import partial
 from typing import List
 
 import customtkinter
+import tkinter
 import numpy as np
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
@@ -45,11 +46,27 @@ class MplFrameGrid:
         self.columns = len(data_list) if len(data_list) < column_size else column_size
         self.rows = (self.number_of_plots // column_size) + 1 if (self.number_of_plots % column_size) else 0
 
-        self.grid = None
-
         self.selected = np.zeros(self.number_of_plots, dtype=np.int)
 
         self.mpl_frames = []
+
+        # Setup Layout
+        self.main_frame = customtkinter.CTkFrame(master=master)
+        self.main_frame.pack(fill=tkinter.BOTH, expand=1)
+
+        self.canvas = tkinter.Canvas(master=self.main_frame, bg='#343638')
+        self.canvas.pack(side=tkinter.LEFT, fill=tkinter.BOTH, expand=1)
+
+        self.scrollbar = customtkinter.CTkScrollbar(master=self.main_frame, orientation=tkinter.VERTICAL,
+                                                    command=self.canvas.yview)
+        self.scrollbar.pack(side=tkinter.RIGHT, fill=tkinter.Y)
+
+        self.canvas.configure(yscrollcommand=self.scrollbar.set)
+        self.canvas.bind('<Configure>', lambda event: self.canvas.configure(scrollregion=self.canvas.bbox("all")))
+
+        self.second_frame = customtkinter.CTkFrame(master=self.canvas)
+
+        self.canvas.create_window((0, 0), window=self.second_frame, anchor='nw')
 
     def build_grid(self):
         for i in range(self.rows):
@@ -57,7 +74,7 @@ class MplFrameGrid:
                 if i * self.rows + j >= self.number_of_plots:
                     break
                 else:
-                    interactive_frame = InteractiveMplFrame(master=self.master,
+                    interactive_frame = InteractiveMplFrame(master=self.second_frame,
                                                             height=self.mpl_height,
                                                             width=self.mpl_width,
                                                             bg_color='#343638',
