@@ -33,7 +33,7 @@ from query_mvc import Mesh, Controller
 from seam import Seam
 from shape_similarities_idx import ss_dict_name_to_idx, ss_dict_idx_to_name
 from subpath import SubPath
-from utils import get_model_name
+from utils import similarity, create_ss_matrix
 
 # import vispy.visuals
 vispy.use(app='tkinter')
@@ -49,23 +49,6 @@ NEW_DATABASE_PATH = '/home/kaseris/Documents/database/'
 
 def handle_focus(event):
     return
-
-
-def similarity(query, retrieved, ss_mat):
-    if ss_mat[retrieved, query] <= 0.0:
-        return ss_mat[query, retrieved]
-    return ss_mat[retrieved, query]
-
-
-def create_ss_matrix(path):
-    with open(path, 'r') as f:
-        for idx, line in enumerate(f):
-            l = line.strip().split(',')
-            if idx == 0:
-                ss = np.zeros((len(l) + 1, len(l) + 1))
-            ss[idx, idx + 1:] = [float(el) for el in l]
-
-    return ss
 
 
 def setMaxWidth(stringList, element):
