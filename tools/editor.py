@@ -89,8 +89,8 @@ class EditorApp(customtkinter.CTkFrame):
 
         if ((choice == 'front') or (choice == 'back')) and ((self.category == 'blouse') or (self.category == 'dress')):
             self.choice_label = customtkinter.CTkLabel(master=self,
-                                                       text="Please choose the pattern\n region you want to"
-                                                            " replace",
+                                                       text="Please choose the\npattern region you\nwant to "
+                                                            "replace",
                                                        text_font=('Roboto', 11, 'bold'))
             self.choice_rb1 = customtkinter.CTkRadioButton(master=self, text='Armhole', text_font=('Roboto', 11),
                                                            variable=self.pattern_choice_var, value=0, width=15,
@@ -109,8 +109,8 @@ class EditorApp(customtkinter.CTkFrame):
             self.choice_button.grid(row=12, pady=(150, 0))
 
         elif (choice == 'skirt front') or (choice == 'skirt back'):
-            self.choice_label = customtkinter.CTkLabel(master=self, text="Do you want to change:",
-                                                       text_font=('Roboto', 11))
+            self.choice_label = customtkinter.CTkLabel(master=self, text="Do you want to\nchange:",
+                                                       text_font=('Roboto', 11, 'bold'))
             self.choice_rb1 = customtkinter.CTkRadioButton(master=self, text='The whole pattern',
                                                            variable=self.pattern_choice_var, value=2, width=15,
                                                            height=15,
@@ -129,8 +129,9 @@ class EditorApp(customtkinter.CTkFrame):
                                                          command=self.on_select)
             self.choice_button.grid(row=12, pady=(150, 0))
         else:
-            self.not_available_info = customtkinter.CTkLabel(master=self, text="You cannot change this pattern",
-                                                             text_font=('Roboto', EditorApp.FONT_SIZE))
+            self.not_available_info = customtkinter.CTkLabel(master=self, text="You cannot change\nthis pattern!",
+                                                             text_font=('Roboto', EditorApp.FONT_SIZE, 'bold'),
+                                                             text_color='#cf1d11')
             self.not_available_info.grid(row=3, pady=50)
 
     def on_select(self):
