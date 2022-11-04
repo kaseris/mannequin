@@ -66,7 +66,7 @@ class VerticalScrolledFrame(customtkinter.CTkFrame):
         vscrollbar = customtkinter.CTkScrollbar(self, orientation=tk.VERTICAL)
         vscrollbar.pack(fill=tk.Y, side=tk.RIGHT, expand=tk.FALSE)
         canvas = tk.Canvas(self, bd=0, highlightthickness=0,
-                           yscrollcommand=vscrollbar.set)
+                           yscrollcommand=vscrollbar.set, bg='#212224')
         canvas.pack(side=tk.LEFT, fill=tk.BOTH, expand=tk.TRUE)
         vscrollbar.configure(command=canvas.yview)
 
