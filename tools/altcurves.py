@@ -15,8 +15,8 @@ DATABASE = '/home/kaseris/Documents/database'
 
 class AltCurvesApp(customtkinter.CTkToplevel):
 
-    GEOMETRY = (1200, 800)
-    OFFSET = (250, 250)
+    GEOMETRY = (1220, 500)
+    OFFSET = (660, 510)
 
     def __init__(self,
                  master,
@@ -39,7 +39,7 @@ class AltCurvesApp(customtkinter.CTkToplevel):
         self.title('Curve Editor')
 
         self.frame_grid = MplFrameGrid(master=self, data_list=self.curves,
-                                       mpl_width=30, mpl_height=30, column_size=5)
+                                       mpl_width=60, mpl_height=60, column_size=5)
         self.frame_grid.build_grid()
 
         self.wm_transient(master=master)
