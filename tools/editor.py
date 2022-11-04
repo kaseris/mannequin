@@ -66,20 +66,26 @@ class EditorApp(customtkinter.CTkFrame):
 
         self.choice = choice
 
-        if self.choice_label is not None:
-            if self.choice_label.winfo_exists():
-                self.choice_rb1.destroy()
-                self.choice_rb2.destroy()
-                self.choice_label.destroy()
-                self.choice_button.destroy()
+        if (self.choice_label is not None) or (self.not_available_info is not None):
+            try:
+                if self.choice_label.winfo_exists():
+                    self.choice_rb1.grid_forget()
+                    self.choice_rb2.grid_forget()
+                    self.choice_label.grid_forget()
+                    self.choice_button.grid_forget()
 
-                self.not_available_info.destroy()
+                    if self.not_available_info is not None:
+                        self.not_available_info.grid_forget()
 
-                self.choice_rb1 = None
-                self.choice_rb2 = None
-                self.choice_label = None
-                self.choice_button = None
-                self.not_available_info = None
+                    self.choice_rb1 = None
+                    self.choice_rb2 = None
+                    self.choice_label = None
+                    self.choice_button = None
+                    self.not_available_info = None
+            except AttributeError:
+                if self.not_available_info.winfo_exists():
+                    self.not_available_info.grid_forget()
+                    self.not_available_info = None
 
         if ((choice == 'front') or (choice == 'back')) and ((self.category == 'blouse') or (self.category == 'dress')):
             self.choice_label = customtkinter.CTkLabel(master=self,
@@ -93,7 +99,7 @@ class EditorApp(customtkinter.CTkFrame):
                                                            variable=self.pattern_choice_var, value=1, width=15,
                                                            height=15)
 
-            self.choice_label.grid(row=3, pady=(35,10))
+            self.choice_label.grid(row=3, pady=(35, 10))
             self.choice_rb1.grid(row=4)
             self.choice_rb2.grid(row=5)
             self.choice_rb1.select()
