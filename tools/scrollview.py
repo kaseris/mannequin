@@ -7,16 +7,6 @@ fp = functools.partial
 
 
 class VerticalScrolledFrame(customtkinter.CTkFrame):
-    """
-    A pure Tkinter scrollable frame that actually works!
-    * Use the 'interior' attribute to place widgets inside the scrollable frame
-    * Construct and pack/place/grid normally
-    * This frame only allows vertical scrolling
-    * -- NOTE: You will need to comment / uncomment code the differently for windows or linux
-    * -- or write your own 'os' type check.
-    * This comes from a different naming of the the scrollwheel 'button', on different systems.
-    """
-
     def __init__(self, parent, *args, **kw):
 
         # track changes to the canvas and frame width and sync them,
@@ -34,11 +24,6 @@ class VerticalScrolledFrame(customtkinter.CTkFrame):
                 # update the inner frame's width to fill the canvas
                 canvas.itemconfigure(interior_id, width=canvas.winfo_width())
 
-        """
-        This is linux code for scrolling the window, 
-        It has different buttons for scrolling the windows
-        """
-
         def _on_mousewheel(event, scroll):
             canvas.yview_scroll(int(scroll), "units")
 
@@ -49,16 +34,6 @@ class VerticalScrolledFrame(customtkinter.CTkFrame):
         def _unbind_from_mousewheel(event):
             canvas.unbind_all("<Button-4>")
             canvas.unbind_all("<Button-5>")
-
-        """
-        This is windows code for scrolling the Frame
-        def _on_mousewheel(event):
-            canvas.yview_scroll(int(-1*(event.delta/120)), "units")
-        def _bind_to_mousewheel(event):
-            canvas.bind_all("<MouseWheel>", _on_mousewheel)
-        def _unbind_from_mousewheel(event):
-            canvas.unbind_all("<MouseWheel>")
-        """
 
         customtkinter.CTkFrame.__init__(self, parent, *args, **kw)
 
@@ -75,7 +50,6 @@ class VerticalScrolledFrame(customtkinter.CTkFrame):
         canvas.yview_moveto(0)
 
         # create a frame inside the canvas which will be scrolled with it
-        # self.interior = interior = customtkinter.CTkFrame(canvas)
         self.interior = interior = tk.Frame(canvas, bg='#212224')
 
         interior_id = canvas.create_window((0, 0), window=interior,
@@ -87,28 +61,5 @@ class VerticalScrolledFrame(customtkinter.CTkFrame):
         canvas.bind('<Leave>', _unbind_from_mousewheel)
 
 
-# Thanks to chlutz214 for the usage update:
 if __name__ == "__main__":
-    # Set Up root of app
-    root = customtkinter.CTk()
-    root.geometry("400x500+50+50")
-    root.title("VerticalScrolledFrame Sample")
-
-    # Create a frame to put the VerticalScrolledFrame inside
-    holder_frame = customtkinter.CTkFrame(root)
-    holder_frame.pack(side=tk.LEFT, fill=tk.BOTH, expand=tk.TRUE)
-
-    # Create the VerticalScrolledFrame
-    vs_frame = VerticalScrolledFrame(holder_frame)
-    vs_frame.pack(side=tk.BOTTOM, fill=tk.BOTH, expand=tk.TRUE)
-
-    # Fill the VerticalScrolledFrame
-    i = 0
-    while i != 100:
-        item = customtkinter.CTkEntry(vs_frame.interior)
-        item.insert(0, i)
-        item.pack(side=tk.TOP, fill=tk.X, expand=tk.TRUE)
-        i = i + 1
-
-    # Run mainloop to start app
-    root.mainloop()
+    pass
