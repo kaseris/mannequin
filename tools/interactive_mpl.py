@@ -17,6 +17,7 @@ from matplotlib.collections import LineCollection
 from mannequin.fileio import read_coords_from_txt
 from scrollview import VerticalScrolledFrame
 
+
 def on_enter(event):
     event.widget.f.patch.set_facecolor('#64676b')
     event.widget.preview.draw()
@@ -33,7 +34,7 @@ def on_frame_click(event):
         event.widget.master.parent.set_selected(event.widget.master.index)
         event.widget.master.parent.master.set_curve_to_replace(event.widget.master.parent.get_curve())
         # De doulevei akoma
-        # event.widget.master.parent.master.update_line_collection()
+        event.widget.master.parent.master.update_curves()
         event.widget.master.parent.master.destroy()
     except AttributeError:
         pass
@@ -191,6 +192,12 @@ class InteractivePatternPreview:
 
     def update(self):
         pass
+
+    def add_curve(self, curve):
+        if len(self.__data) > 0:
+            __data_copy = copy.deepcopy(self.__data)
+            self.__data = []
+            self.__data = __data_copy + [curve]
 
     def get_data_from_path(self, path: Union[str, PathLike]):
         '''Ayth h methodos xrhsimopoieitai gia na enimerwsei to pattern preview plot otan kanw klik se ena rouxol.
