@@ -333,6 +333,7 @@ class App(customtkinter.CTk):
 
         self.pattern_preview.set_editor(self.editor)
         self.pattern_preview.get_data_from_path(_selected)
+        self.pattern_number.configure(text=str(len(self.pattern_preview.coords_list)))
         self.pattern_preview.draw()
 
     def clear_info(self):
@@ -356,16 +357,18 @@ class App(customtkinter.CTk):
     def onClickRelevantGarmentButton(self, index):
         self._index = index
         found = [a for a in self.filenames if os.path.basename(self._suggested[index]) in a]
-        self.onClickDetails(index)
         img_path = osp.join(str(Path(found[0]).parent), self._suggested[index]) + '.jpg'
         img_obj = Image.open(img_path).resize((180, 180))
         photo_img = ImageTk.PhotoImage(img_obj)
         self.selected_image_preview_obj = photo_img
         self.selected_image_preview.configure(image=self.selected_image_preview_obj)
 
-        p = Path(found[0]).parent
-        self.pattern_preview.set_editor(self.editor)
+        p = Path(found[0])
+        self.update_details(p)
+
+        # self.pattern_preview.set_editor(self.editor)
         self.pattern_preview.get_data_from_path(p)
+        self.pattern_number.configure(text=str(len(self.pattern_preview.coords_list)))
         self.pattern_preview.draw()
 
     def clear_images(self):
@@ -504,6 +507,13 @@ class App(customtkinter.CTk):
                     getattr(child, f'out_img_{idx + 1}').configure(image=photo_img)
 
             child.mainloop()
+
+    def update_details(self, path):
+        self.pattern_name.configure(text=str(path.parent.name))
+        for cat in ['blouse', 'dress', 'skirt']:
+            if cat in str(path):
+                self.pattern_category.configure(text=cat)
+        self.pattern_path.configure(text=str(path.parent))
 
     def start(self):
         self.controller.render()

@@ -204,11 +204,11 @@ class InteractivePatternPreview:
         ind_patterns = os.path.join(Path(path).parent, 'individual patterns')
         pattern_files = ['front.xyz', 'back.xyz', 'skirt back.xyz', 'skirt front.xyz', 'sleever.xyz', 'sleevel.xyz',
                          'cuffl.xyz', 'cuffr.xyz', 'collar.xyz']
-        coords_list = []
+        self.coords_list = []
         self.included = []
         for f in pattern_files:
             if f in os.listdir(ind_patterns):
-                coords_list.append(read_coords_from_txt(os.path.join(ind_patterns, f), delimiter=','))
+                self.coords_list.append(read_coords_from_txt(os.path.join(ind_patterns, f), delimiter=','))
                 points = read_coords_from_txt(osp.join(ind_patterns, f), ',')
                 curve = []
                 self.included.append(f)
