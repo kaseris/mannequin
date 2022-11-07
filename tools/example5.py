@@ -347,7 +347,6 @@ class App(customtkinter.CTk):
     def onClickGarmentButton(self, index, img_path, event):
         print(f'You clicked button number: {index}')
         self._index = index
-        # logging.info(f'img_path: {img_path}')
         self.onClickDetails(index)
         img_obj = Image.open(img_path).resize((180, 180))
         photo_img = ImageTk.PhotoImage(img_obj)
@@ -366,7 +365,6 @@ class App(customtkinter.CTk):
         p = Path(found[0])
         self.update_details(p)
 
-        # self.pattern_preview.set_editor(self.editor)
         self.pattern_preview.get_data_from_path(p)
         self.pattern_number.configure(text=str(len(self.pattern_preview.coords_list)))
         self.pattern_preview.draw()
