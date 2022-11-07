@@ -370,27 +370,10 @@ class App(customtkinter.CTk):
         self.pattern_preview.draw()
 
     def clear_images(self):
-        self.view1.parent = None
-        self.view2.parent = None
-        self.view3.parent = None
-        self.view4.parent = None
-
-        self.view1 = self.canvas1.central_widget.add_view(bgcolor='#4a4949')
-        self.view2 = self.canvas2.central_widget.add_view(bgcolor='#4a4949')
-        self.view3 = self.canvas3.central_widget.add_view(bgcolor='#4a4949')
-        self.view4 = self.canvas4.central_widget.add_view(bgcolor='#4a4949')
-
-        self.f.clf()
-        self.f.subplots_adjust(top=1, bottom=0, right=1, left=0, hspace=0, wspace=0)
-        self.f.tight_layout()
-        ax = self.f.add_subplot(autoscale_on=False, xlim=(0, 0), ylim=(0, 0))
-        ax.set_facecolor('#343638')
-        ax.set_xticks([])
-        ax.set_yticks([])
-        ax.axis('tight')
-        ax.axis('off')
-        ax.set_aspect('equal')
-        self.pattern_preview.draw()
+        for i in range(4):
+            getattr(self, f'view{i+1}').parent = None
+            setattr(self, f'view{i+1}', getattr(self, f'canvas{i + 1}').central_widget.add_view(bgcolor='#4a4949'))
+        self.pattern_preview.clear()
 
     def update_images(self):
         for idx, retrieved_path in enumerate(self._retrieved):

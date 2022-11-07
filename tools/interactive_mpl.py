@@ -199,6 +199,19 @@ class InteractivePatternPreview:
             self.__data = []
             self.__data = __data_copy + [curve]
 
+    def clear(self):
+        self.f.clf()
+        self.f.subplots_adjust(top=1, bottom=0, right=1, left=0, hspace=0, wspace=0)
+        self.f.tight_layout()
+        ax = self.f.add_subplot(autoscale_on=False, xlim=(0, 0), ylim=(0, 0))
+        ax.set_facecolor('#343638')
+        ax.set_xticks([])
+        ax.set_yticks([])
+        ax.axis('tight')
+        ax.axis('off')
+        ax.set_aspect('equal')
+        self.pattern_preview.draw()
+
     def get_data_from_path(self, path: Union[str, PathLike]):
         '''Ayth h methodos xrhsimopoieitai gia na enimerwsei to pattern preview plot otan kanw klik se ena rouxol.
         Se aythn thn periptwsh, dinetai ena path pou deixnei sta individual patterns tou epilegmenou retrieved rouxou.
