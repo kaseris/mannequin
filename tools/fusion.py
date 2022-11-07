@@ -85,10 +85,6 @@ def visualize_points(points1, points2):
 
 def align_regions(rouxo1, points2, selection: str, pattern: str):
     # Diavazw 1o rouxo
-    print('Ti theleis na allakseis?')
-    print(f'Selection: {selection}')
-    print(f'Number keypoints rouxo1: {get_keypoint_count(rouxo1, pattern=pattern)}')
-
     # Prepei na kserw pio arxeio tha diabasw prwta
     # Tha xrisimopoihsw tous kanones
     # Points1: ta simeia twn bezier gia ta collar/sleeves tou prwtou rouxou: lista
@@ -127,11 +123,6 @@ def align_regions(rouxo1, points2, selection: str, pattern: str):
         translated = ps2 - diff
         translated_points.append(translated)
 
-    pc_rouxo1 = read_entire_pattern(rouxo1, pattern=pattern)
-    pc_rouxo1_np = np.vstack(pc_rouxo1)
-
-    # visualize_points(pc_rouxo1_np, translated_points[0])
-    print(f'translated_points[1]: {translated_points[0]}')
     return translated_points
 
 
