@@ -1,12 +1,10 @@
 import os
 import os.path as osp
 
-from pathlib import Path
-
 import customtkinter
 
-from fusion import get_keypoint_count, get_filename_for_bezier_points, read_bezier_points_from_txt
-from interactive_mpl import InteractiveMplFrame, MplFrameGrid
+from fusion import get_keypoint_count, get_filename_for_bezier_points, read_bezier_points_from_txt, align_regions
+from interactive_mpl import MplFrameGrid
 from rules import rules_blouse
 
 
@@ -68,6 +66,10 @@ class AltCurvesApp(customtkinter.CTkToplevel):
     def set_curve_to_replace(self, data):
         self.curve_to_replace = data
         print(f'data updated with: {self.curve_to_replace}')
+
+    def update_curves(self):
+        self.master.master.master.pattern_preview.add_curve(self.curve_to_replace) # To be tested
+        self.master.master.master.pattern_preview.draw()
 
 
 if __name__ == '__main__':
