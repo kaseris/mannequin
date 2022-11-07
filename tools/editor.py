@@ -21,6 +21,7 @@ class EditorApp(customtkinter.CTkFrame):
         self.radio_var = tkinter.IntVar()
         self.pattern_choice_var = tkinter.IntVar()
         self.category = category
+        self._path_to_garment = None
 
         self.choice_rb1 = None
         self.choice_rb2 = None
@@ -141,6 +142,12 @@ class EditorApp(customtkinter.CTkFrame):
                            pattern_selection=self.choice)
         app.render()
 
+    def set_path_to_garment(self, path):
+        self._path_to_garment = path
+
+    @property
+    def path_to_garment(self):
+        return self._path_to_garment
 
 if __name__ == '__main__':
     pass

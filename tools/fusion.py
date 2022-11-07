@@ -83,15 +83,11 @@ def visualize_points(points1, points2):
     plt.show()
 
 
-def align_regions(rouxo1, rouxo2, selection: str, pattern: str):
+def align_regions(rouxo1, points2, selection: str, pattern: str):
     # Diavazw 1o rouxo
     print('Ti theleis na allakseis?')
     print(f'Selection: {selection}')
     print(f'Number keypoints rouxo1: {get_keypoint_count(rouxo1, pattern=pattern)}')
-    print(f'Number keypoints rouxo2: {get_keypoint_count(rouxo2, pattern=pattern)}')
-
-    if not sleeves_exist(rouxo2):
-        raise ValueError(f'Garment {Path(osp.basename(rouxo2)).name} does not contain sleeves.')
 
     # Prepei na kserw pio arxeio tha diabasw prwta
     # Tha xrisimopoihsw tous kanones
@@ -100,9 +96,6 @@ def align_regions(rouxo1, rouxo2, selection: str, pattern: str):
     fnames1 = [get_filename_for_bezier_points(rouxo1, pattern, n=n) for n in which1]
     points1 = [read_bezier_points_from_txt(fname=f) for f in fnames1]
     # Points2: ta simeia twn bezier gia ta collar/sleeves tou deuterou rouxou: lista
-    which2 = rules_blouse[selection][get_keypoint_count(rouxo2, pattern=pattern)]
-    fnames2 = [get_filename_for_bezier_points(rouxo2, pattern, n=n) for n in which2]
-    points2 = [read_bezier_points_from_txt(fname=f) for f in fnames2]
 
     # kano scaling wste to 2 na katsei sto 1
     sf = [scale_factor(b1, b2) for b1, b2 in zip(points1, points2)]

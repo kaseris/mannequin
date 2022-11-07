@@ -327,6 +327,7 @@ class App(customtkinter.CTk):
         _names = [self.garment_paths['name'][i] for i in self.ind]
         self.editor = EditorApp(master=self.frame_lower_right_right, width=300,
                                 category=self.pattern_category.text)
+        self.editor.set_path_to_garment(_selected)
 
         self.pattern_category.configure(text=_categories[idx - 1])
         self.pattern_name.configure(text=_names[idx - 1])

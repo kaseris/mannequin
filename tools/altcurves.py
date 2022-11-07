@@ -1,6 +1,7 @@
 import os
 import os.path as osp
 
+from pathlib import Path
 import customtkinter
 
 from fusion import get_keypoint_count, get_filename_for_bezier_points, read_bezier_points_from_txt, align_regions
@@ -68,7 +69,11 @@ class AltCurvesApp(customtkinter.CTkToplevel):
         print(f'data updated with: {self.curve_to_replace}')
 
     def update_curves(self):
-        self.master.master.master.pattern_preview.add_curve(self.curve_to_replace) # To be tested
+        path_to_garment1 = Path(self.master.path_to_garment).parent
+        aligned_alt_curve = align_regions(path_to_garment1, [self.curve_to_replace],
+                                          pattern=self.pattern_selection,
+                                          selection=self.choice)
+        self.master.master.master.pattern_preview.add_curve(aligned_alt_curve[0])
         self.master.master.master.pattern_preview.draw()
 
 
