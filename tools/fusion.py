@@ -83,8 +83,7 @@ def visualize_points(points1, points2):
     plt.show()
 
 
-def main(rouxo1, rouxo2, selection: str, pattern: str):
-    #   TODO: na valw wraio onomataki gia to function
+def align_regions(rouxo1, rouxo2, selection: str, pattern: str):
     # Diavazw 1o rouxo
     print('Ti theleis na allakseis?')
     print(f'Selection: {selection}')
@@ -107,7 +106,7 @@ def main(rouxo1, rouxo2, selection: str, pattern: str):
 
     # kano scaling wste to 2 na katsei sto 1
     sf = [scale_factor(b1, b2) for b1, b2 in zip(points1, points2)]
-    #print(sf)
+
     # pollaplasiazw tis bezier tou 2 me ta scale factors
     points2_scaled = [pts * s for pts, s in zip(points2, sf)]
 
@@ -119,7 +118,6 @@ def main(rouxo1, rouxo2, selection: str, pattern: str):
         slope2 = slope(line2[0][0], line2[0][1], line2[1][0], line2[1][1])
         # ypologizw thn gwnia pou sxhmatizetai metaksy twn dyo eytheiwn
         ang = angle(slope2, slope1)
-        #print(ang)
         points2_rotated = rotate(ps2, angle=ang)
         points2_rot.append(points2_rotated)
 
@@ -148,10 +146,10 @@ if __name__ == '__main__':
     # So far we replaced the armholes of the garment
     # Now to replace the sleeves themselves
     # We only care about the curvy part of the sleeve
-    curves = main(rouxo1='/home/kaseris/Documents/database/blouse/b1/Q7180',
-                  rouxo2='/home/kaseris/Documents/database/blouse/b1/Q6431',
-                  selection='collar',
-                  pattern='front')
+    curves = align_regions(rouxo1='/home/kaseris/Documents/database/blouse/b1/Q7180',
+                           rouxo2='/home/kaseris/Documents/database/blouse/b1/Q6431',
+                           selection='collar',
+                           pattern='front')
     seam = Seam('/home/kaseris/Documents/database/blouse/b1/Q7180')
     for curve in curves:
         seam.replace(curve)
