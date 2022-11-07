@@ -1,5 +1,11 @@
-from functools import partial
-from typing import List
+import copy
+import os
+import os.path as osp
+
+from os import PathLike
+from pathlib import Path
+# from functools import partial
+from typing import List, Union
 
 import customtkinter
 import tkinter
@@ -8,7 +14,7 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
 from matplotlib.collections import LineCollection
 
-
+from mannequin.fileio import read_coords_from_txt
 from scrollview import VerticalScrolledFrame
 
 def on_enter(event):
@@ -26,6 +32,8 @@ def on_frame_click(event):
         # Need to set a method to communicate between parents and children
         event.widget.master.parent.set_selected(event.widget.master.index)
         event.widget.master.parent.master.set_curve_to_replace(event.widget.master.parent.get_curve())
+        # De doulevei akoma
+        # event.widget.master.parent.master.update_line_collection()
         event.widget.master.parent.master.destroy()
     except AttributeError:
         pass
@@ -146,6 +154,116 @@ class InteractiveMplFrame(customtkinter.CTkFrame):
     @property
     def parent(self):
         return self.__parent
+
+
+class InteractivePatternPreview:
+
+    normal_selected_color = np.array([[57 / 255, 139 / 255, 227 / 255, 1.0],
+                                      [230 / 255, 67 / 255, 67 / 255, 1.0],
+                                      [255 / 255, 190 / 255, 59 / 255, 1.0]])
+
+    def __init__(self,
+                 master: Union[customtkinter.CTkFrame, customtkinter.CTkToplevel],
+                 figsize=(9, 5),
+                 callbacks=None,
+                 editor=None,
+                 **grid_params):
+        self.f = Figure(figsize=figsize)
+        self.f.patch.set_facecolor('#343638')
+        self.pattern_preview = FigureCanvasTkAgg(self.f, master=master)
+        # self._set_callback(self, event, func)
+
+        self.editor = None
+        if editor is not None:
+            self.editor = editor
+
+        # Instance's data
+        self.__data = []
+        self.__selected = None
+
+        # Layout setup
+        self.pattern_preview.get_tk_widget().grid(**grid_params) # Poly pithano edw na einai TO lathos
+
+    def _set_callback(self, event, func):
+        self.f.canvas.mpl_connect(event, func)
+
+    def set_editor(self, editor):
+        self.editor = editor
+
+    def update(self):
+        pass
+
+    def get_data_from_path(self, path: Union[str, PathLike]):
+        '''Ayth h methodos xrhsimopoieitai gia na enimerwsei to pattern preview plot otan kanw klik se ena rouxol.
+        Se aythn thn periptwsh, dinetai ena path pou deixnei sta individual patterns tou epilegmenou retrieved rouxou.
+        Auth h methodos loipon, anoigei ola ta individual patterns tou rouxou, enhmerwnei ta dedomena tou instance ths
+        klashs kai ksanazwgrafizei to preview.'''
+        # A workaround to clear the class' data
+        if len(self.__data) > 0:
+            self.__data = []
+
+        ind_patterns = os.path.join(Path(path).parent, 'individual patterns')
+        pattern_files = ['front.xyz', 'back.xyz', 'skirt back.xyz', 'skirt front.xyz', 'sleever.xyz', 'sleevel.xyz',
+                         'cuffl.xyz', 'cuffr.xyz', 'collar.xyz']
+        coords_list = []
+        self.included = []
+        for f in pattern_files:
+            if f in os.listdir(ind_patterns):
+                coords_list.append(read_coords_from_txt(os.path.join(ind_patterns, f), delimiter=','))
+                points = read_coords_from_txt(osp.join(ind_patterns, f), ',')
+                curve = []
+                self.included.append(f)
+                for p in points:
+                    curve.append(tuple(p))
+                self.__data.append(curve)
+
+    def draw(self):
+        self.f.clear()
+        self.f.subplots_adjust(top=1, bottom=0, right=1, left=0, hspace=0, wspace=0)
+        self.f.tight_layout()
+        ax = self.f.add_subplot(autoscale_on=False, xlim=(0, 0), ylim=(0, 0))
+
+        temp = np.vstack(self.__data)
+        ax.set_facecolor('#343638')
+        ax.axis('off')
+        ax.set_xlim([temp.min(axis=0)[0] - 20.0, temp.max(axis=0)[0] + 20.0])
+        ax.set_ylim([temp.min(axis=0)[1] - 20.0, temp.max(axis=0)[1] + 20.0])
+        ax.set_aspect('equal')
+        ax.set_xticks([])
+        ax.set_yticks([])
+
+        self.__selected = np.zeros(len(self.__data), dtype=int)
+        colors = InteractivePatternPreview.normal_selected_color[self.__selected]
+        lines = LineCollection(self.__data, pickradius=10, colors=colors)
+        lines.set_picker(True)
+        ax.add_collection(lines)
+        self.pattern_preview.draw()
+
+        def on_pick(event):
+            if event.artist is lines:
+                ind = event.ind[0]
+                self.__selected[:] = 0
+                self.__selected[ind] = 1
+                lines.set_color(InteractivePatternPreview.normal_selected_color[self.__selected])
+                self.f.canvas.draw_idle()
+                self.editor.on_click_ok(self.included[np.where(self.__selected == 1)[0][0]].replace('.xyz', ''))
+
+        def on_plot_hover(event):
+            cp = copy.deepcopy(self.__selected)
+            if event.inaxes == ax:
+                cont, ind = lines.contains(event)
+                if cont:
+                    cp[np.where(cp == 2)] = 0
+                    cp[ind['ind'][0]] = 2
+
+                    lines.set_color(InteractivePatternPreview.normal_selected_color[cp])
+                    self.f.canvas.draw_idle()
+                else:
+                    cp[np.where(cp == 2)] = 0
+                    lines.set_color(InteractivePatternPreview.normal_selected_color[cp])
+                    self.f.canvas.draw_idle()
+        self.f.canvas.mpl_connect("pick_event", on_pick)
+        self.f.canvas.mpl_connect("motion_notify_event", on_plot_hover)
 
 
 if __name__ == '__main__':
