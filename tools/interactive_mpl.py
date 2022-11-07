@@ -281,6 +281,33 @@ class InteractivePatternPreview:
                     cp[np.where(cp == 2)] = 0
                     lines.set_color(InteractivePatternPreview.normal_selected_color[cp])
                     self.f.canvas.draw_idle()
+
+        def zoom_fun(event):
+            # get the current x and y limits
+            cur_xlim = ax.get_xlim()
+            cur_ylim = ax.get_ylim()
+            cur_xrange = (cur_xlim[1] - cur_xlim[0]) * .5
+            cur_yrange = (cur_ylim[1] - cur_ylim[0]) * .5
+            xdata = event.xdata  # get event x location
+            ydata = event.ydata  # get event y location
+            if event.button == 'up':
+                # deal with zoom in
+                scale_factor = 1. / 1.15
+            elif event.button == 'down':
+                # deal with zoom out
+                scale_factor = 1.5
+            else:
+                # deal with something that should never happen
+                scale_factor = 1
+            # set new limits
+            ax.set_xlim([xdata - cur_xrange * scale_factor,
+                         xdata + cur_xrange * scale_factor])
+            ax.set_ylim([ydata - cur_yrange * scale_factor,
+                         ydata + cur_yrange * scale_factor])
+            self.f.draw_idle()
+
+
+        self.f.canvas.mpl_connect('scroll_event', zoom_fun)
         self.f.canvas.mpl_connect("pick_event", on_pick)
         self.f.canvas.mpl_connect("motion_notify_event", on_plot_hover)
 
