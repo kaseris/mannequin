@@ -165,7 +165,6 @@ class InteractivePatternPreview:
     def __init__(self,
                  master: Union[customtkinter.CTkFrame, customtkinter.CTkToplevel],
                  figsize=(9, 5),
-                 callbacks=None,
                  editor=None,
                  **grid_params):
         self.f = Figure(figsize=figsize)
@@ -184,7 +183,7 @@ class InteractivePatternPreview:
         # Layout setup
         self.pattern_preview.get_tk_widget().grid(**grid_params) # Poly pithano edw na einai TO lathos
 
-    def _set_callback(self, event, func):
+    def set_callback(self, event, func):
         self.f.canvas.mpl_connect(event, func)
 
     def set_editor(self, editor):
