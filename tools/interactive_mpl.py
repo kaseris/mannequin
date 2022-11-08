@@ -134,8 +134,8 @@ class InteractiveMplFrame(customtkinter.CTkFrame):
         ax.add_collection(self.curves)
         ax.set_xticks([])
         ax.set_yticks([])
-        ax.set_xlim([self.data.min(axis=0)[0] - 20.0, self.data.max(axis=0)[0] + 20.0])
-        ax.set_ylim([self.data.min(axis=0)[1] - 20.0, self.data.max(axis=0)[1] + 20.0])
+        ax.set_xlim([np.vstack(self.data).min(axis=0)[0] - 1.0, np.vstack(self.data).max(axis=0)[0] + 1.0])
+        ax.set_ylim([np.vstack(self.data).min(axis=0)[1] - 1.0, np.vstack(self.data).max(axis=0)[1] + 1.0])
         ax.axis('tight')
         ax.axis('off')
         ax.set_aspect('equal')
@@ -143,10 +143,13 @@ class InteractiveMplFrame(customtkinter.CTkFrame):
         self.preview.draw()
 
     def prepare_data(self):
-        curve = []
-        for point in self.data:
-            curve.append(tuple(point))
-        return LineCollection([curve], pickradius=10, colors=InteractiveMplFrame.COLORS['unselected'])
+        curve_set = []
+        for c in self.data:
+            curve = []
+            for point in c:
+                curve.append(tuple(point))
+            curve_set.append(curve)
+        return LineCollection(curve_set, pickradius=10, colors=InteractiveMplFrame.COLORS['unselected'])
 
     @property
     def index(self):
@@ -224,6 +227,7 @@ class InteractivePatternPreview:
         ind_patterns = os.path.join(Path(path).parent, 'individual patterns')
         pattern_files = ['front.xyz', 'back.xyz', 'skirt back.xyz', 'skirt front.xyz', 'sleever.xyz', 'sleevel.xyz',
                          'cuffl.xyz', 'cuffr.xyz', 'collar.xyz']
+
         self.coords_list = []
         self.included = []
         for f in pattern_files:
@@ -240,7 +244,7 @@ class InteractivePatternPreview:
         self.f.clear()
         self.f.subplots_adjust(top=1, bottom=0, right=1, left=0, hspace=0, wspace=0)
         self.f.tight_layout()
-        ax = self.f.add_subplot(autoscale_on=False, xlim=(0, 0), ylim=(0, 0))
+        ax = self.f.add_subplot(autoscale_on=False)
 
         temp = np.vstack(self.__data)
         ax.set_facecolor('#343638')
@@ -256,7 +260,7 @@ class InteractivePatternPreview:
         lines = LineCollection(self.__data, pickradius=10, colors=colors)
         lines.set_picker(True)
         ax.add_collection(lines)
-        self.pattern_preview.draw()
+        self.pattern_preview.draw_idle()
 
         def on_pick(event):
             if event.artist is lines:
