@@ -174,7 +174,7 @@ class InteractivePatternPreview:
         self.f = Figure(figsize=figsize)
         self.f.patch.set_facecolor('#343638')
         self.pattern_preview = FigureCanvasTkAgg(self.f, master=master)
-        # self._set_callback(self, event, func)
+        self.alternative_exists = False
 
         self.editor = None
         if editor is not None:
@@ -182,10 +182,11 @@ class InteractivePatternPreview:
 
         # Instance's data
         self.__data = []
+        self.__copy = None
         self.__selected = None
 
         # Layout setup
-        self.pattern_preview.get_tk_widget().grid(**grid_params) # Poly pithano edw na einai TO lathos
+        self.pattern_preview.get_tk_widget().grid(**grid_params)
 
     def set_callback(self, event, func):
         self.f.canvas.mpl_connect(event, func)
@@ -197,10 +198,19 @@ class InteractivePatternPreview:
         pass
 
     def add_curve(self, curve):
-        if len(self.__data) > 0:
-            __data_copy = copy.deepcopy(self.__data)
+        if not self.alternative_exists:
             self.__data = []
-            self.__data = __data_copy + [curve]
+            self.__data += self.__copy
+            for c in curve:
+                self.__data += [c]
+            self.alternative_exists = True
+            return
+        else:
+            # Clear the plot
+            self.__data = []
+            self.__data = self.__copy
+            self.alternative_exists = False
+            self.add_curve(curve)
 
     def clear(self):
         self.f.clf()
@@ -216,10 +226,10 @@ class InteractivePatternPreview:
         self.pattern_preview.draw()
 
     def get_data_from_path(self, path: Union[str, PathLike]):
-        '''Ayth h methodos xrhsimopoieitai gia na enimerwsei to pattern preview plot otan kanw klik se ena rouxol.
+        """Ayth h methodos xrhsimopoieitai gia na enimerwsei to pattern preview plot otan kanw klik se ena rouxol.
         Se aythn thn periptwsh, dinetai ena path pou deixnei sta individual patterns tou epilegmenou retrieved rouxou.
         Auth h methodos loipon, anoigei ola ta individual patterns tou rouxou, enhmerwnei ta dedomena tou instance ths
-        klashs kai ksanazwgrafizei to preview.'''
+        klashs kai ksanazwgrafizei to preview."""
         # A workaround to clear the class' data
         if len(self.__data) > 0:
             self.__data = []
@@ -239,6 +249,7 @@ class InteractivePatternPreview:
                 for p in points:
                     curve.append(tuple(p))
                 self.__data.append(curve)
+        self.__copy = copy.deepcopy(self.__data)
 
     def draw(self):
         self.f.clear()

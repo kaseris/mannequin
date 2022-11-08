@@ -78,8 +78,7 @@ class AltCurvesApp(customtkinter.CTkToplevel):
         aligned_alt_curve = align_regions(path_to_garment1, self.curve_to_replace,
                                           pattern=self.pattern_selection,
                                           selection=self.choice)
-        for aligned_curve in aligned_alt_curve:
-            self.master.master.master.pattern_preview.add_curve(aligned_curve)
+        self.master.master.master.pattern_preview.add_curve(aligned_alt_curve)
         self.master.master.master.pattern_preview.draw()
 
 
