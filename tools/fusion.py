@@ -83,17 +83,8 @@ def visualize_points(points1, points2):
     plt.show()
 
 
-def main(rouxo1, rouxo2, selection: str, pattern: str):
-    #   TODO: na valw wraio onomataki gia to function
+def align_regions(rouxo1, points2, selection: str, pattern: str):
     # Diavazw 1o rouxo
-    print('Ti theleis na allakseis?')
-    print(f'Selection: {selection}')
-    print(f'Number keypoints rouxo1: {get_keypoint_count(rouxo1, pattern=pattern)}')
-    print(f'Number keypoints rouxo2: {get_keypoint_count(rouxo2, pattern=pattern)}')
-
-    if not sleeves_exist(rouxo2):
-        raise ValueError(f'Garment {Path(osp.basename(rouxo2)).name} does not contain sleeves.')
-
     # Prepei na kserw pio arxeio tha diabasw prwta
     # Tha xrisimopoihsw tous kanones
     # Points1: ta simeia twn bezier gia ta collar/sleeves tou prwtou rouxou: lista
@@ -101,15 +92,13 @@ def main(rouxo1, rouxo2, selection: str, pattern: str):
     fnames1 = [get_filename_for_bezier_points(rouxo1, pattern, n=n) for n in which1]
     points1 = [read_bezier_points_from_txt(fname=f) for f in fnames1]
     # Points2: ta simeia twn bezier gia ta collar/sleeves tou deuterou rouxou: lista
-    which2 = rules_blouse[selection][get_keypoint_count(rouxo2, pattern=pattern)]
-    fnames2 = [get_filename_for_bezier_points(rouxo2, pattern, n=n) for n in which2]
-    points2 = [read_bezier_points_from_txt(fname=f) for f in fnames2]
 
     # kano scaling wste to 2 na katsei sto 1
     sf = [scale_factor(b1, b2) for b1, b2 in zip(points1, points2)]
-    #print(sf)
+
     # pollaplasiazw tis bezier tou 2 me ta scale factors
     points2_scaled = [pts * s for pts, s in zip(points2, sf)]
+    # points2_scaled = points2[0][0] * sf[0]
 
     points2_rot = []
     for ps1, ps2 in zip(points1, points2_scaled):
@@ -119,7 +108,6 @@ def main(rouxo1, rouxo2, selection: str, pattern: str):
         slope2 = slope(line2[0][0], line2[0][1], line2[1][0], line2[1][1])
         # ypologizw thn gwnia pou sxhmatizetai metaksy twn dyo eytheiwn
         ang = angle(slope2, slope1)
-        #print(ang)
         points2_rotated = rotate(ps2, angle=ang)
         points2_rot.append(points2_rotated)
 
@@ -136,11 +124,6 @@ def main(rouxo1, rouxo2, selection: str, pattern: str):
         translated = ps2 - diff
         translated_points.append(translated)
 
-    pc_rouxo1 = read_entire_pattern(rouxo1, pattern=pattern)
-    pc_rouxo1_np = np.vstack(pc_rouxo1)
-
-    # visualize_points(pc_rouxo1_np, translated_points[0])
-    print(f'translated_points[1]: {translated_points[0]}')
     return translated_points
 
 
@@ -148,10 +131,10 @@ if __name__ == '__main__':
     # So far we replaced the armholes of the garment
     # Now to replace the sleeves themselves
     # We only care about the curvy part of the sleeve
-    curves = main(rouxo1='/home/kaseris/Documents/database/blouse/b1/Q7180',
-                  rouxo2='/home/kaseris/Documents/database/blouse/b1/Q6431',
-                  selection='collar',
-                  pattern='front')
+    curves = align_regions(rouxo1='/home/kaseris/Documents/database/blouse/b1/Q7180',
+                           rouxo2='/home/kaseris/Documents/database/blouse/b1/Q6431',
+                           selection='collar',
+                           pattern='front')
     seam = Seam('/home/kaseris/Documents/database/blouse/b1/Q7180')
     for curve in curves:
         seam.replace(curve)

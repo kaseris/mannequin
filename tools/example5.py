@@ -28,6 +28,7 @@ from vispy.io import imread
 
 import fusion
 from infer_retrieval import infer
+from interactive_mpl import InteractivePatternPreview
 from editor import EditorApp
 from query_mvc import Mesh, Controller
 from seam import Seam
@@ -275,14 +276,14 @@ class App(customtkinter.CTk):
         self.pattern_preview_title = customtkinter.CTkLabel(master=self.frame_lower_right_right, text="Patterns",
                                                             text_font=('Roboto', 16)).grid(column=0, sticky='n',
                                                                                            pady=10)
-        # self.choices = customtkinter.CTkFrame(master=self.frame_lower_right_right, bg_color='red', width=300)
-        # self.choices.grid(row=1, sticky='nswe', padx=(20, 0))
-
-        self.f = Figure(figsize=(9, 5))
-        self.f.canvas.mpl_connect('button_press_event', self.onDoubleClickCanvas)
-        self.f.patch.set_facecolor('#343638')
-        self.pattern_preview = FigureCanvasTkAgg(self.f, master=self.frame_lower_right_right)
-        self.pattern_preview.get_tk_widget().grid(sticky='n', padx=(15), column=0, row=1)
+        self.pattern_preview = InteractivePatternPreview(master=self.frame_lower_right_right,
+                                                         callbacks=None,
+                                                         editor=None,
+                                                         sticky='n',
+                                                         padx=(15),
+                                                         column=0,
+                                                         row=1)
+        self.pattern_preview.set_callback('button_press_event', self.onDoubleClickCanvas)
 
         self._scanned_file = None
 
@@ -326,84 +327,15 @@ class App(customtkinter.CTk):
         _names = [self.garment_paths['name'][i] for i in self.ind]
         self.editor = EditorApp(master=self.frame_lower_right_right, width=300,
                                 category=self.pattern_category.text)
+        self.editor.set_path_to_garment(_selected)
 
         self.pattern_category.configure(text=_categories[idx - 1])
         self.pattern_name.configure(text=_names[idx - 1])
-        # logging.info(f'_selected: {_selected}')
-        ind_patterns = os.path.join(Path(_selected).parent, 'individual patterns')
-        pattern_files = ['front.xyz', 'back.xyz', 'skirt back.xyz', 'skirt front.xyz', 'sleever.xyz', 'sleevel.xyz',
-                         'cuffl.xyz', 'cuffr.xyz', 'collar.xyz']
-        coords_list = []
-        curves = []
-        included = []
-        for f in pattern_files:
-            if f in os.listdir(ind_patterns):
-                coords_list.append(read_coords_from_txt(os.path.join(ind_patterns, f), delimiter=','))
-                points = read_coords_from_txt(osp.join(ind_patterns, f), ',')
-                curve = []
-                included.append(f)
-                for p in points:
-                    curve.append(tuple(p))
-                curves.append(curve)
 
-        self.pattern_number.configure(text=str(len(coords_list)))
-        self.f.clf()
-        self.f.subplots_adjust(top=1, bottom=0, right=1, left=0, hspace=0, wspace=0)
-        self.f.tight_layout()
-        ax = self.f.add_subplot(autoscale_on=False, xlim=(0, 0), ylim=(0, 0))
-
-        temp = np.vstack(curves)
-        ax.set_xlim([temp.min(axis=0)[0] - 20.0, temp.max(axis=0)[0] + 20.0])
-        ax.set_ylim([temp.min(axis=0)[1] - 20.0, temp.max(axis=0)[1] + 20.0])
-        ax.set_aspect('equal')
-        ax.set_xticks([])
-        ax.set_yticks([])
-
-        normal_selected_color = np.array([[57 / 255, 139 / 255, 227/255, 1.0],
-                                          [230/255, 67/255, 67/255, 1.0],
-                                          [255/255, 190/255, 59/255, 1.0]])
-        selected = np.zeros(len(curves), dtype=int)
-        colors = normal_selected_color[selected]
-        lines = LineCollection(curves, pickradius=10, colors=colors)
-        lines.set_picker(True)
-
-        ax.add_collection(lines)
-
-        ax.set_facecolor('#343638')
-        ax.set_xticks([])
-        ax.set_yticks([])
-        ax.axis('tight')
-        ax.axis('off')
-        ax.set_aspect('equal')
+        self.pattern_preview.set_editor(self.editor)
+        self.pattern_preview.get_data_from_path(_selected)
+        self.pattern_number.configure(text=str(len(self.pattern_preview.coords_list)))
         self.pattern_preview.draw()
-
-        def on_pick(evt):
-            if evt.artist is lines:
-                ind = evt.ind[0]
-                selected[:] = 0
-                selected[ind] = 1
-                lines.set_color(normal_selected_color[selected])
-                self.f.canvas.draw_idle()
-                self.editor.on_click_ok(included[np.where(selected == 1)[0][0]].replace('.xyz', ''))
-
-        def on_plot_hover(event):
-            cp = copy.deepcopy(selected)
-            if event.inaxes == ax:
-                cont, ind = lines.contains(event)
-                if cont:
-                    cp[np.where(cp == 2)] = 0
-                    cp[ind['ind'][0]] = 2
-
-                    lines.set_color(normal_selected_color[cp])
-                    self.f.canvas.draw_idle()
-                else:
-                    cp[np.where(cp == 2)] = 0
-                    lines.set_color(normal_selected_color[cp])
-                    self.f.canvas.draw_idle()
-
-        self.f.canvas.mpl_connect("pick_event", on_pick)
-        self.f.canvas.mpl_connect("motion_notify_event", on_plot_hover)
-
 
     def clear_info(self):
         self.pattern_name.configure(text="")
@@ -416,7 +348,6 @@ class App(customtkinter.CTk):
     def onClickGarmentButton(self, index, img_path, event):
         print(f'You clicked button number: {index}')
         self._index = index
-        # logging.info(f'img_path: {img_path}')
         self.onClickDetails(index)
         img_obj = Image.open(img_path).resize((180, 180))
         photo_img = ImageTk.PhotoImage(img_obj)
@@ -426,109 +357,24 @@ class App(customtkinter.CTk):
     def onClickRelevantGarmentButton(self, index):
         self._index = index
         found = [a for a in self.filenames if os.path.basename(self._suggested[index]) in a]
-        self.onClickDetails(index)
         img_path = osp.join(str(Path(found[0]).parent), self._suggested[index]) + '.jpg'
         img_obj = Image.open(img_path).resize((180, 180))
         photo_img = ImageTk.PhotoImage(img_obj)
         self.selected_image_preview_obj = photo_img
         self.selected_image_preview.configure(image=self.selected_image_preview_obj)
 
-        p = Path(found[0]).parent
-        for cat in ['dress', 'skirt', 'blouse']:
-            if cat in str(p):
-                self.pattern_category.configure(text=cat)
-        # Read the individual patterns
-        ind_patterns = os.path.join(p, 'individual patterns')
-        pattern_files = ['front.xyz', 'back.xyz', 'skirt back.xyz', 'skirt front.xyz', 'sleever.xyz', 'sleevel.xyz',
-                         'cuffl.xyz', 'cuffr.xyz', 'collar.xyz']
-        coords_list = []
-        curves = []
-        included = []
-        for f in pattern_files:
-            if f in os.listdir(ind_patterns):
-                coords_list.append(read_coords_from_txt(os.path.join(ind_patterns, f), delimiter=','))
-                points = read_coords_from_txt(osp.join(ind_patterns, f), ',')
-                curve = []
-                included.append(f)
-                for p in points:
-                    curve.append(tuple(p))
-                curves.append(curve)
-        self.pattern_number.configure(text=str(len(coords_list)))
-        self.f.clf()
-        self.f.subplots_adjust(top=1, bottom=0, right=1, left=0, hspace=0, wspace=0)
-        self.f.tight_layout()
-        ax = self.f.add_subplot(autoscale_on=False, xlim=(0, 0), ylim=(0, 0))
-        normal_selected_color = np.array([[57 / 255, 139 / 255, 227 / 255, 1.0],
-                                          [230 / 255, 67 / 255, 67 / 255, 1.0],
-                                          [255 / 255, 190 / 255, 59 / 255, 1.0]])
-        selected = np.zeros(len(curves), dtype=int)
-        colors = normal_selected_color[selected]
-        lines = LineCollection(curves, pickradius=10, colors=colors)
-        lines.set_picker(True)
+        p = Path(found[0])
+        self.update_details(p)
 
-        temp = np.vstack(curves)
-        ax.add_collection(lines)
-        ax.set_xlim([temp.min(axis=0)[0] - 20.0, temp.max(axis=0)[0] + 20.0])
-        ax.set_ylim([temp.min(axis=0)[1] - 20.0, temp.max(axis=0)[1] + 20.0])
-        ax.set_aspect('equal')
-
-        ax.set_facecolor('#343638')
-        ax.set_xticks([])
-        ax.set_yticks([])
-        ax.axis('tight')
-        ax.axis('off')
-        ax.set_aspect('equal')
+        self.pattern_preview.get_data_from_path(p)
+        self.pattern_number.configure(text=str(len(self.pattern_preview.coords_list)))
         self.pattern_preview.draw()
-
-        def on_pick(evt):
-            if evt.artist is lines:
-                ind = evt.ind[0]
-                selected[:] = 0
-                selected[ind] = 1
-                lines.set_color(normal_selected_color[selected])
-                self.f.canvas.draw_idle()
-                self.editor.on_click_ok(included[np.where(selected == 1)[0][0]].replace('.xyz', ''))
-
-        def on_plot_hover(event):
-            cp = copy.deepcopy(selected)
-            if event.inaxes == ax:
-                cont, ind = lines.contains(event)
-                if cont:
-                    cp[np.where(cp == 2)] = 0
-                    cp[ind['ind'][0]] = 2
-
-                    lines.set_color(normal_selected_color[cp])
-                    self.f.canvas.draw_idle()
-                else:
-                    cp[np.where(cp == 2)] = 0
-                    lines.set_color(normal_selected_color[cp])
-                    self.f.canvas.draw_idle()
-
-        self.f.canvas.mpl_connect("pick_event", on_pick)
-        self.f.canvas.mpl_connect("motion_notify_event", on_plot_hover)
 
     def clear_images(self):
-        self.view1.parent = None
-        self.view2.parent = None
-        self.view3.parent = None
-        self.view4.parent = None
-
-        self.view1 = self.canvas1.central_widget.add_view(bgcolor='#4a4949')
-        self.view2 = self.canvas2.central_widget.add_view(bgcolor='#4a4949')
-        self.view3 = self.canvas3.central_widget.add_view(bgcolor='#4a4949')
-        self.view4 = self.canvas4.central_widget.add_view(bgcolor='#4a4949')
-
-        self.f.clf()
-        self.f.subplots_adjust(top=1, bottom=0, right=1, left=0, hspace=0, wspace=0)
-        self.f.tight_layout()
-        ax = self.f.add_subplot(autoscale_on=False, xlim=(0, 0), ylim=(0, 0))
-        ax.set_facecolor('#343638')
-        ax.set_xticks([])
-        ax.set_yticks([])
-        ax.axis('tight')
-        ax.axis('off')
-        ax.set_aspect('equal')
-        self.pattern_preview.draw()
+        for i in range(4):
+            getattr(self, f'view{i+1}').parent = None
+            setattr(self, f'view{i+1}', getattr(self, f'canvas{i + 1}').central_widget.add_view(bgcolor='#4a4949'))
+        self.pattern_preview.clear()
 
     def update_images(self):
         for idx, retrieved_path in enumerate(self._retrieved):
@@ -643,6 +489,13 @@ class App(customtkinter.CTk):
                     getattr(child, f'out_img_{idx + 1}').configure(image=photo_img)
 
             child.mainloop()
+
+    def update_details(self, path):
+        self.pattern_name.configure(text=str(path.parent.name))
+        for cat in ['blouse', 'dress', 'skirt']:
+            if cat in str(path):
+                self.pattern_category.configure(text=cat)
+        self.pattern_path.configure(text=str(path.parent))
 
     def start(self):
         self.controller.render()
