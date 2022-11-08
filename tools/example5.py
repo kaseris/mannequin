@@ -92,57 +92,23 @@ class App(customtkinter.CTk):
         self._index = None
         self._retrieved_3d = None
 
-        self.retrieved_viewport1 = customtkinter.CTkToplevel(master=self)
-        self.retrieved_viewport1.geometry('282x314+665+124')
-        self.retrieved_viewport1.title("Garment 1")
-        self.canvas1 = vispy.scene.SceneCanvas(keys='interactive', show=True, parent=self.retrieved_viewport1)
-        self.canvas1.native.pack(side=tkinter.TOP, fill=tkinter.BOTH, expand=True)
-        self.view1 = self.canvas1.central_widget.add_view(bgcolor='#4a4949')
-        self.retrieved_viewport1.update_idletasks()
-        self.retrieved_viewport1.wm_transient(self)
-        self.view1.camera = vispy.scene.cameras.PanZoomCamera(aspect=1)
-        self.view1.camera.flip = (0, 1, 0)
-        self.view1.camera.set_range()
-        self.view1.camera.zoom(1.0, (250, 200))
+        offsets = [(665, 124), (970, 124), (1275, 124), (1580, 124)]
+        for i in range(4):
+            setattr(self, f'retrieved_viewport{i+1}', customtkinter.CTkToplevel(master=self))
+            getattr(self, f'retrieved_viewport{i+1}').geometry(f'282x314+{offsets[i][0]}+{offsets[i][1]}')
+            getattr(self, f'retrieved_viewport{i+1}').title(f'Garment {i + 1}')
+            setattr(self, f'canvas{i + 1}', vispy.scene.SceneCanvas(keys='interactive',
+                                                                    show=True,
+                                                                    parent=getattr(self, f'retrieved_viewport{i+1}')))
+            getattr(self, f'canvas{i+1}').native.pack(side=tkinter.TOP, fill=tkinter.BOTH, expand=True)
+            setattr(self, f'view{i+1}', getattr(self, f'canvas{i+1}').central_widget.add_view(bgcolor='#4a4949'))
+            getattr(self, f'retrieved_viewport{i+1}').update_idletasks()
+            getattr(self, f'retrieved_viewport{i+1}').wm_transient(self)
+            getattr(self, f'view{i+1}').camera = vispy.scene.cameras.PanZoomCamera(aspect=1)
+            getattr(self, f'view{i + 1}').camera.flip = (0, 1, 0)
+            getattr(self, f'view{i + 1}').camera.set_range()
+            getattr(self, f'view{i + 1}').camera.zoom(1.0, (250, 200))
 
-        self.retrieved_viewport2 = customtkinter.CTkToplevel(master=self)
-        self.retrieved_viewport2.geometry('282x314+970+124')
-        self.retrieved_viewport2.title("Garment 2")
-        self.canvas2 = vispy.scene.SceneCanvas(keys='interactive', show=True, parent=self.retrieved_viewport2)
-        self.canvas2.native.pack(side=tkinter.TOP, fill=tkinter.BOTH, expand=True)
-        self.view2 = self.canvas2.central_widget.add_view(bgcolor='#4a4949')
-        self.retrieved_viewport2.update_idletasks()
-        self.retrieved_viewport2.wm_transient(self)
-        self.view2.camera = vispy.scene.cameras.PanZoomCamera(aspect=1)
-        self.view2.camera.flip = (0, 1, 0)
-        self.view2.camera.set_range()
-        self.view2.camera.zoom(1.0, (250, 200))
-        #
-        self.retrieved_viewport3 = customtkinter.CTkToplevel(master=self)
-        self.retrieved_viewport3.geometry('282x314+1275+124')
-        self.retrieved_viewport3.title("Garment 3")
-        self.canvas3 = vispy.scene.SceneCanvas(keys='interactive', show=True, parent=self.retrieved_viewport3)
-        self.canvas3.native.pack(side=tkinter.TOP, fill=tkinter.BOTH, expand=True)
-        self.view3 = self.canvas3.central_widget.add_view(bgcolor='#4a4949')
-        self.retrieved_viewport3.update_idletasks()
-        self.retrieved_viewport3.wm_transient(self)
-        self.view3.camera = vispy.scene.cameras.PanZoomCamera(aspect=1)
-        self.view3.camera.flip = (0, 1, 0)
-        self.view3.camera.set_range()
-        self.view3.camera.zoom(1.0, (250, 200))
-        #
-        self.retrieved_viewport4 = customtkinter.CTkToplevel(master=self)
-        self.retrieved_viewport4.geometry('282x314+1580+124')
-        self.retrieved_viewport4.title("Garment 4")
-        self.canvas4 = vispy.scene.SceneCanvas(keys='interactive', show=True, parent=self.retrieved_viewport4)
-        self.canvas4.native.pack(side=tkinter.TOP, fill=tkinter.BOTH, expand=True)
-        self.view4 = self.canvas4.central_widget.add_view(bgcolor='#4a4949')
-        self.retrieved_viewport4.update_idletasks()
-        self.retrieved_viewport4.wm_transient(self)
-        self.view4.camera = vispy.scene.cameras.PanZoomCamera(aspect=1)
-        self.view4.camera.flip = (0, 1, 0)
-        self.view4.camera.set_range()
-        self.view4.camera.zoom(1.0, (250, 200))
 
         # ============ create two frames ============
         # configure grid layout (2x1)
@@ -316,11 +282,11 @@ class App(customtkinter.CTk):
 
     def onClickDetails(self, idx):
         if not isinstance(self._retrieved[idx - 1], str):
-            self.pattern_path.configure(text=self._retrieved[idx - 1][0])
+            self.pattern_path.configure(text=Path(self._retrieved[idx - 1][0]).parent)
             self.pattern_name.configure(text=osp.basename(self._retrieved[idx - 1][0]).split('.')[0])
             _selected = self._retrieved[idx - 1][0]
         else:
-            self.pattern_path.configure(text=self._retrieved[idx - 1])
+            self.pattern_path.configure(text=Path(self._retrieved[idx - 1]).parent)
             self.pattern_name.configure(text=osp.basename(self._retrieved[idx - 1]).split('.')[0])
             _selected = self._retrieved[idx - 1]
         _categories = [self.garment_paths['category'][i] for i in self.ind]
@@ -384,15 +350,7 @@ class App(customtkinter.CTk):
     def retrieve(self):
         self._retrieved, self.ind = infer(self._scanned_file, k=4, object_type=self.controller.model.object_type,
                                           gallery_paths=self.garment_paths['image_path'])
-        self.view1.parent = None
-        self.view2.parent = None
-        self.view3.parent = None
-        self.view4.parent = None
-
-        self.view1 = self.canvas1.central_widget.add_view(bgcolor='#4a4949')
-        self.view2 = self.canvas2.central_widget.add_view(bgcolor='#4a4949')
-        self.view3 = self.canvas3.central_widget.add_view(bgcolor='#4a4949')
-        self.view4 = self.canvas4.central_widget.add_view(bgcolor='#4a4949')
+        self.clear_images()
 
         if self.object_type == 'image':
             im1 = imread(self._retrieved[0][0])
