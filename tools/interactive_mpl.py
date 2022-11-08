@@ -10,7 +10,7 @@ from typing import List, Union
 import customtkinter
 import tkinter
 import numpy as np
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
 from matplotlib.figure import Figure
 from matplotlib.collections import LineCollection
 
@@ -281,6 +281,16 @@ class InteractivePatternPreview:
                 lines.set_color(InteractivePatternPreview.normal_selected_color[self.__selected])
                 self.f.canvas.draw_idle()
                 self.editor.on_click_ok(self.included[np.where(self.__selected == 1)[0][0]].replace('.xyz', ''))
+                where = np.where(self.__selected == 1)[0][0]
+                ax.set_xlim([self.coords_list[where].min(axis=0)[0] - 100.0, self.coords_list[where].max(axis=0)[0] + 100.0])
+                ax.set_ylim([self.coords_list[where].min(axis=0)[1] - 100.0, self.coords_list[where].max(axis=0)[1] + 100.0])
+                self.f.canvas.draw_idle()
+
+        def on_escape(event):
+            if event.key == 'escape':
+                ax.set_xlim([temp.min(axis=0)[0] - 20.0, temp.max(axis=0)[0] + 20.0])
+                ax.set_ylim([temp.min(axis=0)[1] - 20.0, temp.max(axis=0)[1] + 20.0])
+                self.f.canvas.draw_idle()
 
         def on_plot_hover(event):
             cp = copy.deepcopy(self.__selected)
@@ -297,32 +307,7 @@ class InteractivePatternPreview:
                     lines.set_color(InteractivePatternPreview.normal_selected_color[cp])
                     self.f.canvas.draw_idle()
 
-        def zoom_fun(event):
-            # get the current x and y limits
-            cur_xlim = ax.get_xlim()
-            cur_ylim = ax.get_ylim()
-            cur_xrange = (cur_xlim[1] - cur_xlim[0]) * .5
-            cur_yrange = (cur_ylim[1] - cur_ylim[0]) * .5
-            xdata = event.xdata  # get event x location
-            ydata = event.ydata  # get event y location
-            if event.button == 'up':
-                # deal with zoom in
-                scale_factor = 1. / 1.15
-            elif event.button == 'down':
-                # deal with zoom out
-                scale_factor = 1.5
-            else:
-                # deal with something that should never happen
-                scale_factor = 1
-            # set new limits
-            ax.set_xlim([xdata - cur_xrange * scale_factor,
-                         xdata + cur_xrange * scale_factor])
-            ax.set_ylim([ydata - cur_yrange * scale_factor,
-                         ydata + cur_yrange * scale_factor])
-            self.f.draw_idle()
-
-
-        self.f.canvas.mpl_connect('scroll_event', zoom_fun)
+        self.f.canvas.mpl_connect('key_press_event', on_escape)
         self.f.canvas.mpl_connect("pick_event", on_pick)
         self.f.canvas.mpl_connect("motion_notify_event", on_plot_hover)
 
