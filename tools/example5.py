@@ -420,8 +420,13 @@ class App(customtkinter.CTk):
                 getattr(child, f'out_img_{i + 1}').grid(row=5, column=0, pady=10, padx=10)
 
             path_to_ss = osp.join(DATABASE_PATH, self.pattern_category.text, f'ss_{self.pattern_category.text}.txt')
-            selected_idx = ss_dict_name_to_idx[self.pattern_category.text][
-                osp.basename(self._retrieved[self._index - 1][0]).split('.')[0]] # logika to [0] dne tha doulevei sto 3d
+            try:
+                selected_idx = ss_dict_name_to_idx[self.pattern_category.text][
+                    osp.basename(self._retrieved[self._index - 1][0]).split('.')[
+                        0]]  # logika to [0] dne tha doulevei sto 3d
+            except KeyError:
+                selected_idx = ss_dict_name_to_idx[self.pattern_category.text][
+                    osp.basename(self._retrieved[self._index - 1]).split('.')[0]]
             ss_mat = create_ss_matrix(path_to_ss)
 
             list_similarities = []
