@@ -60,11 +60,9 @@ class AltCurvesApp(customtkinter.CTkToplevel):
             try:
                 which1 = rules_blouse[self.choice][get_keypoint_count(g, pattern=self.pattern_selection)]
                 fnames1 = [get_filename_for_bezier_points(g, self.pattern_selection, n=n) for n in which1]
-                # TODO: na diorthwthei gia na fainontai toso ta collar oso kai ta armholes se ena tile
                 curve = []
                 for fname in fnames1:
                     curve.append(read_bezier_points_from_txt(fname))
-                    # self.curves.append(read_bezier_points_from_txt(fname))
                 self.curves.append(curve)
             except FileNotFoundError:
                 continue
