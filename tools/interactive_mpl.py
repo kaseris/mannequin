@@ -37,7 +37,7 @@ def on_frame_click(event):
         event.widget.master.parent.master.update_curves()
         event.widget.master.parent.master.destroy()
     except AttributeError:
-        pass
+        print("E OXI RE POUSTI MOU")
 
 
 class MplFrameGrid:

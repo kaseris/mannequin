@@ -75,7 +75,7 @@ class AltCurvesApp(customtkinter.CTkToplevel):
 
     def update_curves(self):
         path_to_garment1 = Path(self.master.path_to_garment).parent
-        aligned_alt_curve = align_regions(path_to_garment1, [self.curve_to_replace],
+        aligned_alt_curve = align_regions(path_to_garment1, self.curve_to_replace,
                                           pattern=self.pattern_selection,
                                           selection=self.choice)
         for aligned_curve in aligned_alt_curve:

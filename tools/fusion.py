@@ -98,6 +98,7 @@ def align_regions(rouxo1, points2, selection: str, pattern: str):
 
     # pollaplasiazw tis bezier tou 2 me ta scale factors
     points2_scaled = [pts * s for pts, s in zip(points2, sf)]
+    # points2_scaled = points2[0][0] * sf[0]
 
     points2_rot = []
     for ps1, ps2 in zip(points1, points2_scaled):
