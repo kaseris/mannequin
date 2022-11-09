@@ -10,7 +10,7 @@ from typing import List, Union
 import customtkinter
 import tkinter
 import numpy as np
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
 from matplotlib.figure import Figure
 from matplotlib.collections import LineCollection
 
@@ -33,11 +33,10 @@ def on_frame_click(event):
         # Need to set a method to communicate between parents and children
         event.widget.master.parent.set_selected(event.widget.master.index)
         event.widget.master.parent.master.set_curve_to_replace(event.widget.master.parent.get_curve())
-        # De doulevei akoma
         event.widget.master.parent.master.update_curves()
         event.widget.master.parent.master.destroy()
     except AttributeError:
-        print("E OXI RE POUSTI MOU")
+        pass
 
 
 class MplFrameGrid:
@@ -174,7 +173,7 @@ class InteractivePatternPreview:
         self.f = Figure(figsize=figsize)
         self.f.patch.set_facecolor('#343638')
         self.pattern_preview = FigureCanvasTkAgg(self.f, master=master)
-        # self._set_callback(self, event, func)
+        self.alternative_exists = False
 
         self.editor = None
         if editor is not None:
@@ -182,10 +181,11 @@ class InteractivePatternPreview:
 
         # Instance's data
         self.__data = []
+        self.__copy = None
         self.__selected = None
 
         # Layout setup
-        self.pattern_preview.get_tk_widget().grid(**grid_params) # Poly pithano edw na einai TO lathos
+        self.pattern_preview.get_tk_widget().grid(**grid_params)
 
     def set_callback(self, event, func):
         self.f.canvas.mpl_connect(event, func)
@@ -197,10 +197,19 @@ class InteractivePatternPreview:
         pass
 
     def add_curve(self, curve):
-        if len(self.__data) > 0:
-            __data_copy = copy.deepcopy(self.__data)
+        if not self.alternative_exists:
             self.__data = []
-            self.__data = __data_copy + [curve]
+            self.__data += self.__copy
+            for c in curve:
+                self.__data += [c]
+            self.alternative_exists = True
+            return
+        else:
+            # Clear the plot
+            self.__data = []
+            self.__data = self.__copy
+            self.alternative_exists = False
+            self.add_curve(curve)
 
     def clear(self):
         self.f.clf()
@@ -216,10 +225,10 @@ class InteractivePatternPreview:
         self.pattern_preview.draw()
 
     def get_data_from_path(self, path: Union[str, PathLike]):
-        '''Ayth h methodos xrhsimopoieitai gia na enimerwsei to pattern preview plot otan kanw klik se ena rouxol.
+        """Ayth h methodos xrhsimopoieitai gia na enimerwsei to pattern preview plot otan kanw klik se ena rouxol.
         Se aythn thn periptwsh, dinetai ena path pou deixnei sta individual patterns tou epilegmenou retrieved rouxou.
         Auth h methodos loipon, anoigei ola ta individual patterns tou rouxou, enhmerwnei ta dedomena tou instance ths
-        klashs kai ksanazwgrafizei to preview.'''
+        klashs kai ksanazwgrafizei to preview."""
         # A workaround to clear the class' data
         if len(self.__data) > 0:
             self.__data = []
@@ -239,6 +248,21 @@ class InteractivePatternPreview:
                 for p in points:
                     curve.append(tuple(p))
                 self.__data.append(curve)
+        self.__copy = copy.deepcopy(self.__data)
+
+    def zoom_in(self):
+        if np.any(self.__selected):
+            where = np.where(self.__selected == 1)[0][0]
+            self._xmin = self.coords_list[where].min(axis=0)[0] - 100.0
+            self._xmax = self.coords_list[where].max(axis=0)[0] + 100.0
+            self._ymin = self.coords_list[where].min(axis=0)[1] - 100.0
+            self._ymax = self.coords_list[where].max(axis=0)[1] + 100.0
+        else:
+            temp = np.vstack(self.__data)
+            self._xmin = temp.min(axis=0)[0] - 20.0
+            self._xmax = temp.max(axis=0)[0] + 20.0
+            self._ymin = temp.min(axis=0)[1] - 20.0
+            self._ymax = temp.max(axis=0)[1] + 20.0
 
     def draw(self):
         self.f.clear()
@@ -246,11 +270,11 @@ class InteractivePatternPreview:
         self.f.tight_layout()
         ax = self.f.add_subplot(autoscale_on=False)
 
-        temp = np.vstack(self.__data)
         ax.set_facecolor('#343638')
         ax.axis('off')
-        ax.set_xlim([temp.min(axis=0)[0] - 20.0, temp.max(axis=0)[0] + 20.0])
-        ax.set_ylim([temp.min(axis=0)[1] - 20.0, temp.max(axis=0)[1] + 20.0])
+        self.zoom_in()
+        ax.set_xlim([self._xmin, self._xmax])
+        ax.set_ylim([self._ymin, self._ymax])
         ax.set_aspect('equal')
         ax.set_xticks([])
         ax.set_yticks([])
@@ -270,6 +294,14 @@ class InteractivePatternPreview:
                 lines.set_color(InteractivePatternPreview.normal_selected_color[self.__selected])
                 self.f.canvas.draw_idle()
                 self.editor.on_click_ok(self.included[np.where(self.__selected == 1)[0][0]].replace('.xyz', ''))
+                self.f.canvas.draw_idle()
+
+        def on_escape(event):
+            if event.key == 'escape':
+                temp = np.vstack(self.__data)
+                ax.set_xlim([temp.min(axis=0)[0] - 20.0, temp.max(axis=0)[0] + 20.0])
+                ax.set_ylim([temp.min(axis=0)[1] - 20.0, temp.max(axis=0)[1] + 20.0])
+                self.f.canvas.draw_idle()
 
         def on_plot_hover(event):
             cp = copy.deepcopy(self.__selected)
@@ -286,32 +318,7 @@ class InteractivePatternPreview:
                     lines.set_color(InteractivePatternPreview.normal_selected_color[cp])
                     self.f.canvas.draw_idle()
 
-        def zoom_fun(event):
-            # get the current x and y limits
-            cur_xlim = ax.get_xlim()
-            cur_ylim = ax.get_ylim()
-            cur_xrange = (cur_xlim[1] - cur_xlim[0]) * .5
-            cur_yrange = (cur_ylim[1] - cur_ylim[0]) * .5
-            xdata = event.xdata  # get event x location
-            ydata = event.ydata  # get event y location
-            if event.button == 'up':
-                # deal with zoom in
-                scale_factor = 1. / 1.15
-            elif event.button == 'down':
-                # deal with zoom out
-                scale_factor = 1.5
-            else:
-                # deal with something that should never happen
-                scale_factor = 1
-            # set new limits
-            ax.set_xlim([xdata - cur_xrange * scale_factor,
-                         xdata + cur_xrange * scale_factor])
-            ax.set_ylim([ydata - cur_yrange * scale_factor,
-                         ydata + cur_yrange * scale_factor])
-            self.f.draw_idle()
-
-
-        self.f.canvas.mpl_connect('scroll_event', zoom_fun)
+        self.f.canvas.mpl_connect('key_press_event', on_escape)
         self.f.canvas.mpl_connect("pick_event", on_pick)
         self.f.canvas.mpl_connect("motion_notify_event", on_plot_hover)
 

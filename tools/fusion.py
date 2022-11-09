@@ -3,12 +3,15 @@ import os
 import os.path as osp
 import re
 
+from os import PathLike
 from pathlib import Path
+from typing import List
 
 import numpy as np
 
 from rules import rules_blouse
 from seam import Seam
+from utils import smoothstep
 
 FLOAT_2_STRING_PRECISION = 3
 
@@ -127,16 +130,39 @@ def align_regions(rouxo1, points2, selection: str, pattern: str):
     return translated_points
 
 
-if __name__ == '__main__':
-    # So far we replaced the armholes of the garment
-    # Now to replace the sleeves themselves
-    # We only care about the curvy part of the sleeve
-    curves = align_regions(rouxo1='/home/kaseris/Documents/database/blouse/b1/Q7180',
-                           rouxo2='/home/kaseris/Documents/database/blouse/b1/Q6431',
-                           selection='collar',
-                           pattern='front')
-    seam = Seam('/home/kaseris/Documents/database/blouse/b1/Q7180')
-    for curve in curves:
-        seam.replace(curve)
+def build_vecs(x):
+    vecs = []
+    for vec in x:
+        vecs.append(vec / np.linalg.norm(vec))
+    return np.asarray(vecs)
 
-    seam.export_to_file('seam1.txt')
+
+def propose_intermediate_curves(rouxo1: PathLike,
+                                curve2: List,
+                                pattern,
+                                selection,
+                                n_alt=2):
+    # We suppose that both rouxo1 and curve2 are aligned first.
+    which1 = rules_blouse[selection][get_keypoint_count(rouxo1, pattern=pattern)]
+    fnames1 = [get_filename_for_bezier_points(rouxo1, pattern, n=n) for n in which1]
+    curve1 = [read_bezier_points_from_txt(fname=f) for f in fnames1]
+
+    assert len(curve1) == len(curve2), 'Lists `curve1` and `curve2` do not have the same length'
+
+    proposed_curves = []
+    for c1, c2 in zip(curve1, curve2):
+        dist = c1 - c2
+        norms = np.linalg.norm(dist, axis=1)
+        vecs = build_vecs(dist)
+
+        for idx, c in enumerate(np.linspace(0, np.mean(norms), n_alt + 1)[1:]):
+            clipped = smoothstep(norms, x_min=0.0, x_max=norms.max(), N=1)
+            newcurve = c1 - (np.multiply(vecs, clipped) * c)
+            newcurve[0, :] = c1[0, :]
+            newcurve[-1, :] = c1[-1, :]
+            proposed_curves.append(newcurve)
+    return proposed_curves
+
+
+if __name__ == '__main__':
+    pass

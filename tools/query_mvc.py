@@ -201,6 +201,8 @@ class Controller:
         self.parent.clear_info()
         self.parent._scanned_file = file_name
         self.parent.clear_images()
+        if self.parent.editor is not None:
+            self.parent.editor.clear_all()
 
     def exit(self):
         self.model.clear()
