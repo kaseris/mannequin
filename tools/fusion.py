@@ -3,6 +3,7 @@ import os
 import os.path as osp
 import re
 
+from os import PathLike
 from pathlib import Path
 from typing import List
 
@@ -136,7 +137,16 @@ def build_vecs(x):
     return np.asarray(vecs)
 
 
-def propose_intermediate_curves(curve1: List, curve2: List, n_alt=2):
+def propose_intermediate_curves(rouxo1: PathLike,
+                                curve2: List,
+                                pattern,
+                                selection,
+                                n_alt=2):
+    # We suppose that both rouxo1 and curve2 are aligned first.
+    which1 = rules_blouse[selection][get_keypoint_count(rouxo1, pattern=pattern)]
+    fnames1 = [get_filename_for_bezier_points(rouxo1, pattern, n=n) for n in which1]
+    curve1 = [read_bezier_points_from_txt(fname=f) for f in fnames1]
+
     assert len(curve1) == len(curve2), 'Lists `curve1` and `curve2` do not have the same length'
 
     proposed_curves = []
@@ -148,6 +158,8 @@ def propose_intermediate_curves(curve1: List, curve2: List, n_alt=2):
         for idx, c in enumerate(np.linspace(0, np.mean(norms), n_alt + 1)[1:]):
             clipped = smoothstep(norms, x_min=0.0, x_max=norms.max(), N=1)
             newcurve = c1 - (np.multiply(vecs, clipped) * c)
+            newcurve[0, :] = c1[0, :]
+            newcurve[-1, :] = c1[-1, :]
             proposed_curves.append(newcurve)
     return proposed_curves
 

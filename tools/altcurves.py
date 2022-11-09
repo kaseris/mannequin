@@ -4,7 +4,8 @@ import os.path as osp
 from pathlib import Path
 import customtkinter
 
-from fusion import get_keypoint_count, get_filename_for_bezier_points, read_bezier_points_from_txt, align_regions
+from fusion import get_keypoint_count, get_filename_for_bezier_points, read_bezier_points_from_txt, align_regions, \
+    propose_intermediate_curves
 from interactive_mpl import MplFrameGrid
 from rules import rules_blouse
 
@@ -76,7 +77,11 @@ class AltCurvesApp(customtkinter.CTkToplevel):
         aligned_alt_curve = align_regions(path_to_garment1, self.curve_to_replace,
                                           pattern=self.pattern_selection,
                                           selection=self.choice)
-        self.master.master.master.pattern_preview.add_curve(aligned_alt_curve)
+        proposed_curves = propose_intermediate_curves(path_to_garment1,
+                                                      aligned_alt_curve,
+                                                      pattern=self.pattern_selection,
+                                                      selection=self.choice)
+        self.master.master.master.pattern_preview.add_curve(proposed_curves)
         self.master.master.master.pattern_preview.draw()
 
 
