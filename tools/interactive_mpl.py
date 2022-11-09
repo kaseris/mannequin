@@ -33,7 +33,6 @@ def on_frame_click(event):
         # Need to set a method to communicate between parents and children
         event.widget.master.parent.set_selected(event.widget.master.index)
         event.widget.master.parent.master.set_curve_to_replace(event.widget.master.parent.get_curve())
-
         event.widget.master.parent.master.update_curves()
         event.widget.master.parent.master.destroy()
     except AttributeError:
@@ -271,7 +270,6 @@ class InteractivePatternPreview:
         self.f.tight_layout()
         ax = self.f.add_subplot(autoscale_on=False)
 
-        temp = np.vstack(self.__data)
         ax.set_facecolor('#343638')
         ax.axis('off')
         self.zoom_in()
@@ -300,6 +298,7 @@ class InteractivePatternPreview:
 
         def on_escape(event):
             if event.key == 'escape':
+                temp = np.vstack(self.__data)
                 ax.set_xlim([temp.min(axis=0)[0] - 20.0, temp.max(axis=0)[0] + 20.0])
                 ax.set_ylim([temp.min(axis=0)[1] - 20.0, temp.max(axis=0)[1] + 20.0])
                 self.f.canvas.draw_idle()
