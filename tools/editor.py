@@ -161,5 +161,6 @@ class EditorApp(customtkinter.CTkFrame):
     def path_to_garment(self):
         return self._path_to_garment
 
+
 if __name__ == '__main__':
     pass

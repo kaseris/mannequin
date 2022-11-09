@@ -33,11 +33,11 @@ def on_frame_click(event):
         # Need to set a method to communicate between parents and children
         event.widget.master.parent.set_selected(event.widget.master.index)
         event.widget.master.parent.master.set_curve_to_replace(event.widget.master.parent.get_curve())
-        # De doulevei akoma
+
         event.widget.master.parent.master.update_curves()
         event.widget.master.parent.master.destroy()
     except AttributeError:
-        print("E OXI RE POUSTI MOU")
+        pass
 
 
 class MplFrameGrid:
@@ -251,6 +251,20 @@ class InteractivePatternPreview:
                 self.__data.append(curve)
         self.__copy = copy.deepcopy(self.__data)
 
+    def zoom_in(self):
+        if np.any(self.__selected):
+            where = np.where(self.__selected == 1)[0][0]
+            self._xmin = self.coords_list[where].min(axis=0)[0] - 100.0
+            self._xmax = self.coords_list[where].max(axis=0)[0] + 100.0
+            self._ymin = self.coords_list[where].min(axis=0)[1] - 100.0
+            self._ymax = self.coords_list[where].max(axis=0)[1] + 100.0
+        else:
+            temp = np.vstack(self.__data)
+            self._xmin = temp.min(axis=0)[0] - 20.0
+            self._xmax = temp.max(axis=0)[0] + 20.0
+            self._ymin = temp.min(axis=0)[1] - 20.0
+            self._ymax = temp.max(axis=0)[1] + 20.0
+
     def draw(self):
         self.f.clear()
         self.f.subplots_adjust(top=1, bottom=0, right=1, left=0, hspace=0, wspace=0)
@@ -260,8 +274,9 @@ class InteractivePatternPreview:
         temp = np.vstack(self.__data)
         ax.set_facecolor('#343638')
         ax.axis('off')
-        ax.set_xlim([temp.min(axis=0)[0] - 20.0, temp.max(axis=0)[0] + 20.0])
-        ax.set_ylim([temp.min(axis=0)[1] - 20.0, temp.max(axis=0)[1] + 20.0])
+        self.zoom_in()
+        ax.set_xlim([self._xmin, self._xmax])
+        ax.set_ylim([self._ymin, self._ymax])
         ax.set_aspect('equal')
         ax.set_xticks([])
         ax.set_yticks([])
@@ -281,9 +296,6 @@ class InteractivePatternPreview:
                 lines.set_color(InteractivePatternPreview.normal_selected_color[self.__selected])
                 self.f.canvas.draw_idle()
                 self.editor.on_click_ok(self.included[np.where(self.__selected == 1)[0][0]].replace('.xyz', ''))
-                where = np.where(self.__selected == 1)[0][0]
-                ax.set_xlim([self.coords_list[where].min(axis=0)[0] - 100.0, self.coords_list[where].max(axis=0)[0] + 100.0])
-                ax.set_ylim([self.coords_list[where].min(axis=0)[1] - 100.0, self.coords_list[where].max(axis=0)[1] + 100.0])
                 self.f.canvas.draw_idle()
 
         def on_escape(event):
