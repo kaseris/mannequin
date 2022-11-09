@@ -67,26 +67,7 @@ class EditorApp(customtkinter.CTkFrame):
 
         self.choice = choice
 
-        if (self.choice_label is not None) or (self.not_available_info is not None):
-            try:
-                if self.choice_label.winfo_exists():
-                    self.choice_rb1.grid_forget()
-                    self.choice_rb2.grid_forget()
-                    self.choice_label.grid_forget()
-                    self.choice_button.grid_forget()
-
-                    if self.not_available_info is not None:
-                        self.not_available_info.grid_forget()
-
-                    self.choice_rb1 = None
-                    self.choice_rb2 = None
-                    self.choice_label = None
-                    self.choice_button = None
-                    self.not_available_info = None
-            except AttributeError:
-                if self.not_available_info.winfo_exists():
-                    self.not_available_info.grid_forget()
-                    self.not_available_info = None
+        self.clear()
 
         if ((choice == 'front') or (choice == 'back')) and ((self.category == 'blouse') or (self.category == 'dress')):
             self.choice_label = customtkinter.CTkLabel(master=self,
@@ -134,6 +115,37 @@ class EditorApp(customtkinter.CTkFrame):
                                                              text_font=('Roboto', EditorApp.FONT_SIZE, 'bold'),
                                                              text_color='#cf1d11')
             self.not_available_info.grid(row=3, pady=50)
+
+    def clear(self):
+        if (self.choice_label is not None) or (self.not_available_info is not None):
+            try:
+                if self.choice_label.winfo_exists():
+                    self.choice_rb1.grid_forget()
+                    self.choice_rb2.grid_forget()
+                    self.choice_label.grid_forget()
+                    self.choice_button.grid_forget()
+
+                    if self.not_available_info is not None:
+                        self.not_available_info.grid_forget()
+
+                    self.choice_rb1 = None
+                    self.choice_rb2 = None
+                    self.choice_label = None
+                    self.choice_button = None
+                    self.not_available_info = None
+            except AttributeError:
+                if self.not_available_info.winfo_exists():
+                    self.not_available_info.grid_forget()
+                    self.not_available_info = None
+
+    def clear_all(self):
+        self.title.grid_forget()
+        self.choices.grid_forget()
+        try:
+            self.message.grid_forget()
+        except AttributeError:
+            pass
+        self.clear()
 
     def on_select(self):
         app = AltCurvesApp(master=self,
