@@ -204,7 +204,7 @@ class InteractivePatternPreview:
     def add_curve(self, curve):
         if not self.alternative_exists:
             self.__data = []
-            self.__data = self.__copy
+            self.__data = copy.deepcopy(self.__copy)
             if len(curve) == 4:
                 for i in range(len(curve) - 2):
                     pair = [curve[i], curve[i + 2]]
@@ -217,13 +217,14 @@ class InteractivePatternPreview:
                     line = InteractiveLine([c], id=uid)
                     self.__data.append(line)
             self.alternative_exists = True
-            return
         else:
             # Clear the plot
             self.__data = []
-            self.__data = self.__copy
+            self.__data = copy.deepcopy(self.__copy)
             self.alternative_exists = False
+            self.clear()
             self.add_curve(curve)
+        self.draw()
 
     def clear(self):
         self.f.clf()
@@ -264,8 +265,6 @@ class InteractivePatternPreview:
                 self.line_dict[uid] = line
                 self.__data.append(line)
         self.__copy = copy.deepcopy(self.__data)
-        self.__line_dict_copy = copy.deepcopy(self.line_dict)
-
 
     def draw(self):
         self.f.clear()
