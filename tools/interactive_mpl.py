@@ -9,6 +9,8 @@ from typing import List, Union
 
 import customtkinter
 import tkinter
+
+import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
 from matplotlib.figure import Figure
@@ -323,5 +325,121 @@ class InteractivePatternPreview:
         self.f.canvas.mpl_connect("motion_notify_event", on_plot_hover)
 
 
+class InteractiveLine:
+
+    normal_selected_color = np.array([[57 / 255, 139 / 255, 227 / 255, 1.0],
+                                      [230 / 255, 67 / 255, 67 / 255, 1.0],
+                                      [255 / 255, 190 / 255, 59 / 255, 1.0]])
+
+    def __init__(self, data, id):
+        self.data = data
+        self.__data_array = np.vstack(data)
+        self.__line = self.build()
+        self.__selected = False
+        self.__line.set_picker(True)
+        self.__id = id
+        setattr(self.__line, 'ID', self.__id)
+
+        '''States:
+        0: unselected
+        1: selected
+        2: hovered
+        '''
+        self.__state = 0
+
+    def build(self):
+        curve_set = []
+        for c in self.data:
+            curve = []
+            for point in c:
+                curve.append(tuple(point))
+            curve_set.append(curve)
+        return LineCollection(curve_set, pickradius=10, colors=InteractiveMplFrame.COLORS['unselected'])
+
+    def set_state(self, state):
+        self.__state = state
+
+    @property
+    def state(self):
+        return self.__state
+
+    @property
+    def line(self):
+        return self.__line
+
+    @property
+    def min_x(self):
+        return self.__data_array.min(axis=0)[0]
+
+    @property
+    def min_y(self):
+        return self.__data_array.min(axis=0)[1]
+
+    @property
+    def max_x(self):
+        return self.__data_array.max(axis=0)[0]
+
+    @property
+    def max_y(self):
+        return self.__data_array.max(axis=0)[1]
+
+
 if __name__ == '__main__':
-    pass
+    import matplotlib.pyplot as plt
+    armhole1 = read_coords_from_txt('/home/kaseris/Documents/database/dress/d1/DD032/data/txt/front/bezier_front_1.txt',
+                                    delimiter=',')
+    armhole2 = read_coords_from_txt('/home/kaseris/Documents/database/dress/d1/DD032/data/txt/front/bezier_front_5.txt',
+                                    delimiter=',')
+
+    armhole3 = read_coords_from_txt('/home/kaseris/Documents/database/dress/d1/Q5751/data/txt/front/bezier_front_1.txt',
+                                    delimiter=',')
+    armhole4 = read_coords_from_txt('/home/kaseris/Documents/database/dress/d1/Q5751/data/txt/front/bezier_front_5.txt',
+                                    delimiter=',')
+
+    armhole5 = read_coords_from_txt('/home/kaseris/Documents/database/dress/d1/Q6089/data/txt/front/bezier_front_1.txt',
+                                    delimiter=',')
+    armhole6 = read_coords_from_txt('/home/kaseris/Documents/database/dress/d1/Q6089/data/txt/front/bezier_front_3.txt',
+                                    delimiter=',')
+
+    root = customtkinter.CTk()
+    root.title('Test')
+    root.geometry('500x500')
+
+    line = InteractiveLine([armhole1, armhole2], id=0)
+    line2 = InteractiveLine([armhole3, armhole4], id=1)
+    line3 = InteractiveLine([armhole5, armhole6], id=2)
+
+    f = Figure(figsize=(3, 3))
+    preview = FigureCanvasTkAgg(f, master=root)
+    preview.get_tk_widget().pack()
+    ax = f.add_subplot()
+
+    ax.add_collection(line.line)
+    ax.add_collection(line2.line)
+    ax.add_collection(line3.line)
+
+    lns = [line, line2, line3]
+
+    x_min = min([l.min_x for l in lns])
+    y_min = min([l.min_y for l in lns])
+
+    x_max = max([l.max_x for l in lns])
+    y_max = max([l.max_y for l in lns])
+
+    ax.set_xlim([x_min, x_max])
+    ax.set_ylim([y_min, y_max])
+    ax.set_aspect('equal')
+
+    def on_pick(event):
+        for i in range(len(lns)):
+            if i != event.artist.ID:
+                lns[i].set_state(0)
+                lns[i].line.set_color(InteractiveLine.normal_selected_color[0])
+        lns[event.artist.ID].set_state(1)
+        lns[event.artist.ID].line.set_color(InteractiveLine.normal_selected_color[1])
+
+        f.canvas.draw()
+
+    f.canvas.mpl_connect("pick_event", on_pick)
+    f.canvas.draw()
+    root.mainloop()
