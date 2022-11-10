@@ -164,10 +164,6 @@ class InteractiveMplFrame(customtkinter.CTkFrame):
 
 class InteractivePatternPreview:
 
-    normal_selected_color = np.array([[57 / 255, 139 / 255, 227 / 255, 1.0],
-                                      [230 / 255, 67 / 255, 67 / 255, 1.0],
-                                      [255 / 255, 190 / 255, 59 / 255, 1.0]])
-
     MIN_X = 20.0
     MIN_Y = 20.0
     MAX_X = 20.0
@@ -208,9 +204,18 @@ class InteractivePatternPreview:
     def add_curve(self, curve):
         if not self.alternative_exists:
             self.__data = []
-            self.__data += self.__copy
-            for c in curve:
-                self.__data += [c]
+            self.__data = self.__copy
+            if len(curve) == 4:
+                for i in range(len(curve) - 2):
+                    pair = [curve[i], curve[i + 2]]
+                    uid = str(uuid.uuid4())
+                    line = InteractiveLine(pair, id=uid)
+                    self.__data.append(line)
+            else:
+                for c in curve:
+                    uid = str(uuid.uuid4())
+                    line = InteractiveLine([c], id=uid)
+                    self.__data.append(line)
             self.alternative_exists = True
             return
         else:
@@ -259,6 +264,8 @@ class InteractivePatternPreview:
                 self.line_dict[uid] = line
                 self.__data.append(line)
         self.__copy = copy.deepcopy(self.__data)
+        self.__line_dict_copy = copy.deepcopy(self.line_dict)
+
 
     def draw(self):
         self.f.clear()
@@ -272,7 +279,6 @@ class InteractivePatternPreview:
         ax.set_xticks([])
         ax.set_yticks([])
 
-        self.__selected = np.zeros(len(self.__data), dtype=int)
         for collection in self.__data:
             ax.add_collection(collection.line)
 
@@ -287,13 +293,14 @@ class InteractivePatternPreview:
 
         def on_pick(event):
             ind = event.artist.ID
-            for id in self.line_dict.keys():
+            for il in self.__data:
+                id = il.id
                 if ind != id:
-                    self.line_dict[id].set_state(0)
-                    self.line_dict[id].line.set_color(InteractiveLine.normal_selected_color[0])
+                    il.set_state(0)
+                    il.line.set_color(InteractiveLine.normal_selected_color[0])
                 else:
-                    self.line_dict[id].set_state(1)
-                    self.line_dict[id].line.set_color(InteractiveLine.normal_selected_color[1])
+                    il.set_state(1)
+                    il.line.set_color(InteractiveLine.normal_selected_color[1])
                     self.editor.on_click_ok(self.included[ind].replace('.xyz', ''))
             self.f.canvas.draw_idle()
 
@@ -376,6 +383,10 @@ class InteractiveLine:
         return self.__state
 
     @property
+    def id(self):
+        return self.__id
+
+    @property
     def line(self):
         return self.__line
 
@@ -397,61 +408,4 @@ class InteractiveLine:
 
 
 if __name__ == '__main__':
-    import matplotlib.pyplot as plt
-    armhole1 = read_coords_from_txt('/home/kaseris/Documents/database/dress/d1/DD032/data/txt/front/bezier_front_1.txt',
-                                    delimiter=',')
-    armhole2 = read_coords_from_txt('/home/kaseris/Documents/database/dress/d1/DD032/data/txt/front/bezier_front_5.txt',
-                                    delimiter=',')
-
-    armhole3 = read_coords_from_txt('/home/kaseris/Documents/database/dress/d1/Q5751/data/txt/front/bezier_front_1.txt',
-                                    delimiter=',')
-    armhole4 = read_coords_from_txt('/home/kaseris/Documents/database/dress/d1/Q5751/data/txt/front/bezier_front_5.txt',
-                                    delimiter=',')
-
-    armhole5 = read_coords_from_txt('/home/kaseris/Documents/database/dress/d1/Q6089/data/txt/front/bezier_front_1.txt',
-                                    delimiter=',')
-    armhole6 = read_coords_from_txt('/home/kaseris/Documents/database/dress/d1/Q6089/data/txt/front/bezier_front_3.txt',
-                                    delimiter=',')
-
-    root = customtkinter.CTk()
-    root.title('Test')
-    root.geometry('500x500')
-
-    line = InteractiveLine([armhole1, armhole2], id=0)
-    line2 = InteractiveLine([armhole3, armhole4], id=1)
-    line3 = InteractiveLine([armhole5, armhole6], id=2)
-
-    f = Figure(figsize=(3, 3))
-    preview = FigureCanvasTkAgg(f, master=root)
-    preview.get_tk_widget().pack()
-    ax = f.add_subplot()
-
-    ax.add_collection(line.line)
-    ax.add_collection(line2.line)
-    ax.add_collection(line3.line)
-
-    lns = [line, line2, line3]
-
-    x_min = min([l.min_x for l in lns])
-    y_min = min([l.min_y for l in lns])
-
-    x_max = max([l.max_x for l in lns])
-    y_max = max([l.max_y for l in lns])
-
-    ax.set_xlim([x_min, x_max])
-    ax.set_ylim([y_min, y_max])
-    ax.set_aspect('equal')
-
-    def on_pick(event):
-        for i in range(len(lns)):
-            if i != event.artist.ID:
-                lns[i].set_state(0)
-                lns[i].line.set_color(InteractiveLine.normal_selected_color[0])
-        lns[event.artist.ID].set_state(1)
-        lns[event.artist.ID].line.set_color(InteractiveLine.normal_selected_color[1])
-
-        f.canvas.draw()
-
-    f.canvas.mpl_connect("pick_event", on_pick)
-    f.canvas.draw()
-    root.mainloop()
+    pass
