@@ -1,6 +1,7 @@
 import copy
 import os
 import os.path as osp
+import uuid
 
 from os import PathLike
 from pathlib import Path
@@ -167,6 +168,11 @@ class InteractivePatternPreview:
                                       [230 / 255, 67 / 255, 67 / 255, 1.0],
                                       [255 / 255, 190 / 255, 59 / 255, 1.0]])
 
+    MIN_X = 20.0
+    MIN_Y = 20.0
+    MAX_X = 20.0
+    MAX_Y = 20.0
+
     def __init__(self,
                  master: Union[customtkinter.CTkFrame, customtkinter.CTkToplevel],
                  figsize=(9, 5),
@@ -176,6 +182,7 @@ class InteractivePatternPreview:
         self.f.patch.set_facecolor('#343638')
         self.pattern_preview = FigureCanvasTkAgg(self.f, master=master)
         self.alternative_exists = False
+        self.line_dict = dict()
 
         self.editor = None
         if editor is not None:
@@ -240,31 +247,18 @@ class InteractivePatternPreview:
                          'cuffl.xyz', 'cuffr.xyz', 'collar.xyz']
 
         self.coords_list = []
-        self.included = []
+        self.included = dict()
         for f in pattern_files:
             if f in os.listdir(ind_patterns):
                 self.coords_list.append(read_coords_from_txt(os.path.join(ind_patterns, f), delimiter=','))
                 points = read_coords_from_txt(osp.join(ind_patterns, f), ',')
-                curve = []
-                self.included.append(f)
-                for p in points:
-                    curve.append(tuple(p))
-                self.__data.append(curve)
+                # Assign a universal unique identifier (UUID) to every curve in the pattern preview
+                uid = str(uuid.uuid4())
+                self.included[uid] = f
+                line = InteractiveLine([points], id=uid)
+                self.line_dict[uid] = line
+                self.__data.append(line)
         self.__copy = copy.deepcopy(self.__data)
-
-    def zoom_in(self):
-        if np.any(self.__selected):
-            where = np.where(self.__selected == 1)[0][0]
-            self._xmin = self.coords_list[where].min(axis=0)[0] - 100.0
-            self._xmax = self.coords_list[where].max(axis=0)[0] + 100.0
-            self._ymin = self.coords_list[where].min(axis=0)[1] - 100.0
-            self._ymax = self.coords_list[where].max(axis=0)[1] + 100.0
-        else:
-            temp = np.vstack(self.__data)
-            self._xmin = temp.min(axis=0)[0] - 20.0
-            self._xmax = temp.max(axis=0)[0] + 20.0
-            self._ymin = temp.min(axis=0)[1] - 20.0
-            self._ymax = temp.max(axis=0)[1] + 20.0
 
     def draw(self):
         self.f.clear()
@@ -274,55 +268,73 @@ class InteractivePatternPreview:
 
         ax.set_facecolor('#343638')
         ax.axis('off')
-        self.zoom_in()
-        ax.set_xlim([self._xmin, self._xmax])
-        ax.set_ylim([self._ymin, self._ymax])
         ax.set_aspect('equal')
         ax.set_xticks([])
         ax.set_yticks([])
 
         self.__selected = np.zeros(len(self.__data), dtype=int)
-        colors = InteractivePatternPreview.normal_selected_color[self.__selected]
-        lines = LineCollection(self.__data, pickradius=10, colors=colors)
-        lines.set_picker(True)
-        ax.add_collection(lines)
-        self.pattern_preview.draw_idle()
+        for collection in self.__data:
+            ax.add_collection(collection.line)
+
+        x_min = min([l.min_x for l in self.__data])
+        y_min = min([l.min_y for l in self.__data])
+
+        x_max = max([l.max_x for l in self.__data])
+        y_max = max([l.max_y for l in self.__data])
+
+        ax.set_xlim([x_min - InteractivePatternPreview.MIN_Y, x_max + InteractivePatternPreview.MAX_X])
+        ax.set_ylim([y_min - InteractivePatternPreview.MIN_Y, y_max + InteractivePatternPreview.MAX_Y])
 
         def on_pick(event):
-            if event.artist is lines:
-                ind = event.ind[0]
-                self.__selected[:] = 0
-                self.__selected[ind] = 1
-                lines.set_color(InteractivePatternPreview.normal_selected_color[self.__selected])
-                self.f.canvas.draw_idle()
-                self.editor.on_click_ok(self.included[np.where(self.__selected == 1)[0][0]].replace('.xyz', ''))
-                self.f.canvas.draw_idle()
-
-        def on_escape(event):
-            if event.key == 'escape':
-                temp = np.vstack(self.__data)
-                ax.set_xlim([temp.min(axis=0)[0] - 20.0, temp.max(axis=0)[0] + 20.0])
-                ax.set_ylim([temp.min(axis=0)[1] - 20.0, temp.max(axis=0)[1] + 20.0])
-                self.f.canvas.draw_idle()
-
-        def on_plot_hover(event):
-            cp = copy.deepcopy(self.__selected)
-            if event.inaxes == ax:
-                cont, ind = lines.contains(event)
-                if cont:
-                    cp[np.where(cp == 2)] = 0
-                    cp[ind['ind'][0]] = 2
-
-                    lines.set_color(InteractivePatternPreview.normal_selected_color[cp])
-                    self.f.canvas.draw_idle()
+            ind = event.artist.ID
+            for id in self.line_dict.keys():
+                if ind != id:
+                    self.line_dict[id].set_state(0)
+                    self.line_dict[id].line.set_color(InteractiveLine.normal_selected_color[0])
                 else:
-                    cp[np.where(cp == 2)] = 0
-                    lines.set_color(InteractivePatternPreview.normal_selected_color[cp])
-                    self.f.canvas.draw_idle()
+                    self.line_dict[id].set_state(1)
+                    self.line_dict[id].line.set_color(InteractiveLine.normal_selected_color[1])
+                    self.editor.on_click_ok(self.included[ind].replace('.xyz', ''))
+            self.f.canvas.draw_idle()
 
-        self.f.canvas.mpl_connect('key_press_event', on_escape)
-        self.f.canvas.mpl_connect("pick_event", on_pick)
-        self.f.canvas.mpl_connect("motion_notify_event", on_plot_hover)
+        def on_hover(event):
+            if event.inaxes == ax:
+                for il in self.__data:
+                    cont, ind = il.line.contains(event)
+
+                    if il.state == 1:
+                        continue
+
+                    if cont:
+                        il.set_state(2)
+                        il.line.set_color(InteractiveLine.normal_selected_color[2])
+                        self.f.canvas.draw_idle()
+                    else:
+                        il.set_state(0)
+                        il.line.set_color(InteractiveLine.normal_selected_color[0])
+                        self.f.canvas.draw_idle()
+
+        def on_key_press(event):
+            if event.key == 'z':
+                for il in self.__data:
+                    if il.state == 1:
+                        ax.set_xlim([il.min_x - 100., il.max_x + 100.0])
+                        ax.set_ylim([il.min_y - 100., il.max_y + 100.0])
+                        self.f.canvas.draw_idle()
+                        break
+            elif event.key == 'escape':
+                min_x = min([l.min_x for l in self.__data])
+                min_y = min([l.min_y for l in self.__data])
+                max_x = max([l.max_x for l in self.__data])
+                max_y = max([l.max_y for l in self.__data])
+                ax.set_xlim([min_x - 20.0, max_x + 20.0])
+                ax.set_ylim([min_y - 20.0, max_y + 20.0])
+                self.f.canvas.draw_idle()
+
+        self.f.canvas.mpl_connect('key_press_event', on_key_press)
+        self.f.canvas.mpl_connect("motion_notify_event", on_hover)
+        self.f.canvas.mpl_connect('pick_event', on_pick)
+        self.f.canvas.draw_idle()
 
 
 class InteractiveLine:
