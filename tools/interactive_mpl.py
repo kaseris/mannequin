@@ -177,7 +177,7 @@ class InteractivePatternPreview:
         self.f = Figure(figsize=figsize)
         self.f.patch.set_facecolor('#343638')
         self.pattern_preview = FigureCanvasTkAgg(self.f, master=master)
-        self.alternative_exists = False
+        self.__alternative_exists = False
         self.line_dict = dict()
 
         self.editor = None
@@ -202,7 +202,7 @@ class InteractivePatternPreview:
         pass
 
     def add_curve(self, curve):
-        if not self.alternative_exists:
+        if not self.__alternative_exists:
             self.__data = []
             self.__data = copy.deepcopy(self.__copy)
             if len(curve) == 4:
@@ -216,13 +216,13 @@ class InteractivePatternPreview:
                     uid = str(uuid.uuid4())
                     line = InteractiveLine([c], id=uid)
                     self.__data.append(line)
-            self.alternative_exists = True
+            self.__alternative_exists = True
             self.draw()
         else:
             # Clear the plot
             self.__data = []
             self.__data = copy.deepcopy(self.__copy)
-            self.alternative_exists = False
+            self.__alternative_exists = False
             self.clear()
             self.add_curve(curve)
 
@@ -323,8 +323,8 @@ class InteractivePatternPreview:
             if event.key == 'z':
                 for il in self.__data:
                     if il.state == 1:
-                        ax.set_xlim([il.min_x - 100., il.max_x + 100.0])
-                        ax.set_ylim([il.min_y - 100., il.max_y + 100.0])
+                        ax.set_xlim([il.min_x - 20., il.max_x + 20.0])
+                        ax.set_ylim([il.min_y - 20., il.max_y + 20.0])
                         self.f.canvas.draw_idle()
                         break
             elif event.key == 'escape':
@@ -340,6 +340,10 @@ class InteractivePatternPreview:
         self.f.canvas.mpl_connect("motion_notify_event", on_hover)
         self.f.canvas.mpl_connect('pick_event', on_pick)
         self.f.canvas.draw_idle()
+
+    @property
+    def alternative_exists(self):
+        return self.__alternative_exists
 
 
 class InteractiveLine:
