@@ -217,6 +217,7 @@ class InteractivePatternPreview:
                     line = InteractiveLine([c], id=uid)
                     self.__data.append(line)
             self.alternative_exists = True
+            self.draw()
         else:
             # Clear the plot
             self.__data = []
@@ -224,7 +225,6 @@ class InteractivePatternPreview:
             self.alternative_exists = False
             self.clear()
             self.add_curve(curve)
-        self.draw()
 
     def clear(self):
         self.f.clf()
@@ -237,7 +237,6 @@ class InteractivePatternPreview:
         ax.axis('tight')
         ax.axis('off')
         ax.set_aspect('equal')
-        self.pattern_preview.draw()
 
     def get_data_from_path(self, path: Union[str, PathLike]):
         """Ayth h methodos xrhsimopoieitai gia na enimerwsei to pattern preview plot otan kanw klik se ena rouxol.
