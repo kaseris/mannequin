@@ -82,7 +82,6 @@ class AltCurvesApp(customtkinter.CTkToplevel):
                                                       pattern=self.pattern_selection,
                                                       selection=self.choice)
         self.master.master.master.pattern_preview.add_curve(proposed_curves)
-        self.master.master.master.pattern_preview.draw()
 
 
 if __name__ == '__main__':

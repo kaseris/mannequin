@@ -1,8 +1,11 @@
+from pathlib import Path
+
 import tkinter
 import customtkinter
 
 from altcurves import AltCurvesApp
-
+from individual_pattern import IndividualPattern
+from utils import ErrorPopup
 
 class EditorApp(customtkinter.CTkFrame):
     FONT_SIZE = 11
@@ -27,6 +30,7 @@ class EditorApp(customtkinter.CTkFrame):
         self.choice_rb2 = None
         self.choice_label = None
         self.choice_button = None
+        self.replace_button = None
 
         self.not_available_info = None
 
@@ -88,7 +92,10 @@ class EditorApp(customtkinter.CTkFrame):
 
             self.choice_button = customtkinter.CTkButton(master=self, text='OK', text_font=('Roboto', 11),
                                                          command=self.on_select)
-            self.choice_button.grid(row=12, pady=(150, 0))
+            self.replace_button = customtkinter.CTkButton(master=self, text='Replace Curve', text_font=('Roboto', 11),
+                                                          command=self.on_replace)
+            self.choice_button.grid(row=12, pady=(100, 0))
+            self.replace_button.grid(row=13, pady=(10, 0))
 
         elif (choice == 'skirt front') or (choice == 'skirt back'):
             self.choice_label = customtkinter.CTkLabel(master=self, text="Do you want to\nchange:",
@@ -109,7 +116,10 @@ class EditorApp(customtkinter.CTkFrame):
 
             self.choice_button = customtkinter.CTkButton(master=self, text='OK', text_font=('Roboto', 11),
                                                          command=self.on_select)
-            self.choice_button.grid(row=12, pady=(150, 0))
+            self.replace_button = customtkinter.CTkButton(master=self, text='Replace Curve', text_font=('Roboto', 11),
+                                                          command=self.on_replace)
+            self.choice_button.grid(row=12, pady=(100, 0))
+            self.replace_button.grid(row=13, pady=(10, 0))
         else:
             self.not_available_info = customtkinter.CTkLabel(master=self, text="You cannot change\nthis pattern!",
                                                              text_font=('Roboto', EditorApp.FONT_SIZE, 'bold'),
@@ -124,6 +134,7 @@ class EditorApp(customtkinter.CTkFrame):
                     self.choice_rb2.grid_forget()
                     self.choice_label.grid_forget()
                     self.choice_button.grid_forget()
+                    self.replace_button.grid_forget()
 
                     if self.not_available_info is not None:
                         self.not_available_info.grid_forget()
@@ -132,6 +143,7 @@ class EditorApp(customtkinter.CTkFrame):
                     self.choice_rb2 = None
                     self.choice_label = None
                     self.choice_button = None
+                    self.replace_button = None
                     self.not_available_info = None
             except AttributeError:
                 if self.not_available_info.winfo_exists():
@@ -146,6 +158,21 @@ class EditorApp(customtkinter.CTkFrame):
         except AttributeError:
             pass
         self.clear()
+
+    def on_replace(self):
+        __path = Path(self.path_to_garment).parent
+        line = self.master.master.pattern_preview.get_region()
+        if self.master.master.pattern_preview.alternative_exists and line is not None:
+            region = line.data_array
+            ind_pat = IndividualPattern(__path)
+            ind_pat.replace(region, self.choice)
+            self.master.master.pattern_preview.get_data_from_individual_pattern(ind_pat)
+            self.master.master.pattern_preview.draw()
+        else:
+            error = ErrorPopup(master=self.master.master,
+                               message='You have not chosen a curve to replace the selected pattern.',
+                               geometry='450x80+890+700')
+            error.run()
 
     def on_select(self):
         app = AltCurvesApp(master=self,

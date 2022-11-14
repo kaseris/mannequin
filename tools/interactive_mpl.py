@@ -1,6 +1,7 @@
 import copy
 import os
 import os.path as osp
+import uuid
 
 from os import PathLike
 from pathlib import Path
@@ -9,12 +10,15 @@ from typing import List, Union
 
 import customtkinter
 import tkinter
+
+import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
 from matplotlib.figure import Figure
 from matplotlib.collections import LineCollection
 
 from mannequin.fileio import read_coords_from_txt
+from individual_pattern import IndividualPattern
 from scrollview import VerticalScrolledFrame
 
 
@@ -161,9 +165,10 @@ class InteractiveMplFrame(customtkinter.CTkFrame):
 
 class InteractivePatternPreview:
 
-    normal_selected_color = np.array([[57 / 255, 139 / 255, 227 / 255, 1.0],
-                                      [230 / 255, 67 / 255, 67 / 255, 1.0],
-                                      [255 / 255, 190 / 255, 59 / 255, 1.0]])
+    MIN_X = 20.0
+    MIN_Y = 20.0
+    MAX_X = 20.0
+    MAX_Y = 20.0
 
     def __init__(self,
                  master: Union[customtkinter.CTkFrame, customtkinter.CTkToplevel],
@@ -173,7 +178,8 @@ class InteractivePatternPreview:
         self.f = Figure(figsize=figsize)
         self.f.patch.set_facecolor('#343638')
         self.pattern_preview = FigureCanvasTkAgg(self.f, master=master)
-        self.alternative_exists = False
+        self.__alternative_exists = False
+        self.line_dict = dict()
 
         self.editor = None
         if editor is not None:
@@ -197,18 +203,28 @@ class InteractivePatternPreview:
         pass
 
     def add_curve(self, curve):
-        if not self.alternative_exists:
+        if not self.__alternative_exists:
             self.__data = []
-            self.__data += self.__copy
-            for c in curve:
-                self.__data += [c]
-            self.alternative_exists = True
-            return
+            self.__data = copy.deepcopy(self.__copy)
+            if len(curve) == 4:
+                for i in range(len(curve) - 2):
+                    pair = [curve[i], curve[i + 2]]
+                    uid = str(uuid.uuid4())
+                    line = InteractiveLine(pair, id=uid)
+                    self.__data.append(line)
+            else:
+                for c in curve:
+                    uid = str(uuid.uuid4())
+                    line = InteractiveLine([c], id=uid)
+                    self.__data.append(line)
+            self.__alternative_exists = True
+            self.draw()
         else:
             # Clear the plot
             self.__data = []
-            self.__data = self.__copy
-            self.alternative_exists = False
+            self.__data = copy.deepcopy(self.__copy)
+            self.__alternative_exists = False
+            self.clear()
             self.add_curve(curve)
 
     def clear(self):
@@ -222,7 +238,6 @@ class InteractivePatternPreview:
         ax.axis('tight')
         ax.axis('off')
         ax.set_aspect('equal')
-        self.pattern_preview.draw()
 
     def get_data_from_path(self, path: Union[str, PathLike]):
         """Ayth h methodos xrhsimopoieitai gia na enimerwsei to pattern preview plot otan kanw klik se ena rouxol.
@@ -232,37 +247,40 @@ class InteractivePatternPreview:
         # A workaround to clear the class' data
         if len(self.__data) > 0:
             self.__data = []
-
+        self.__alternative_exists = False
         ind_patterns = os.path.join(Path(path).parent, 'individual patterns')
         pattern_files = ['front.xyz', 'back.xyz', 'skirt back.xyz', 'skirt front.xyz', 'sleever.xyz', 'sleevel.xyz',
                          'cuffl.xyz', 'cuffr.xyz', 'collar.xyz']
 
         self.coords_list = []
-        self.included = []
+        self.included = dict()
         for f in pattern_files:
             if f in os.listdir(ind_patterns):
                 self.coords_list.append(read_coords_from_txt(os.path.join(ind_patterns, f), delimiter=','))
                 points = read_coords_from_txt(osp.join(ind_patterns, f), ',')
-                curve = []
-                self.included.append(f)
-                for p in points:
-                    curve.append(tuple(p))
-                self.__data.append(curve)
+                # Assign a universal unique identifier (UUID) to every curve in the pattern preview
+                uid = str(uuid.uuid4())
+                self.included[uid] = f
+                line = InteractiveLine([points], id=uid)
+                self.line_dict[uid] = line
+                self.__data.append(line)
         self.__copy = copy.deepcopy(self.__data)
 
-    def zoom_in(self):
-        if np.any(self.__selected):
-            where = np.where(self.__selected == 1)[0][0]
-            self._xmin = self.coords_list[where].min(axis=0)[0] - 100.0
-            self._xmax = self.coords_list[where].max(axis=0)[0] + 100.0
-            self._ymin = self.coords_list[where].min(axis=0)[1] - 100.0
-            self._ymax = self.coords_list[where].max(axis=0)[1] + 100.0
-        else:
-            temp = np.vstack(self.__data)
-            self._xmin = temp.min(axis=0)[0] - 20.0
-            self._xmax = temp.max(axis=0)[0] + 20.0
-            self._ymin = temp.min(axis=0)[1] - 20.0
-            self._ymax = temp.max(axis=0)[1] + 20.0
+    def get_data_from_individual_pattern(self, ind_pat: IndividualPattern):
+        self.__data = []
+        self.__alternative_exists = False
+
+        self.coords_list = []
+        self.included = dict()
+        self.__copy = None
+        for region in ind_pat.patterns.keys():
+            points = ind_pat[region]
+            uid = str(uuid.uuid4())
+            self.included[uid] = osp.join(ind_pat.garment_dir, region)
+            line = InteractiveLine([points], id=uid)
+            self.line_dict[uid] = line
+            self.__data.append(line)
+        self.__copy = copy.deepcopy(self.__data)
 
     def draw(self):
         self.f.clear()
@@ -272,55 +290,158 @@ class InteractivePatternPreview:
 
         ax.set_facecolor('#343638')
         ax.axis('off')
-        self.zoom_in()
-        ax.set_xlim([self._xmin, self._xmax])
-        ax.set_ylim([self._ymin, self._ymax])
         ax.set_aspect('equal')
         ax.set_xticks([])
         ax.set_yticks([])
 
-        self.__selected = np.zeros(len(self.__data), dtype=int)
-        colors = InteractivePatternPreview.normal_selected_color[self.__selected]
-        lines = LineCollection(self.__data, pickradius=10, colors=colors)
-        lines.set_picker(True)
-        ax.add_collection(lines)
-        self.pattern_preview.draw_idle()
+        for collection in self.__data:
+            ax.add_collection(collection.line)
+
+        x_min = min([l.min_x for l in self.__data])
+        y_min = min([l.min_y for l in self.__data])
+
+        x_max = max([l.max_x for l in self.__data])
+        y_max = max([l.max_y for l in self.__data])
+
+        ax.set_xlim([x_min - InteractivePatternPreview.MIN_Y, x_max + InteractivePatternPreview.MAX_X])
+        ax.set_ylim([y_min - InteractivePatternPreview.MIN_Y, y_max + InteractivePatternPreview.MAX_Y])
 
         def on_pick(event):
-            if event.artist is lines:
-                ind = event.ind[0]
-                self.__selected[:] = 0
-                self.__selected[ind] = 1
-                lines.set_color(InteractivePatternPreview.normal_selected_color[self.__selected])
-                self.f.canvas.draw_idle()
-                self.editor.on_click_ok(self.included[np.where(self.__selected == 1)[0][0]].replace('.xyz', ''))
-                self.f.canvas.draw_idle()
-
-        def on_escape(event):
-            if event.key == 'escape':
-                temp = np.vstack(self.__data)
-                ax.set_xlim([temp.min(axis=0)[0] - 20.0, temp.max(axis=0)[0] + 20.0])
-                ax.set_ylim([temp.min(axis=0)[1] - 20.0, temp.max(axis=0)[1] + 20.0])
-                self.f.canvas.draw_idle()
-
-        def on_plot_hover(event):
-            cp = copy.deepcopy(self.__selected)
-            if event.inaxes == ax:
-                cont, ind = lines.contains(event)
-                if cont:
-                    cp[np.where(cp == 2)] = 0
-                    cp[ind['ind'][0]] = 2
-
-                    lines.set_color(InteractivePatternPreview.normal_selected_color[cp])
-                    self.f.canvas.draw_idle()
+            ind = event.artist.ID
+            for il in self.__data:
+                id = il.id
+                if ind != id:
+                    il.set_state(0)
+                    il.line.set_color(InteractiveLine.normal_selected_color[0])
                 else:
-                    cp[np.where(cp == 2)] = 0
-                    lines.set_color(InteractivePatternPreview.normal_selected_color[cp])
-                    self.f.canvas.draw_idle()
+                    il.set_state(1)
+                    il.line.set_color(InteractiveLine.normal_selected_color[1])
+                    try:
+                        self.editor.on_click_ok(self.included[ind].replace('.xyz', ''))
+                    except KeyError:
+                        pass
+            self.f.canvas.draw_idle()
 
-        self.f.canvas.mpl_connect('key_press_event', on_escape)
-        self.f.canvas.mpl_connect("pick_event", on_pick)
-        self.f.canvas.mpl_connect("motion_notify_event", on_plot_hover)
+        def on_hover(event):
+            if event.inaxes == ax:
+                for il in self.__data:
+                    cont, ind = il.line.contains(event)
+
+                    if il.state == 1:
+                        continue
+
+                    if cont:
+                        il.set_state(2)
+                        il.line.set_color(InteractiveLine.normal_selected_color[2])
+                        self.f.canvas.draw_idle()
+                    else:
+                        il.set_state(0)
+                        il.line.set_color(InteractiveLine.normal_selected_color[0])
+                        self.f.canvas.draw_idle()
+
+        def on_key_press(event):
+            if event.key == 'z':
+                for il in self.__data:
+                    if il.state == 1:
+                        ax.set_xlim([il.min_x - 20., il.max_x + 20.0])
+                        ax.set_ylim([il.min_y - 20., il.max_y + 20.0])
+                        self.f.canvas.draw_idle()
+                        break
+            elif event.key == 'escape':
+                min_x = min([l.min_x for l in self.__data])
+                min_y = min([l.min_y for l in self.__data])
+                max_x = max([l.max_x for l in self.__data])
+                max_y = max([l.max_y for l in self.__data])
+                ax.set_xlim([min_x - 20.0, max_x + 20.0])
+                ax.set_ylim([min_y - 20.0, max_y + 20.0])
+                self.f.canvas.draw_idle()
+
+        self.f.canvas.mpl_connect('key_press_event', on_key_press)
+        self.f.canvas.mpl_connect("motion_notify_event", on_hover)
+        self.f.canvas.mpl_connect('pick_event', on_pick)
+        self.f.canvas.draw_idle()
+
+    @property
+    def alternative_exists(self):
+        return self.__alternative_exists
+
+    def get_region(self):
+        for il in self.__data:
+            if il.state == 1:
+                return il
+        return None
+
+    def get_state(self, id):
+        for il in self.__data:
+            if id == il.id:
+                return il.state
+
+
+class InteractiveLine:
+
+    normal_selected_color = np.array([[57 / 255, 139 / 255, 227 / 255, 1.0],
+                                      [230 / 255, 67 / 255, 67 / 255, 1.0],
+                                      [255 / 255, 190 / 255, 59 / 255, 1.0]])
+
+    def __init__(self, data, id):
+        self.data = data
+        self.__data_array = np.vstack(data)
+        self.__line = self.build()
+        self.__selected = False
+        self.__line.set_picker(True)
+        self.__id = id
+        setattr(self.__line, 'ID', self.__id)
+
+        '''States:
+        0: unselected
+        1: selected
+        2: hovered
+        '''
+        self.__state = 0
+
+    def build(self):
+        curve_set = []
+        for c in self.data:
+            curve = []
+            for point in c:
+                curve.append(tuple(point))
+            curve_set.append(curve)
+        return LineCollection(curve_set, pickradius=10, colors=InteractiveMplFrame.COLORS['unselected'])
+
+    def set_state(self, state):
+        self.__state = state
+
+    @property
+    def state(self):
+        return self.__state
+
+    @property
+    def id(self):
+        return self.__id
+
+    @property
+    def line(self):
+        return self.__line
+
+    @property
+    def min_x(self):
+        return self.__data_array.min(axis=0)[0]
+
+    @property
+    def min_y(self):
+        return self.__data_array.min(axis=0)[1]
+
+    @property
+    def max_x(self):
+        return self.__data_array.max(axis=0)[0]
+
+    @property
+    def max_y(self):
+        return self.__data_array.max(axis=0)[1]
+
+    @property
+    def data_array(self):
+        return self.__data_array
 
 
 if __name__ == '__main__':
