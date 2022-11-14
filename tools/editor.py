@@ -5,6 +5,8 @@ import customtkinter
 
 from altcurves import AltCurvesApp
 from individual_pattern import IndividualPattern
+from seam import Seam
+from subpath import SubPath
 from utils import ErrorPopup
 
 
@@ -27,6 +29,7 @@ class EditorApp(customtkinter.CTkFrame):
         self.category = category
         self._path_to_garment = None
         self._ind_pattern = None
+        self._seam, self._subpath = None, None
 
         self.choice_rb1 = None
         self.choice_rb2 = None
@@ -100,21 +103,11 @@ class EditorApp(customtkinter.CTkFrame):
             self.replace_button.grid(row=13, pady=(10, 0))
 
         elif (choice == 'skirt front') or (choice == 'skirt back'):
-            self.choice_label = customtkinter.CTkLabel(master=self, text="Do you want to\nchange:",
-                                                       text_font=('Roboto', 11, 'bold'))
-            self.choice_rb1 = customtkinter.CTkRadioButton(master=self, text='The whole pattern',
-                                                           variable=self.pattern_choice_var, value=2, width=15,
-                                                           height=15,
-                                                           text_font=('Roboto', 11))
-            self.choice_rb2 = customtkinter.CTkRadioButton(master=self, text='The \"sides\" region',
-                                                           variable=self.pattern_choice_var, value=3, width=15,
-                                                           height=15,
-                                                           text_font=('Roboto', 11))
-
-            self.choice_label.grid(pady=(45, 10), row=3)
-            self.choice_rb1.grid(row=4)
-            self.choice_rb2.grid(row=5)
-            self.choice_rb1.select()
+            self.not_available_info = customtkinter.CTkLabel(master=self, text="The sides region will\n"
+                                                                               "automatically be changed!",
+                                                             text_font=('Roboto', EditorApp.FONT_SIZE, 'bold'),
+                                                             text_color='#dbb240')
+            self.not_available_info.grid(row=3, pady=50)
 
             self.choice_button = customtkinter.CTkButton(master=self, text='OK', text_font=('Roboto', 11),
                                                          command=self.on_select)
@@ -167,6 +160,8 @@ class EditorApp(customtkinter.CTkFrame):
         if self.master.master.pattern_preview.alternative_exists and line is not None:
             region = line.data_array
             self._ind_pattern.replace(region, self.choice)
+            self._subpath.replace(region)
+            self._subpath.export_to_file('___subpath.txt')
             self.master.master.pattern_preview.get_data_from_individual_pattern(self._ind_pattern)
             self.master.master.pattern_preview.draw()
         else:
@@ -191,6 +186,12 @@ class EditorApp(customtkinter.CTkFrame):
 
     def set_ind_pat(self, path):
         self._ind_pattern = IndividualPattern(path)
+
+    def set_seam(self, path):
+        self._seam = Seam(path)
+
+    def set_subpath(self, path):
+        self._subpath = SubPath(path)
 
 
 if __name__ == '__main__':

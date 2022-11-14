@@ -1,3 +1,4 @@
+import copy
 import os.path as osp
 import re
 
@@ -23,38 +24,50 @@ class SubPath:
                 line = re.sub('\[|]', '', line.strip())
                 nums = line.split(', ')
                 self.subpath.append([float(num[:num.find('.') + SubPath.FLOAT_2_STRING_PRECISION]) for num in nums])
-                self.subpath_copy.append([float(num) for num in nums])
+                self.subpath_copy.append(np.asarray([[float(n1), float(n2)] for n1, n2 in zip(nums[::2], nums[1::2])]))
 
-    def __find_seam(self, arr: np.ndarray):
-        for array, rev in zip([arr, arr[::-1, :]], [False, True]):
-            start = array[0, :]
-            end = array[-1, :]
-            j_start, j_end, i_subpath = None, None, None
-            for i, path in enumerate(self.subpath):
+    def __find_seam(self, curve: np.ndarray):
 
-                pairs = [[path[i], path[i + 1]] for i in range(0, len(path) - 1, 2)]
-                for j, pair in enumerate(pairs):
-                    if np.allclose(start, pair):
-                        print(f'vrika thn arxh ths kampylis sto: {j} ({pair})')
-                        j_start = j
-                        i_subpath = i
-                    elif np.allclose(end, pair):
-                        print(f'vrika to telos ths kampylis sto: {j} ({pair})')
-                        j_end = j
-        return j_start, j_end, i_subpath
+        def find_nearest(array, value):
+            dist = array - value
+            norm = np.linalg.norm(dist, axis=1)
+            return norm.argmin(), norm.min()
+
+        dist_idx_pair_start = []
+        dist_idx_pair_end = []
+        for idx, subpath in enumerate(self.subpath_copy):
+            curve_start = curve[0, :]
+            curve_end = curve[-1, :]
+            dist_idx_pair_start.append(find_nearest(subpath, curve_start))
+            dist_idx_pair_end.append(find_nearest(subpath, curve_end))
+
+        dist_idx_pair_start_arr = np.asarray(dist_idx_pair_start)
+        dist_idx_pair_end_arr = np.asarray(dist_idx_pair_end)
+
+        subpath_i = dist_idx_pair_start_arr[:, 1].argmin()
+
+        return subpath_i, dist_idx_pair_start[subpath_i][0], dist_idx_pair_end[subpath_i][0]
 
     def replace(self, curve: np.ndarray):
-        j_start, j_end, i_subpath = self.__find_seam(curve)
-        sp = self.subpath_copy[i_subpath]
-        part_1 = sp[:2 * ((j_start - 1) + 1)]
-        part_2 = curve.flatten().tolist()
-        part_3 = sp[2 * (j_end+1):]
-        self.subpath_copy[i_subpath] = part_1 + part_2 + part_3
+        i_subpath, start, end = self.__find_seam(curve)
+        reverse = False
+        if end < end:
+            reverse = True
+
+        if reverse:
+            curve = curve[::-1]
+        region_copy = copy.deepcopy(self.subpath_copy[i_subpath])
+        region_copy_part1 = region_copy[:start+1]
+        region_copy_part2 = region_copy[(end + 2):]
+        region_new = np.vstack((region_copy_part1, curve[1:], region_copy_part2))
+        self.subpath_copy[i_subpath] = region_new
 
     def export_to_file(self, target_filename):
         s = ''
-        for seam in self.subpath_copy:
-            s += str(seam) + '\n'
+        for idx, seam in enumerate(self.subpath_copy):
+            s += '[' + ', '.join(list(map(str, seam.flatten()))) + ']'
+            if idx < len(self.subpath_copy):
+                s += '\n'
         with open(osp.join(self.garment_path, target_filename), 'w') as f:
             f.write(s)
 
@@ -63,4 +76,4 @@ if __name__ == '__main__':
     subpath = SubPath('/home/kaseris/Documents/database/blouse/b1/Q6431')
     arr = np.array([[1166.37770136, 658.81548836], [1.08370136, 1.13748836], [1171.59270136, 661.80148836]])
     subpath.replace(arr)
-    subpath.export_to_file('subpath1.txt')
+    subpath.export_to_file('___subpath1.txt')
