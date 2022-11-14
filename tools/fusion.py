@@ -125,6 +125,9 @@ def align_regions(rouxo1, points2, selection: str, pattern: str):
         # Briskw to dianysma poy koitaei apo thn arxh toy points2_rot pros thn arxi tou points1
         diff = ps2[0, :] - ps1[0, :]
         translated = ps2 - diff
+        # Force the first and last xy points of the translated curve to coincide
+        translated[0, :] = ps1[0, :]
+        translated[-1, :] = ps1[-1, :]
         translated_points.append(translated)
 
     return translated_points
@@ -157,6 +160,7 @@ def propose_intermediate_curves(rouxo1: PathLike,
 
         for idx, c in enumerate(np.linspace(0, np.mean(norms), n_alt + 1)[1:]):
             clipped = smoothstep(norms, x_min=0.0, x_max=norms.max(), N=1)
+            #TODO: Slider to control coefficient c???
             newcurve = c1 - (np.multiply(vecs, clipped) * c)
             newcurve[0, :] = c1[0, :]
             newcurve[-1, :] = c1[-1, :]
