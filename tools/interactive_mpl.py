@@ -18,6 +18,7 @@ from matplotlib.figure import Figure
 from matplotlib.collections import LineCollection
 
 from mannequin.fileio import read_coords_from_txt
+from individual_pattern import IndividualPattern
 from scrollview import VerticalScrolledFrame
 
 
@@ -246,7 +247,7 @@ class InteractivePatternPreview:
         # A workaround to clear the class' data
         if len(self.__data) > 0:
             self.__data = []
-
+        self.__alternative_exists = False
         ind_patterns = os.path.join(Path(path).parent, 'individual patterns')
         pattern_files = ['front.xyz', 'back.xyz', 'skirt back.xyz', 'skirt front.xyz', 'sleever.xyz', 'sleevel.xyz',
                          'cuffl.xyz', 'cuffr.xyz', 'collar.xyz']
@@ -263,6 +264,22 @@ class InteractivePatternPreview:
                 line = InteractiveLine([points], id=uid)
                 self.line_dict[uid] = line
                 self.__data.append(line)
+        self.__copy = copy.deepcopy(self.__data)
+
+    def get_data_from_individual_pattern(self, ind_pat: IndividualPattern):
+        self.__data = []
+        self.__alternative_exists = False
+
+        self.coords_list = []
+        self.included = dict()
+        self.__copy = None
+        for region in ind_pat.patterns.keys():
+            points = ind_pat[region]
+            uid = str(uuid.uuid4())
+            self.included[uid] = osp.join(ind_pat.garment_dir, region)
+            line = InteractiveLine([points], id=uid)
+            self.line_dict[uid] = line
+            self.__data.append(line)
         self.__copy = copy.deepcopy(self.__data)
 
     def draw(self):
@@ -299,7 +316,10 @@ class InteractivePatternPreview:
                 else:
                     il.set_state(1)
                     il.line.set_color(InteractiveLine.normal_selected_color[1])
-                    self.editor.on_click_ok(self.included[ind].replace('.xyz', ''))
+                    try:
+                        self.editor.on_click_ok(self.included[ind].replace('.xyz', ''))
+                    except KeyError:
+                        pass
             self.f.canvas.draw_idle()
 
         def on_hover(event):
@@ -344,6 +364,17 @@ class InteractivePatternPreview:
     @property
     def alternative_exists(self):
         return self.__alternative_exists
+
+    def get_region(self):
+        for il in self.__data:
+            if il.state == 1:
+                return il
+        return None
+
+    def get_state(self, id):
+        for il in self.__data:
+            if id == il.id:
+                return il.state
 
 
 class InteractiveLine:
@@ -407,6 +438,10 @@ class InteractiveLine:
     @property
     def max_y(self):
         return self.__data_array.max(axis=0)[1]
+
+    @property
+    def data_array(self):
+        return self.__data_array
 
 
 if __name__ == '__main__':
