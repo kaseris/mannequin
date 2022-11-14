@@ -11,7 +11,6 @@ from typing import List, Union
 import customtkinter
 import tkinter
 
-import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
 from matplotlib.figure import Figure
@@ -101,10 +100,10 @@ class MplFrameGrid:
 
 class InteractiveMplFrame(customtkinter.CTkFrame):
 
-    COLORS = {'unselected': (57/255, 139/255, 227/255),
-              'hover': (230/255, 67/255, 67/255),
-              'selected': (255/255, 190/255, 59/255)}
-    
+    COLORS = {'unselected':     (57/255, 139/255, 227/255),
+              'hover':          (230/255, 67/255, 67/255),
+              'selected':       (255/255, 190/255, 59/255)}
+
     def __init__(self,
                  master,
                  parent,
@@ -317,7 +316,12 @@ class InteractivePatternPreview:
                     il.set_state(1)
                     il.line.set_color(InteractiveLine.normal_selected_color[1])
                     try:
-                        self.editor.on_click_ok(self.included[ind].replace('.xyz', ''))
+                        pattern_files = ['front', 'back', 'skirt back', 'skirt front', 'sleever',
+                                         'sleevel', 'cuffl', 'cuffr', 'collar']
+                        for p in pattern_files:
+                            if p in self.included[ind]:
+                                pattern = p
+                        self.editor.on_click_ok(pattern)
                     except KeyError:
                         pass
             self.f.canvas.draw_idle()

@@ -7,6 +7,7 @@ from altcurves import AltCurvesApp
 from individual_pattern import IndividualPattern
 from utils import ErrorPopup
 
+
 class EditorApp(customtkinter.CTkFrame):
     FONT_SIZE = 11
     GEOMETRY = (250, 200)
@@ -25,6 +26,7 @@ class EditorApp(customtkinter.CTkFrame):
         self.pattern_choice_var = tkinter.IntVar()
         self.category = category
         self._path_to_garment = None
+        self._ind_pattern = None
 
         self.choice_rb1 = None
         self.choice_rb2 = None
@@ -164,9 +166,8 @@ class EditorApp(customtkinter.CTkFrame):
         line = self.master.master.pattern_preview.get_region()
         if self.master.master.pattern_preview.alternative_exists and line is not None:
             region = line.data_array
-            ind_pat = IndividualPattern(__path)
-            ind_pat.replace(region, self.choice)
-            self.master.master.pattern_preview.get_data_from_individual_pattern(ind_pat)
+            self._ind_pattern.replace(region, self.choice)
+            self.master.master.pattern_preview.get_data_from_individual_pattern(self._ind_pattern)
             self.master.master.pattern_preview.draw()
         else:
             error = ErrorPopup(master=self.master.master,
@@ -187,6 +188,9 @@ class EditorApp(customtkinter.CTkFrame):
     @property
     def path_to_garment(self):
         return self._path_to_garment
+
+    def set_ind_pat(self, path):
+        self._ind_pattern = IndividualPattern(path)
 
 
 if __name__ == '__main__':
