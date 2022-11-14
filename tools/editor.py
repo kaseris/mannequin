@@ -4,7 +4,8 @@ import tkinter
 import customtkinter
 
 from altcurves import AltCurvesApp
-
+from individual_pattern import IndividualPattern
+from utils import ErrorPopup
 
 class EditorApp(customtkinter.CTkFrame):
     FONT_SIZE = 11
@@ -160,23 +161,18 @@ class EditorApp(customtkinter.CTkFrame):
 
     def on_replace(self):
         __path = Path(self.path_to_garment).parent
-        if self.master.master.pattern_preview.alternative_exists:
-            print(f'Replacing {__path} with a curve..')
+        line = self.master.master.pattern_preview.get_region()
+        if self.master.master.pattern_preview.alternative_exists and line is not None:
+            region = line.data_array
+            ind_pat = IndividualPattern(__path)
+            ind_pat.replace(region, self.choice)
+            self.master.master.pattern_preview.get_data_from_individual_pattern(ind_pat)
+            self.master.master.pattern_preview.draw()
         else:
-            print('You have not chosen a curve to replace the selected pattern.')
-            error = customtkinter.CTkToplevel(master=self.master.master)
-            error.geometry('450x80+890+700')
-            error.title('Error')
-            label = customtkinter.CTkLabel(master=error,
-                                           text='You have not chosen a curve to replace the selected pattern.',
-                                           text_font=('Roboto', 11))
-            label.pack()
-            button = customtkinter.CTkButton(master=error,
-                                             text='OK',
-                                             text_font=('Roboto', 11),
-                                             command=error.destroy)
-            button.pack()
-            error.mainloop()
+            error = ErrorPopup(master=self.master.master,
+                               message='You have not chosen a curve to replace the selected pattern.',
+                               geometry='450x80+890+700')
+            error.run()
 
     def on_select(self):
         app = AltCurvesApp(master=self,
