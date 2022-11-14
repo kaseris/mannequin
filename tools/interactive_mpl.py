@@ -296,6 +296,10 @@ class InteractivePatternPreview:
         for collection in self.__data:
             ax.add_collection(collection.line)
 
+        annot = ax.annotate("", (0, 0), (10, 10), xycoords='figure pixels', bbox=dict(boxstyle="round", fc="w"),
+                            arrowprops=dict(arrowstyle="->"))
+        annot.set_visible(False)
+
         x_min = min([l.min_x for l in self.__data])
         y_min = min([l.min_y for l in self.__data])
 
@@ -328,15 +332,30 @@ class InteractivePatternPreview:
 
         def on_hover(event):
             if event.inaxes == ax:
+                annot.set_visible(False)
                 for il in self.__data:
                     cont, ind = il.line.contains(event)
-
                     if il.state == 1:
                         continue
 
                     if cont:
                         il.set_state(2)
                         il.line.set_color(InteractiveLine.normal_selected_color[2])
+
+                        x, y = event.x, event.y
+                        annot.xy = (x, y)
+                        annot.xyann = (x + 20, y + 20)
+                        pattern_files = ['front', 'back', 'skirt back', 'skirt front', 'sleever',
+                                         'sleevel', 'cuffl', 'cuffr', 'collar']
+                        ind = il.id
+                        for p in pattern_files:
+                            if p in self.included[ind]:
+                                pattern = p
+
+                        annot.set_text(pattern)
+                        annot.get_bbox_patch().set_facecolor('#5577ad')
+                        annot.get_bbox_patch().set_alpha(0.8)
+                        annot.set_visible(True)
                         self.f.canvas.draw_idle()
                     else:
                         il.set_state(0)
