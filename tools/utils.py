@@ -1,5 +1,6 @@
 import os.path as osp
 
+import customtkinter
 import numpy as np
 from scipy.special import comb
 
@@ -35,3 +36,22 @@ def smoothstep(x, x_min=0, x_max=1, N=1):
     result *= x ** (N + 1)
 
     return np.expand_dims(result, axis=1)
+
+
+class ErrorPopup(customtkinter.CTkToplevel):
+    def __init__(self, master, message, geometry):
+        super(ErrorPopup, self).__init__(master=master)
+        self.geometry(geometry)
+        self.title('Error')
+        label = customtkinter.CTkLabel(master=self,
+                                       text=message,
+                                       text_font=('Roboto', 11))
+        label.pack()
+        button = customtkinter.CTkButton(master=self,
+                                         text='OK',
+                                         text_font=('Roboto', 11),
+                                         command=self.destroy)
+        button.pack()
+
+    def run(self):
+        self.mainloop()
