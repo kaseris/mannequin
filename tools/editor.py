@@ -164,8 +164,8 @@ class EditorApp(customtkinter.CTkFrame):
             region = line.data_array
             for _region in region:
                 self._ind_pattern.replace(_region, self.choice)
-            # self._subpath.replace(region)
-            # self._subpath.export_to_file('___subpath.txt')
+                self._subpath.replace(_region)
+                self._subpath.export_to_file('___subpath.txt')
             self.master.master.pattern_preview.get_data_from_individual_pattern(self._ind_pattern)
             self.master.master.pattern_preview.draw()
         else:

@@ -3,7 +3,7 @@ import os.path as osp
 import re
 
 import numpy as np
-
+import scipy.signal as signal
 
 class SubPath:
 
@@ -42,7 +42,6 @@ class SubPath:
             dist_idx_pair_end.append(find_nearest(subpath, curve_end))
 
         dist_idx_pair_start_arr = np.asarray(dist_idx_pair_start)
-        dist_idx_pair_end_arr = np.asarray(dist_idx_pair_end)
 
         subpath_i = dist_idx_pair_start_arr[:, 1].argmin()
 
@@ -51,21 +50,27 @@ class SubPath:
     def replace(self, curve: np.ndarray):
         i_subpath, start, end = self.__find_seam(curve)
         reverse = False
-        if end < end:
+        if end < start:
             reverse = True
 
         if reverse:
             curve = curve[::-1]
+
+        amount_of_points_to_replace = abs(end - start) + 1
+        indices = sorted(np.random.permutation([n for n in range(6, 45)])[:amount_of_points_to_replace - 10])
+        curve_ = np.vstack((curve[:5], curve[indices], curve[-5:]))
+
         region_copy = copy.deepcopy(self.subpath_copy[i_subpath])
-        region_copy_part1 = region_copy[:start+1]
-        region_copy_part2 = region_copy[(end + 2):]
-        region_new = np.vstack((region_copy_part1, curve[1:], region_copy_part2))
+        region_copy_part1 = region_copy[:start + 1]
+        region_copy_part2 = region_copy[end:]
+        region_new = np.vstack((region_copy_part1, curve_[1:-1], region_copy_part2))
         self.subpath_copy[i_subpath] = region_new
 
     def export_to_file(self, target_filename):
         s = ''
         for idx, seam in enumerate(self.subpath_copy):
-            s += '[' + ', '.join(list(map(str, seam.flatten()))) + ']'
+            l2 = [f'{n:.8f}' for n in seam.flatten()]
+            s += '[' + f', '.join(l2) + ']'
             if idx < len(self.subpath_copy):
                 s += '\n'
         with open(osp.join(self.garment_path, target_filename), 'w') as f:
