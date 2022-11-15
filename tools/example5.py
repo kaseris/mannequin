@@ -235,7 +235,7 @@ class App(customtkinter.CTk):
         self.selected_image_preview.grid(row=6, column=0, columnspan=3, pady=(40, 0))
 
         self.finalize_button = customtkinter.CTkButton(master=self.frame_lower_right, text="Finalize",
-                                                       command=None)
+                                                       command=self.on_finalize)
         self.finalize_button.grid(row=7, column=0, pady=(20, 0), columnspan=4)
 
         # Frame lower right right
@@ -294,6 +294,9 @@ class App(customtkinter.CTk):
         self.editor = EditorApp(master=self.frame_lower_right_right, width=300,
                                 category=self.pattern_category.text)
         self.editor.set_path_to_garment(_selected)
+        self.editor.set_ind_pat(Path(_selected).parent)
+        self.editor.set_seam(Path(_selected).parent)
+        self.editor.set_subpath(Path(_selected).parent)
 
         self.pattern_category.configure(text=_categories[idx - 1])
         self.pattern_name.configure(text=_names[idx - 1])
@@ -422,8 +425,7 @@ class App(customtkinter.CTk):
             path_to_ss = osp.join(DATABASE_PATH, self.pattern_category.text, f'ss_{self.pattern_category.text}.txt')
             try:
                 selected_idx = ss_dict_name_to_idx[self.pattern_category.text][
-                    osp.basename(self._retrieved[self._index - 1][0]).split('.')[
-                        0]]  # logika to [0] dne tha doulevei sto 3d
+                    osp.basename(self._retrieved[self._index - 1][0]).split('.')[0]]
             except KeyError:
                 selected_idx = ss_dict_name_to_idx[self.pattern_category.text][
                     osp.basename(self._retrieved[self._index - 1]).split('.')[0]]
@@ -459,6 +461,18 @@ class App(customtkinter.CTk):
             if cat in str(path):
                 self.pattern_category.configure(text=cat)
         self.pattern_path.configure(text=str(path.parent))
+
+    def on_finalize(self):
+        import subprocess
+        import sys
+        if self.pattern_path.text != '':
+            old_dir = os.getcwd()
+            os.chdir('/home/kaseris/Documents/iMannequin_3D_Tool_v11_venia/')
+            subprocess.run([f'{osp.join(os.getcwd(), "main.out")}',
+                            self.pattern_path.text])
+            os.chdir(old_dir)
+        else:
+            pass
 
     def start(self):
         self.controller.render()
