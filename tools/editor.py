@@ -158,10 +158,14 @@ class EditorApp(customtkinter.CTkFrame):
         __path = Path(self.path_to_garment).parent
         line = self.master.master.pattern_preview.get_region()
         if self.master.master.pattern_preview.alternative_exists and line is not None:
+            # Region must be a [num_regions x num_points x 2] array in order to work properly.
+            # In this case, the region is [100x2] i.e. two regions packed together.
+            # This is not correct, because it replaces the whole collar region automatically.
             region = line.data_array
-            self._ind_pattern.replace(region, self.choice)
-            self._subpath.replace(region)
-            self._subpath.export_to_file('___subpath.txt')
+            for _region in region:
+                self._ind_pattern.replace(_region, self.choice)
+            # self._subpath.replace(region)
+            # self._subpath.export_to_file('___subpath.txt')
             self.master.master.pattern_preview.get_data_from_individual_pattern(self._ind_pattern)
             self.master.master.pattern_preview.draw()
         else:

@@ -300,6 +300,7 @@ class InteractivePatternPreview:
                             arrowprops=dict(arrowstyle="->"))
         annot.set_visible(False)
 
+
         x_min = min([l.min_x for l in self.__data])
         y_min = min([l.min_y for l in self.__data])
 
@@ -408,7 +409,12 @@ class InteractiveLine:
 
     def __init__(self, data, id):
         self.data = data
+        # In order to perform a proper curve replacement, we need the alternative curve pairs to be stored in arrays of
+        # shape [num_regions x num_points_per_region x 2]. Otherwise, the replacement will be wrong, especially in the
+        # case of the armholes where the curve starts from the beginning of the 1st armhole and ends at the end of the
+        # second without a separation.
         self.__data_array = np.vstack(data)
+        self.__data_array_np = np.vstack([np.expand_dims(d__, axis=0) for d__ in self.data])
         self.__line = self.build()
         self.__selected = False
         self.__line.set_picker(True)
@@ -464,7 +470,7 @@ class InteractiveLine:
 
     @property
     def data_array(self):
-        return self.__data_array
+        return self.__data_array_np
 
 
 if __name__ == '__main__':
