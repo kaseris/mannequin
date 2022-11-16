@@ -3,7 +3,7 @@ import os.path as osp
 import re
 
 import numpy as np
-import scipy.signal as signal
+
 
 class SubPath:
 

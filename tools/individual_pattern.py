@@ -16,6 +16,9 @@ class IndividualPattern:
         self.garment_dir = garment_dir
 
         self.__patterns = dict()
+        self.__parts = []
+        self.__flags = {'armhole': False,
+                        'collar': False}
         self.__build()
 
     def __build(self):
@@ -31,6 +34,15 @@ class IndividualPattern:
                 if f in os.listdir(ind_patterns):
                     self.__patterns[f.replace('.xyz', '')] = read_coords_from_txt(osp.join(ind_patterns, f),
                                                                                   delimiter=',')
+            with open(osp.join(self.garment_dir, 'category.txt'), 'r') as f:
+                for line in f:
+                    self.__parts.append(line.strip()[3:-3])
+
+        for part in self.__parts:
+            if 'sleeve' in part:
+                self.__flags['armhole'] = True
+            elif 'collar' in part:
+                self.__flags['collar'] = True
 
     def replace(self, curve, region):
         def find_nearest(array, value):
@@ -62,6 +74,9 @@ class IndividualPattern:
 
     def replace_region(self, region, curve):
         self.__patterns[region] = curve
+
+    def get_flag(self, choice):
+        return self.__flags[choice]
 
     def __getitem__(self, item):
         if item not in [l.replace('.xyz', '') for l in IndividualPattern.pattern_files]:

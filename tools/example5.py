@@ -13,13 +13,7 @@ import tkinter.font as tkfont
 
 from pathlib import Path
 
-import numpy as np
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
-from matplotlib.figure import Figure
-from matplotlib.collections import LineCollection
-
 from mannequin.retrieval2d.retrieval_dimis import *
-from mannequin.fileio.fileio import read_coords_from_txt
 from PIL import Image, ImageTk
 
 import vispy
@@ -31,9 +25,7 @@ from infer_retrieval import infer
 from interactive_mpl import InteractivePatternPreview
 from editor import EditorApp
 from query_mvc import Mesh, Controller
-from seam import Seam
 from shape_similarities_idx import ss_dict_name_to_idx, ss_dict_idx_to_name
-from subpath import SubPath
 from utils import similarity, create_ss_matrix
 
 # import vispy.visuals
@@ -315,7 +307,6 @@ class App(customtkinter.CTk):
         self.selected_image_preview.configure(image=self.selected_image_preview_obj)
 
     def onClickGarmentButton(self, index, img_path, event):
-        print(f'You clicked button number: {index}')
         self._index = index
         self.onClickDetails(index)
         img_obj = Image.open(img_path).resize((180, 180))
@@ -464,7 +455,6 @@ class App(customtkinter.CTk):
 
     def on_finalize(self):
         import subprocess
-        import sys
         if self.pattern_path.text != '':
             old_dir = os.getcwd()
             os.chdir('/home/kaseris/Documents/iMannequin_3D_Tool_v11_venia/')

@@ -164,8 +164,12 @@ class EditorApp(customtkinter.CTkFrame):
             region = line.data_array
             for _region in region:
                 self._ind_pattern.replace(_region, self.choice)
-                self._subpath.replace(_region)
-                self._subpath.export_to_file('___subpath.txt')
+                # if self._ind_pattern.get_flag(EditorApp.regions[self.pattern_choice_var.get()]):
+                #     print('I Will use seams')
+                # else:
+                #     print('I will use subpath')
+                # self._subpath.replace(_region)
+                # self._subpath.export_to_file('___subpath.txt')
             self.master.master.pattern_preview.get_data_from_individual_pattern(self._ind_pattern)
             self.master.master.pattern_preview.draw()
         else:
