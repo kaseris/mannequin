@@ -32,8 +32,9 @@ class IndividualPattern:
             ind_patterns = osp.join(self.garment_dir, 'individual patterns')
             for f in IndividualPattern.pattern_files:
                 if f in os.listdir(ind_patterns):
-                    self.__patterns[f.replace('.xyz', '')] = read_coords_from_txt(osp.join(ind_patterns, f),
-                                                                                  delimiter=',')
+                    self.__patterns[f.replace('.xyz', '')] = self.__rearrange(
+                        read_coords_from_txt(osp.join(ind_patterns, f),
+                                             delimiter=','))
             with open(osp.join(self.garment_dir, 'category.txt'), 'r') as f:
                 for line in f:
                     self.__parts.append(line.strip()[3:-3])
@@ -77,6 +78,22 @@ class IndividualPattern:
 
     def get_flag(self, choice):
         return self.__flags[choice]
+
+    def __rearrange(self, array):
+        key_points = detect_keypoints(array)
+        sorted_keypoints = sort_xy(key_points)
+        idx_sorted_by_y_front = np.argsort(sorted_keypoints[:, 1])[:2]
+        lowest_points_front = sorted_keypoints[idx_sorted_by_y_front]
+        where_max_X_front = np.argmax(lowest_points_front[:, 0])
+
+        # Find the index of the lower-right point in the keypoints array
+        # We store it in the idx_key_point_start var
+        coords_key_point_start_front = lowest_points_front[where_max_X_front]
+        idx_key_point_start_front = np.where(np.all(sorted_keypoints == coords_key_point_start_front,
+                                                    axis=1))[0][0]
+        idx = int(np.where(np.all(sorted_keypoints[idx_key_point_start_front] == array, axis=1))[0][0])
+        part1 = array[:idx + 1]
+        return np.vstack((array[idx:], part1))
 
     def __getitem__(self, item):
         if item not in [l.replace('.xyz', '') for l in IndividualPattern.pattern_files]:
