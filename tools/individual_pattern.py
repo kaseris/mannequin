@@ -78,21 +78,8 @@ class IndividualPattern:
     def replace_region(self, region, curve):
         self.__patterns[region] = curve
 
-    def __rearrange(self, array):
-        key_points = detect_keypoints(array)
-        sorted_keypoints = sort_xy(key_points)
-        idx_sorted_by_y_front = np.argsort(sorted_keypoints[:, 1])[:2]
-        lowest_points_front = sorted_keypoints[idx_sorted_by_y_front]
-        where_max_X_front = np.argmax(lowest_points_front[:, 0])
-
-        # Find the index of the lower-right point in the keypoints array
-        # We store it in the idx_key_point_start var
-        coords_key_point_start_front = lowest_points_front[where_max_X_front]
-        idx_key_point_start_front = np.where(np.all(sorted_keypoints == coords_key_point_start_front,
-                                                    axis=1))[0][0]
-        idx = int(np.where(np.all(sorted_keypoints[idx_key_point_start_front] == array, axis=1))[0][0])
-        part1 = array[:idx + 1]
-        return np.vstack((array[idx:], part1))
+    def get_flag(self, choice):
+        return self.__flags[choice]
 
     def __getitem__(self, item):
         if item not in [l.replace('.xyz', '') for l in IndividualPattern.pattern_files]:
