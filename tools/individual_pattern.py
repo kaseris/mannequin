@@ -31,7 +31,7 @@ class IndividualPattern:
             if not 'individual patterns' in children:
                 raise FileNotFoundError(f'`individual patterns` directory was not found in this folder.')
 
-            ind_patterns = osp.join(self.garment_dir, 'individual pattcd erns')
+            ind_patterns = osp.join(self.garment_dir, 'individual patterns')
             for f in IndividualPattern.pattern_files:
                 if f in os.listdir(ind_patterns):
                     self.__patterns[f.replace('.xyz', '')] = self.__rearrange(
