@@ -97,32 +97,4 @@ def check_obj(filename: str):
 
 
 if __name__ == '__main__':
-    fname = '/home/kaseris/Downloads/dress_sleeveless_2550/dress_sleeveless_1KERLQVDIE/dress_sleeveless_1KERLQVDIE_sim.obj'
-    verts = read_obj(fname)
-
-    verts = np.asarray(verts)
-
-    import open3d as o3d
-
-    verts_pc = o3d.geometry.PointCloud()
-    verts_pc.points = o3d.utility.Vector3dVector(verts)
-
-    voxel_size = 2.0
-    pcd_down = verts_pc.voxel_down_sample(voxel_size)
-
-    pcd_down.estimate_normals(o3d.geometry.KDTreeSearchParamHybrid(radius=voxel_size * 2.0,
-                                                                   max_nn=30))
-    fpfh = o3d.pipelines.registration.compute_fpfh_feature(pcd_down,
-                                                           o3d.geometry.KDTreeSearchParamHybrid(radius=voxel_size*5.0,
-                                                                                                max_nn=100))
-
-    fpfh_np = np.asarray(fpfh.data)
-    print(f'fpfh shape: {fpfh_np.shape}')
-    import matplotlib.pyplot as plt
-
-    point_i = 5
-    plt.bar(np.arange(0, len(fpfh_np)), fpfh_np[:, point_i])
-    plt.title(f'Histogram descriptor of point @ index {point_i} in the cloud')
-    plt.show()
-
-    o3d.visualization.draw(pcd_down)
+    pass
