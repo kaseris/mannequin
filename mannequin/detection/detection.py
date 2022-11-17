@@ -27,21 +27,20 @@ def detect_keypoints(coords: np.ndarray) -> np.ndarray:
         theta_deg = np.rad2deg(theta)
         if ANGLE_LARGE >= theta_deg >= ANGLE_SMALL:
             key_points.append(current_point)
-        current_point = coords[0]
-        next_point = coords[1]
-        previous = coords[-1]
 
-        l = current_point - previous
-        r = next_point - current_point
-        l_ = np.linalg.norm(l, ord=2)
-        r_ = np.linalg.norm(r, ord=2)
-        cos_theta = np.dot(l / l_, r / r_)
-        theta = np.arccos(cos_theta)
-        theta_deg = np.rad2deg(theta)
+    current_point = coords[0]
+    previous_point = coords[-2]
+    next_point = coords[1]
 
-        if ANGLE_LARGE >= theta_deg >= ANGLE_SMALL:
-            # print(f'A possible corner was detected at: {current_point}.')
-            key_points.append(current_point)
+    l = current_point - previous_point
+    r = next_point - current_point
+    l_ = np.linalg.norm(l, ord=2)
+    r_ = np.linalg.norm(r, ord=2)
+    cos_theta = np.dot(l / l_, r / r_)
+    theta = np.arccos(cos_theta)
+    theta_deg = np.rad2deg(theta)
+    if ANGLE_LARGE >= theta_deg >= ANGLE_SMALL:
+        key_points.append(current_point)
 
     key_points = np.asarray(key_points)
     return key_points

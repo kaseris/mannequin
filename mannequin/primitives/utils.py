@@ -34,10 +34,11 @@ def read_keypoints(seam_structure: dict,
     return np.array(starting_points + end_points)
 
 
-def sort_xy(x: np.ndarray,
-            y: np.ndarray):
+def sort_xy(arr: np.ndarray):
     """Sort a set of coordinates in a counter-clockwise manner.
     """
+    x, y = arr[:, 0], arr[:, 1]
+
     x0 = np.mean(x)
     y0 = np.mean(y)
 
@@ -174,10 +175,10 @@ if __name__ == '__main__':
 
     sides = create_sides_dict(kp=keypoints, pattern_array=pattern_array)
     panel_dict = create_panel_dict(sides=sides, panel_name='front')
-    from primitives import Panel
-    panel = Panel(**panel_dict)
-
-    import matplotlib.pyplot as plt
-
-    plt.scatter(panel.point_cloud[:, 0], panel.point_cloud[:, 1])
-    plt.show()
+    # from primitives import Panel
+    # panel = Panel(**panel_dict)
+    #
+    # import matplotlib.pyplot as plt
+    #
+    # plt.scatter(panel.point_cloud[:, 0], panel.point_cloud[:, 1])
+    # plt.show()

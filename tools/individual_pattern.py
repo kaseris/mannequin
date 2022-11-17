@@ -4,7 +4,9 @@ import os.path as osp
 
 import numpy as np
 
+from mannequin.detection import detect_keypoints
 from mannequin.fileio import read_coords_from_txt
+from mannequin.primitives.utils import sort_xy
 
 
 class IndividualPattern:
@@ -29,7 +31,7 @@ class IndividualPattern:
             if not 'individual patterns' in children:
                 raise FileNotFoundError(f'`individual patterns` directory was not found in this folder.')
 
-            ind_patterns = osp.join(self.garment_dir, 'individual patterns')
+            ind_patterns = osp.join(self.garment_dir, 'individual pattcd erns')
             for f in IndividualPattern.pattern_files:
                 if f in os.listdir(ind_patterns):
                     self.__patterns[f.replace('.xyz', '')] = self.__rearrange(
@@ -50,22 +52,26 @@ class IndividualPattern:
             dist = array - value
             norm = np.linalg.norm(dist, axis=1)
             return norm.argmin()
-
         coords_region = self[region]
         reverse = False
         # Find if CW/CCW
         curve_start = curve[0, :]
         curve_end = curve[-1, :]
-        idx_start = find_nearest(coords_region, curve_start)
-        idx_end = find_nearest(coords_region, curve_end)
-        if idx_end < idx_start:
+        idx_start_ = find_nearest(coords_region, curve_start)
+        idx_end_ = find_nearest(coords_region, curve_end)
+        if idx_end_ < idx_start_:
             reverse = True
 
-        if reverse:
-            curve = curve[::-1]
         region_copy = copy.deepcopy(self[region])
-        region_copy_part1 = region_copy[:idx_start]
-        region_copy_part2 = region_copy[idx_end+1:]
+        if reverse:
+            idx_start = region_copy.shape[0] - idx_end_ - 1
+            idx_end = region_copy.shape[0] - idx_start_ - 1
+            region_copy = region_copy[::-1]
+            region_copy_part1 = region_copy[:idx_end]
+            region_copy_part2 = region_copy[idx_start:]
+        else:
+            region_copy_part1 = region_copy[:idx_start_]
+            region_copy_part2 = region_copy[idx_end_+1:]
         region_new = np.vstack((region_copy_part1, curve, region_copy_part2))
         self.replace_region(region, region_new)
 
