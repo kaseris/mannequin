@@ -31,9 +31,8 @@ class IndividualPattern:
             ind_patterns = osp.join(self.garment_dir, 'individual pattcd erns')
             for f in IndividualPattern.pattern_files:
                 if f in os.listdir(ind_patterns):
-                    self.__patterns[f.replace('.xyz', '')] = self.__rearrange(
-                        read_coords_from_txt(osp.join(ind_patterns, f),
-                                             delimiter=','))
+                    self.__patterns[f.replace('.xyz', '')] = read_coords_from_txt(osp.join(ind_patterns, f),
+                                                                                  delimiter=',')
             with open(osp.join(self.garment_dir, 'category.txt'), 'r') as f:
                 for line in f:
                     self.__parts.append(line.strip()[3:-3])
