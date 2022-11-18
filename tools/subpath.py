@@ -1,4 +1,5 @@
 import copy
+import os
 import os.path as osp
 import re
 
@@ -66,14 +67,17 @@ class SubPath:
         region_new = np.vstack((region_copy_part1, curve_[1:-1], region_copy_part2))
         self.subpath_copy[i_subpath] = region_new
 
-    def export_to_file(self, target_filename):
+    def export_to_file(self, dst_path, target_filename):
         s = ''
         for idx, seam in enumerate(self.subpath_copy):
             l2 = [f'{n:.8f}' for n in seam.flatten()]
             s += '[' + f', '.join(l2) + ']'
             if idx < len(self.subpath_copy):
                 s += '\n'
-        with open(osp.join(self.garment_path, target_filename), 'w') as f:
+        if osp.exists(osp.join(dst_path, target_filename)):
+            os.remove(osp.join(dst_path, target_filename))
+
+        with open(osp.join(dst_path, target_filename), 'w') as f:
             f.write(s)
 
 
