@@ -1,3 +1,4 @@
+import os
 import os.path as osp
 import re
 
@@ -61,11 +62,14 @@ class Seam:
                     reverse = True if index_pair[0] > index_pair[1] else False
         return found_seam, found_sublist, reverse
 
-    def export_to_file(self, target_file: str):
+    def export_to_file(self, dst_path, target_file: str):
         s = ''
         for seam in self.seams_copy:
             s += str(seam) + '\n'
-        with open(osp.join(self.pattern_path, target_file), 'w') as f:
+
+        if osp.exists(osp.join(dst_path, target_file)):
+            os.remove(osp.join(dst_path, target_file))
+        with open(osp.join(dst_path, target_file), 'w') as f:
             f.write(s)
 
     def replace(self, curve: np.ndarray):

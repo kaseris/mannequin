@@ -86,21 +86,20 @@ class App(customtkinter.CTk):
 
         offsets = [(665, 124), (970, 124), (1275, 124), (1580, 124)]
         for i in range(4):
-            setattr(self, f'retrieved_viewport{i+1}', customtkinter.CTkToplevel(master=self))
-            getattr(self, f'retrieved_viewport{i+1}').geometry(f'282x314+{offsets[i][0]}+{offsets[i][1]}')
-            getattr(self, f'retrieved_viewport{i+1}').title(f'Garment {i + 1}')
+            setattr(self, f'retrieved_viewport{i + 1}', customtkinter.CTkToplevel(master=self))
+            getattr(self, f'retrieved_viewport{i + 1}').geometry(f'282x314+{offsets[i][0]}+{offsets[i][1]}')
+            getattr(self, f'retrieved_viewport{i + 1}').title(f'Garment {i + 1}')
             setattr(self, f'canvas{i + 1}', vispy.scene.SceneCanvas(keys='interactive',
                                                                     show=True,
-                                                                    parent=getattr(self, f'retrieved_viewport{i+1}')))
-            getattr(self, f'canvas{i+1}').native.pack(side=tkinter.TOP, fill=tkinter.BOTH, expand=True)
-            setattr(self, f'view{i+1}', getattr(self, f'canvas{i+1}').central_widget.add_view(bgcolor='#4a4949'))
-            getattr(self, f'retrieved_viewport{i+1}').update_idletasks()
-            getattr(self, f'retrieved_viewport{i+1}').wm_transient(self)
-            getattr(self, f'view{i+1}').camera = vispy.scene.cameras.PanZoomCamera(aspect=1)
+                                                                    parent=getattr(self, f'retrieved_viewport{i + 1}')))
+            getattr(self, f'canvas{i + 1}').native.pack(side=tkinter.TOP, fill=tkinter.BOTH, expand=True)
+            setattr(self, f'view{i + 1}', getattr(self, f'canvas{i + 1}').central_widget.add_view(bgcolor='#4a4949'))
+            getattr(self, f'retrieved_viewport{i + 1}').update_idletasks()
+            getattr(self, f'retrieved_viewport{i + 1}').wm_transient(self)
+            getattr(self, f'view{i + 1}').camera = vispy.scene.cameras.PanZoomCamera(aspect=1)
             getattr(self, f'view{i + 1}').camera.flip = (0, 1, 0)
             getattr(self, f'view{i + 1}').camera.set_range()
             getattr(self, f'view{i + 1}').camera.zoom(1.0, (250, 200))
-
 
         # ============ create two frames ============
         # configure grid layout (2x1)
@@ -332,8 +331,8 @@ class App(customtkinter.CTk):
 
     def clear_images(self):
         for i in range(4):
-            getattr(self, f'view{i+1}').parent = None
-            setattr(self, f'view{i+1}', getattr(self, f'canvas{i + 1}').central_widget.add_view(bgcolor='#4a4949'))
+            getattr(self, f'view{i + 1}').parent = None
+            setattr(self, f'view{i + 1}', getattr(self, f'canvas{i + 1}').central_widget.add_view(bgcolor='#4a4949'))
         self.pattern_preview.clear()
 
     def update_images(self):
@@ -455,11 +454,30 @@ class App(customtkinter.CTk):
 
     def on_finalize(self):
         import subprocess
+        import shutil
+        import errno
+
         if self.pattern_path.text != '':
             old_dir = os.getcwd()
+
+            split_path = str(Path(self.editor.path_to_garment).parent).split(osp.sep)
+            subcategory, model = split_path[-2], split_path[-1]
+
+            if osp.exists(osp.join(DATABASE_PATH, '.temp')):
+                shutil.rmtree(osp.join(DATABASE_PATH, '.temp'))
+                # os.mkdir(osp.join(DATABASE_PATH, '.temp'))
+                # os.mkdir(osp.join(DATABASE_PATH, '.temp', subcategory))
+
+                # os.mkdir(osp.join(DATABASE_PATH, '.temp'))
+                # os.mkdir(osp.join(DATABASE_PATH, '.temp', subcategory, model))
+
+            shutil.copytree(Path(self.editor.path_to_garment).parent,
+                            osp.join(DATABASE_PATH, '.temp', subcategory, model))
+            self.editor.export(osp.join(DATABASE_PATH, '.temp', subcategory, model))
+
             os.chdir('/home/kaseris/Documents/iMannequin_3D_Tool_v11_venia/')
             subprocess.run([f'{osp.join(os.getcwd(), "main.out")}',
-                            self.pattern_path.text])
+                            osp.join(DATABASE_PATH, '.temp', subcategory, model)])
             os.chdir(old_dir)
         else:
             pass
