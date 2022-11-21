@@ -17,6 +17,7 @@ class Layout:
         self.frame_espa = None
         self.frame_watermark = None
         self.query_image_placeholder = None
+        self.frame_retrieved = None
 
         self.build()
 
@@ -29,9 +30,16 @@ class Layout:
         self.sidebar = Sidebar(master=self.root, width=200, corner_radius=9)
         self.frame_espa = FrameESPA(master=self.root, corner_radius=9, height=80, fg_color='#ffffff')
         self.frame_watermark = FrameWatermark(master=self.root, corner_radius=9)
+
+        self.frame_retrieved = FrameRetrievedPlaceholder(master=self.frame_watermark, width=1290, height=355)
         self.sidebar.build()
         self.frame_watermark.build()
         self.frame_espa.build()
+        self.frame_retrieved.build()
+
+        self.query_image_placeholder = QueryImagePlaceholder(master=self.root)
+        self.root.bind('<Configure>', self.query_image_placeholder.dragging)
+        self.query_image_placeholder.build()
 
     def run(self):
         self.root.mainloop()
@@ -111,6 +119,46 @@ class FrameQueryImagePlaceholder(customtkinter.CTkFrame):
 
     def build(self):
         self.grid(row=0, column=0)
+
+
+class FrameRetrievedPlaceholder(customtkinter.CTkFrame):
+    def __init__(self, master, width, height):
+        super(FrameRetrievedPlaceholder, self).__init__(master=master, width=width, height=height)
+
+    def build(self):
+        self.pack(side=tkinter.RIGHT, anchor=tkinter.N, pady=(7, 0), padx=(0, 10))
+        
+        
+class QueryImagePlaceholder(customtkinter.CTkToplevel):
+    TOP_LEVEL_OFFSET_X = 285
+    TOP_LEVEL_OFFSET_Y = 70
+
+    def __init__(self, master):
+        super(QueryImagePlaceholder, self).__init__(master=master)
+        self.master = master
+        self.geometry(f"325x318+{QueryImagePlaceholder.TOP_LEVEL_OFFSET_X}+{QueryImagePlaceholder.TOP_LEVEL_OFFSET_Y}")
+        self.title('Query Image')
+        self.wm_transient(master=master)
+        self.drag_id = ''
+
+        self.update_idletasks()
+
+    def build(self):
+        self.mainloop()
+
+    def dragging(self, event):
+        if event.widget is self.master:
+            if self.drag_id == '':
+                pass
+            else:
+                self.master.after_cancel(self.drag_id)
+                x = self.master.winfo_x()
+                y = self.master.winfo_y()
+                self.geometry(f'400x300+{x + QueryImagePlaceholder.TOP_LEVEL_OFFSET_X}+{y + QueryImagePlaceholder.TOP_LEVEL_OFFSET_Y}')
+            self.drag_id = self.master.after(1000, self.stop_drag)
+
+    def stop_drag(self):
+        self.drag_id = ''
 
 
 if __name__ == '__main__':
