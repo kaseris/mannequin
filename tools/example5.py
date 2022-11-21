@@ -120,12 +120,12 @@ class App(customtkinter.CTk):
         self.frame_right_right.grid(row=0, column=2, sticky="nswe", pady=(0, 18), padx=25)
 
         self.frame_lower_right = customtkinter.CTkFrame(master=self, corner_radius=4)
-        self.frame_lower_right.grid(row=1, column=1, sticky="nswe", padx=(25, 0), pady=(0, 18))
+        self.frame_lower_right.grid(row=1, column=1, sticky="nswe", padx=(25, 0), pady=(0, 0))
 
         self.frame_lower_right_right = customtkinter.CTkFrame(master=self,
                                                               width=80,
                                                               corner_radius=4)
-        self.frame_lower_right_right.grid(row=1, column=2, sticky="nswe", pady=(0, 18), padx=25)
+        self.frame_lower_right_right.grid(row=1, column=2, sticky="nswe", pady=(0, 0), padx=25)
 
         # ============ frame_left ============
 
