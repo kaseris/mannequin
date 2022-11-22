@@ -18,8 +18,12 @@ class Layout:
         self.frame_watermark = None
         self.query_image_placeholder = None
         self.frame_retrieved = None
+        self.frame_information = None
+        self.frame_pattern_preview = None
 
         self.build()
+
+        self.shown = False
 
     def build(self):
         self.root = customtkinter.CTk()
@@ -29,20 +33,33 @@ class Layout:
 
         self.sidebar = Sidebar(master=self.root, width=200, corner_radius=9)
         self.frame_espa = FrameESPA(master=self.root, corner_radius=9, height=80, fg_color='#ffffff')
-        self.frame_watermark = FrameWatermark(master=self.root, corner_radius=9)
-
-        self.frame_retrieved = FrameRetrievedPlaceholder(master=self.frame_watermark, width=1290, height=355)
+        self.frame_watermark = FrameWatermark(master=self.root, corner_radius=9, width=1650, height=930)
         self.sidebar.build()
         self.frame_watermark.build()
         self.frame_espa.build()
-        self.frame_retrieved.build()
 
-        self.query_image_placeholder = QueryImagePlaceholder(master=self.root)
-        self.root.bind('<Configure>', self.query_image_placeholder.dragging)
-        self.query_image_placeholder.build()
+    def show(self):
+        if not self.shown:
+            self.frame_retrieved = FrameRetrievedPlaceholder(master=self.frame_watermark, width=1290, height=355)
+            self.frame_retrieved.build()
+            offsets = [(680, 115), (980, 115), (1280, 115), (1580, 115)]
+            for i in range(4):
+                setattr(self, f'win_{i}', customtkinter.CTkToplevel(master=self.root))
+                getattr(self, f'win_{i}').geometry(f'260x260+{offsets[i][0]}+{offsets[i][1]}')
+                getattr(self, f'win_{i}').wm_transient(master=self.root)
+                getattr(self, f'win_{i}').title(f'Retrieved Garment {i + 1}')
+            self.query_image_placeholder = QueryImagePlaceholder(master=self.root)
+            self.root.bind('<Configure>', self.query_image_placeholder.dragging)
+            self.frame_information = FrameGarmentInformation(master=self.frame_watermark, corner_radius=9,
+                                                             width=327, height=553)
+            self.frame_information.build()
 
-    def run(self):
-        self.root.mainloop()
+            self.frame_pattern_preview = FramePatternPreview(master=self.frame_watermark, corner_radius=9,
+                                                             width=1290, height=553)
+            self.frame_pattern_preview.build()
+            self.shown = True
+        else:
+            print('shown')
 
 
 class Sidebar(customtkinter.CTkFrame):
@@ -101,14 +118,20 @@ class FrameESPA(customtkinter.CTkFrame):
 
 
 class FrameWatermark(customtkinter.CTkFrame):
-    def __init__(self, master, corner_radius):
-        super(FrameWatermark, self).__init__(master=master, corner_radius=corner_radius)
+    def __init__(self,
+                 master,
+                 corner_radius,
+                 width,
+                 height):
+        super(FrameWatermark, self).__init__(master=master,
+                                             corner_radius=corner_radius,
+                                             width=width,
+                                             height=height)
         self.img = ImageTk.PhotoImage(Image.open('test_images/imannequin.png').convert('RGBA'))
         self.label = customtkinter.CTkLabel(master=self, image=self.img)
-        # self.canvas = tkinter.Canvas(master=self)
 
     def build(self):
-        self.pack(side=tkinter.TOP, fill=tkinter.BOTH, expand=True, pady=(0, 5))
+        self.pack(side=tkinter.TOP, pady=(0, 5))
         self.pack_propagate(False)
         self.label.place(x=5, y=5, relwidth=1, relheight=1)
 
@@ -124,11 +147,15 @@ class FrameQueryImagePlaceholder(customtkinter.CTkFrame):
 class FrameRetrievedPlaceholder(customtkinter.CTkFrame):
     def __init__(self, master, width, height):
         super(FrameRetrievedPlaceholder, self).__init__(master=master, width=width, height=height)
+        self.label = customtkinter.CTkLabel(master=self, text='Retrieved Garments',
+                                            text_font=('Roboto', 16))
 
     def build(self):
         self.pack(side=tkinter.RIGHT, anchor=tkinter.N, pady=(7, 0), padx=(0, 10))
-        
-        
+        self.pack_propagate(False)
+        self.label.pack(anchor=tkinter.CENTER, side=tkinter.TOP, pady=(7, 0))
+
+
 class QueryImagePlaceholder(customtkinter.CTkToplevel):
     TOP_LEVEL_OFFSET_X = 285
     TOP_LEVEL_OFFSET_Y = 70
@@ -143,9 +170,6 @@ class QueryImagePlaceholder(customtkinter.CTkToplevel):
 
         self.update_idletasks()
 
-    def build(self):
-        self.mainloop()
-
     def dragging(self, event):
         if event.widget is self.master:
             if self.drag_id == '':
@@ -154,13 +178,56 @@ class QueryImagePlaceholder(customtkinter.CTkToplevel):
                 self.master.after_cancel(self.drag_id)
                 x = self.master.winfo_x()
                 y = self.master.winfo_y()
-                self.geometry(f'400x300+{x + QueryImagePlaceholder.TOP_LEVEL_OFFSET_X}+{y + QueryImagePlaceholder.TOP_LEVEL_OFFSET_Y}')
+                self.geometry(f'400x300+{x + QueryImagePlaceholder.TOP_LEVEL_OFFSET_X}+'
+                              f'{y + QueryImagePlaceholder.TOP_LEVEL_OFFSET_Y}')
             self.drag_id = self.master.after(1000, self.stop_drag)
 
     def stop_drag(self):
         self.drag_id = ''
 
 
+class FrameGarmentInformation(customtkinter.CTkFrame):
+    def __init__(self,
+                 **kwargs):
+        super(FrameGarmentInformation, self).__init__(**kwargs)
+
+    def build(self):
+        self.pack(side=tkinter.LEFT, anchor=tkinter.SW, pady=(7, 7), padx=(7, 0))
+
+
+class FramePatternPreview(customtkinter.CTkFrame):
+    def __init__(self,
+                 master,
+                 width,
+                 height,
+                 corner_radius):
+        super(FramePatternPreview, self).__init__(master=master,
+                                                  width=width,
+                                                  height=height,
+                                                  corner_radius=corner_radius)
+
+    def build(self):
+        self.place(x=345, y=370)
+
+
+class UI:
+    def __init__(self, test_shown=False):
+        self.layout = Layout(title='i-Mannequin')
+        self.layout.sidebar.button_upload.configure(command=self.button_press)
+
+        if test_shown:
+            self.__test()
+
+    def run(self):
+        self.layout.root.mainloop()
+
+    def button_press(self):
+        self.layout.show()
+
+    def __test(self):
+        self.layout.show()
+
+
 if __name__ == '__main__':
-    layout = Layout(title='i-Mannequin')
-    layout.run()
+    ui = UI(test_shown=False)
+    ui.run()
