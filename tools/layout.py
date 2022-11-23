@@ -230,6 +230,8 @@ class FrameGarmentInformation(customtkinter.CTkFrame):
                                                              image=ImageTk.PhotoImage(img_resized),
                                                              text='')
 
+        self.button_launch_editor = customtkinter.CTkButton(master=self, text='Launch 3D Editor')
+
     def build(self):
         self.pack(side=tkinter.LEFT, anchor=tkinter.SW, pady=(7, 7), padx=(7, 0))
         self.pack_propagate(False)
@@ -245,9 +247,10 @@ class FrameGarmentInformation(customtkinter.CTkFrame):
         for i in range(4):
             getattr(self, f'text_dummy_{i}').grid(row=i, column=1, sticky=tkinter.E)
 
-        self.frame_image_preview.pack(pady=(10, 0))
+        self.frame_image_preview.pack(pady=(30, 0))
         self.frame_image_preview.pack_propagate(0)
         self.image_garment_preview.pack(anchor=tkinter.CENTER)
+        self.button_launch_editor.pack(pady=(80, 0))
 
 
 class FramePatternPreview(customtkinter.CTkFrame):
@@ -324,5 +327,5 @@ class UI:
 
 
 if __name__ == '__main__':
-    ui = UI(test_shown=False)
+    ui = UI(test_shown=True)
     ui.run()
