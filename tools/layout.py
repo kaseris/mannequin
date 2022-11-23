@@ -219,9 +219,10 @@ class FrameGarmentInformation(customtkinter.CTkFrame):
 
         self.frame_image_preview = customtkinter.CTkFrame(master=self, width=200, height=200)
         img = Image.open('test_images/8.jpg')
-        img_resized = ImageOps.contain(img, (200, 200))
-        self.image_garment_preview = customtkinter.CTkLabel(master=self.frame_image_preview,
-                                                            image=ImageTk.PhotoImage(img_resized))
+        img_resized = ImageOps.contain(img, (190, 190))
+        self.image_garment_preview = customtkinter.CTkButton(master=self.frame_image_preview,
+                                                             image=ImageTk.PhotoImage(img_resized),
+                                                             text='')
 
     def build(self):
         self.pack(side=tkinter.LEFT, anchor=tkinter.SW, pady=(7, 7), padx=(7, 0))
@@ -238,8 +239,9 @@ class FrameGarmentInformation(customtkinter.CTkFrame):
         for i in range(4):
             getattr(self, f'text_dummy_{i}').grid(row=i, column=1, sticky=tkinter.E)
 
-        self.frame_image_preview.pack()
-        self.image_garment_preview.pack()
+        self.frame_image_preview.pack(pady=(10, 0))
+        self.frame_image_preview.pack_propagate(0)
+        self.image_garment_preview.pack(anchor=tkinter.CENTER)
 
 
 class FramePatternPreview(customtkinter.CTkFrame):
