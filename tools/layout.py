@@ -1,14 +1,20 @@
+from typing import Union
+
 import tkinter
 
 import customtkinter
+
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+from matplotlib.figure import Figure
+from matplotlib.collections import LineCollection
+
 from PIL import Image, ImageTk, ImageOps
 
 
 class Layout:
     def __init__(self,
                  title='i-Mannequin',
-                 geometry='1920x1080',
-                 ):
+                 geometry='1920x1080'):
         self.root = None
         self.title = title
         self.geometry = geometry
@@ -254,9 +260,49 @@ class FramePatternPreview(customtkinter.CTkFrame):
                                                   width=width,
                                                   height=height,
                                                   corner_radius=corner_radius)
+        self.label_title = customtkinter.CTkLabel(master=self, text='Pattern Preview',
+                                                  text_font=('Roboto', 16))
+        self.interactive_preview = InteractivePatternViewer(master=self, figsize=(9, 5))
 
     def build(self):
         self.place(x=345, y=370)
+        self.pack_propagate(False)
+        self.label_title.pack(pady=(7, 0))
+        self.interactive_preview.widget.pack(side=tkinter.LEFT, padx=(20, 0))
+        self.interactive_preview.draw()
+
+
+class InteractivePatternViewer:
+    MIN_X = 20.0
+    MIN_Y = 20.0
+    MAX_X = 20.0
+    MAX_Y = 20.0
+
+    def __init__(self,
+                 master: Union[customtkinter.CTkFrame, customtkinter.CTkToplevel],
+                 figsize=(9, 5),
+                 **grid_params):
+        self.f = Figure(figsize=figsize)
+        self.f.patch.set_facecolor('#525252')
+
+        self.pattern_preview = FigureCanvasTkAgg(self.f, master=master)
+
+        # Maybe lines and line dict can be sampled from a Pattern model interface (?)
+        # Will leave it blank for now and test it from a model class
+
+        # TODO: Figure out; Is an editor required?
+
+        # NOTE: An Editor class should contain the selected pattern's data and manage their contents from there.
+        # The interactivePatternViewer is merely an user interface to render the results and listen to events.
+        # A PatternController will listen to these events and subsequently issue a command to the model interface
+        # to manipulate its data.
+
+    @property
+    def widget(self):
+        return self.pattern_preview.get_tk_widget()
+
+    def draw(self):
+        self.f.canvas.draw_idle()
 
 
 class UI:
@@ -278,5 +324,5 @@ class UI:
 
 
 if __name__ == '__main__':
-    ui = UI(test_shown=True)
+    ui = UI(test_shown=False)
     ui.run()
