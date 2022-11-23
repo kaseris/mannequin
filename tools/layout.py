@@ -1,7 +1,7 @@
 import tkinter
 
 import customtkinter
-from PIL import Image, ImageTk
+from PIL import Image, ImageTk, ImageOps
 
 
 class Layout:
@@ -88,7 +88,8 @@ class Sidebar(customtkinter.CTkFrame):
         self.optionmenu = customtkinter.CTkOptionMenu(master=self,
                                                       values=["Light", "Dark", "System"],
                                                       command=self.change_appearance_mode)
-        self.optionmenu.set('Dark')
+        customtkinter.set_appearance_mode("Dark")
+        self.optionmenu.set("Dark")
 
     def build(self):
         self.pack(fill=tkinter.Y, side=tkinter.LEFT, expand=False, padx=(0, 5))
@@ -190,9 +191,55 @@ class FrameGarmentInformation(customtkinter.CTkFrame):
     def __init__(self,
                  **kwargs):
         super(FrameGarmentInformation, self).__init__(**kwargs)
+        self.label = customtkinter.CTkLabel(master=self, text='Information',
+                                            text_font=('Roboto', 16))
+        self.frame_text_placeholder = customtkinter.CTkFrame(master=self)
+
+        self.text_name = customtkinter.CTkLabel(master=self.frame_text_placeholder,
+                                                text='Name',
+                                                text_font=('Roboto', 8),
+                                                justify=tkinter.LEFT)
+        self.text_category = customtkinter.CTkLabel(master=self.frame_text_placeholder,
+                                                    text='Pattern Category',
+                                                    text_font=('Roboto', 8),
+                                                    justify=tkinter.LEFT)
+        self.text_n_patterns = customtkinter.CTkLabel(master=self.frame_text_placeholder,
+                                                      text='Number of Patterns',
+                                                      text_font=('Roboto', 8),
+                                                      justify=tkinter.LEFT)
+        self.text_pattern_path = customtkinter.CTkLabel(master=self.frame_text_placeholder,
+                                                        text='Pattern Path',
+                                                        text_font=('Roboto', 8),
+                                                        justify=tkinter.LEFT)
+        for i in range(4):
+            setattr(self, f'text_dummy_{i}', customtkinter.CTkEntry(master=self.frame_text_placeholder,
+                                                                    justify=tkinter.RIGHT,
+                                                                    text_font=('Roboto', 8),
+                                                                    placeholder_text=f'dummy_{str(i)}'))
+
+        self.frame_image_preview = customtkinter.CTkFrame(master=self, width=200, height=200)
+        img = Image.open('test_images/8.jpg')
+        img_resized = ImageOps.contain(img, (200, 200))
+        self.image_garment_preview = customtkinter.CTkLabel(master=self.frame_image_preview,
+                                                            image=ImageTk.PhotoImage(img_resized))
 
     def build(self):
         self.pack(side=tkinter.LEFT, anchor=tkinter.SW, pady=(7, 7), padx=(7, 0))
+        self.pack_propagate(False)
+        self.label.pack(anchor=tkinter.CENTER, pady=(5, 0))
+
+        self.frame_text_placeholder.pack()
+        self.frame_text_placeholder.grid_columnconfigure(0, weight=1)
+        self.frame_text_placeholder.grid_columnconfigure(1, weight=3)
+        self.text_name.grid(row=0, column=0, sticky=tkinter.W)
+        self.text_category.grid(row=1, column=0, sticky=tkinter.W)
+        self.text_n_patterns.grid(row=2, column=0, sticky=tkinter.W)
+        self.text_pattern_path.grid(row=3, column=0, sticky=tkinter.W)
+        for i in range(4):
+            getattr(self, f'text_dummy_{i}').grid(row=i, column=1, sticky=tkinter.E)
+
+        self.frame_image_preview.pack()
+        self.image_garment_preview.pack()
 
 
 class FramePatternPreview(customtkinter.CTkFrame):
@@ -229,5 +276,5 @@ class UI:
 
 
 if __name__ == '__main__':
-    ui = UI(test_shown=False)
+    ui = UI(test_shown=True)
     ui.run()
