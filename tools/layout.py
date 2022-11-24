@@ -53,7 +53,6 @@ class Layout:
             for i in range(4):
                 setattr(self, f'win_{i}', customtkinter.CTkToplevel(master=self.root))
                 getattr(self, f'win_{i}').geometry(f'260x260+{offsets[i][0]}+{offsets[i][1]}')
-                # getattr(self, f'win_{i}').wm_transient(master=self.root)
                 getattr(self, f'win_{i}').title(f'Retrieved Garment {i + 1}')
             self.query_image_placeholder = QueryImagePlaceholder(master=self.root)
             self.root.bind('<Configure>', self.query_image_placeholder.dragging)
@@ -65,7 +64,8 @@ class Layout:
                                                              width=1290, height=553)
             self.frame_pattern_preview.build()
             self.frame_pattern_editor = FrameEditorView(master=self.frame_pattern_preview,
-                                                        fg_color='#ff00ff', width=300, height=500)
+                                                        fg_color='#343638', width=300, height=500,
+                                                        bg_color='#343638')
             self.frame_pattern_editor.build()
 
             self.shown = True
@@ -319,9 +319,12 @@ class InteractivePatternViewer:
 
 '''Pattern editor states are defined below.'''
 
-EDITOR_FONT_NORMAL = ('Roboto', 11, 'bold')
-
-
+EDITOR_FONT_NORMAL = ('Roboto', 11)
+EDITOR_FONT_BOLD = ('Roboto', 11, 'bold')
+EDITOR_FONT_BOLD_WARNING = {'text_font': ('Roboto', 11, 'bold'),
+                            'text_color': '#dbb240'}
+EDITOR_FONT_BOLD_NOT_AVAILABLE = {'text_font': ('Roboto', 11, 'bold'),
+                                  'text_color': '#cf1d11'}
 class EditorStateNoPatternSelected:
     def __init__(self, master):
         self.master = master
@@ -341,8 +344,9 @@ class EditorStateGarmentBlouseSelected:
 
     def build(self):
         self.label = customtkinter.CTkLabel(master=self.master, text='Click on the pattern\nyou want to change',
-                                            text_font=EDITOR_FONT_NORMAL)
-        self.choices = customtkinter.CTkLabel(master=self.master, text='\u2022 Front\n\u2022 Back')
+                                            text_font=EDITOR_FONT_BOLD)
+        self.choices = customtkinter.CTkLabel(master=self.master, text='\u2022 Front\n\u2022 Back',
+                                              text_font=EDITOR_FONT_NORMAL)
         self.label.pack()
         self.choices.pack()
 
@@ -363,7 +367,7 @@ class EditorStateGarmentDressSelected:
     def build(self):
         self.label = customtkinter.CTkLabel(master=self.master,
                                             text='Click on the pattern\nyou want to change',
-                                            text_font=EDITOR_FONT_NORMAL)
+                                            text_font=EDITOR_FONT_BOLD)
         self.choices = customtkinter.CTkLabel(master=self.master,
                                               text='\u2022 Front\n\u2022 Back\n\u2022 Skirt Front\n\u2022'
                                                    ' Skirt Back',
@@ -388,7 +392,7 @@ class EditorStateGarmentSkirtSelected:
     def build(self):
         self.label = customtkinter.CTkLabel(master=self.master,
                                             text='Click on the pattern\nyou want to change',
-                                            text_font=EDITOR_FONT_NORMAL)
+                                            text_font=EDITOR_FONT_BOLD)
         self.choices = customtkinter.CTkLabel(master=self.master,
                                               text='\u2022 Skirt Front\n\u2022 Skirt Back',
                                               text_font=EDITOR_FONT_NORMAL)
@@ -403,6 +407,70 @@ class EditorStateGarmentSkirtSelected:
         self.master = None
 
 
+class ArmholeCollarOptions:
+    def __init__(self, master):
+        self.master = master
+        self.rb1 = None
+        self.rb2 = None
+        self.button_search = None
+        self.button_replace = None
+
+    def build(self):
+        self.rb1 = customtkinter.CTkRadioButton(master=self.master, text='Armhole', text_font=EDITOR_FONT_NORMAL)
+        self.rb2 = customtkinter.CTkRadioButton(master=self.master, text='Collar', text_font=EDITOR_FONT_NORMAL)
+        self.button_search = customtkinter.CTkButton(master=self.master, text='Search Alternative Curves',
+                                                     text_font=EDITOR_FONT_NORMAL)
+        self.button_replace = customtkinter.CTkButton(master=self.master, text='Replace Curve',
+                                                      text_font=EDITOR_FONT_NORMAL)
+
+        self.rb1.pack()
+        self.rb2.pack()
+        self.button_search.pack()
+        self.button_replace.pack()
+
+    def destroy(self):
+        self.rb1.pack_forget()
+        self.rb2.pack_forget()
+        self.button_search.pack_forget()
+        self.button_replace.pack_forget()
+        self.rb1 = None
+        self.rb2 = None
+        self.button_search = None
+        self.button_replace = None
+        self.master = None
+
+
+class SkirtOptions:
+    def __init__(self, master):
+        self.master = master
+        self.label = None
+
+    def build(self):
+        self.label = customtkinter.CTkLabel(master=self.master, text='The sides region will\n'
+                                                                     'automatically be changed!',
+                                            **EDITOR_FONT_BOLD_WARNING)
+        self.label.pack()
+
+    def destroy(self):
+        self.label.pack_forget()
+        self.label = None
+
+
+class NotAvailableOptions:
+    def __init__(self, master):
+        self.master = master
+        self.label = None
+
+    def build(self):
+        self.label = customtkinter.CTkLabel(master=self.master, text='You cannot change\nthis pattern!',
+                                            **EDITOR_FONT_BOLD_NOT_AVAILABLE)
+        self.label.pack()
+
+    def destroy(self):
+        self.label.pack_forget()
+        self.label = None
+
+
 class FrameEditorView(customtkinter.CTkFrame):
     """Code related to the pattern editor"""
     __STATES_ENUM = {'NO_GARMENT_SELECTED':         EditorStateNoPatternSelected,
@@ -410,19 +478,28 @@ class FrameEditorView(customtkinter.CTkFrame):
                      'GARMENT_DRESS_SELECTED':      EditorStateGarmentDressSelected,
                      'GARMENT_SKIRT_SELECTED':      EditorStateGarmentSkirtSelected}
 
+    __OPTIONS_ENUM = {'front':      ArmholeCollarOptions,
+                      'back':       ArmholeCollarOptions,
+                      'skirt':      SkirtOptions,
+                      'collar':     NotAvailableOptions,
+                      'sleeve l':   NotAvailableOptions,
+                      'sleeve r':   NotAvailableOptions,
+                      'cuff l':     NotAvailableOptions,
+                      'cuff r':     NotAvailableOptions}
+
     def __init__(self, master, **kwargs):
         super(FrameEditorView, self).__init__(**kwargs)
         self.__state = None
         self.__widget = None
+        self.__options_widget = None
         self.initialize_view_state()
         self.__build_layout_from_state()
 
     def initialize_view_state(self):
-        self.__state = 'NO_GARMENT_SELECTED' # Needs to be implemented
+        self.__state = 'NO_GARMENT_SELECTED'
 
     def __build_layout_from_state(self):
-        # The following two statements do not exist for now.
-        self.__widget = FrameEditorView.__STATES_ENUM[self.__state](self)
+        self.__widget = FrameEditorView.__STATES_ENUM[self.__state](master=self)
         self.__widget.build()
 
     def __update(self, state):
@@ -438,12 +515,25 @@ class FrameEditorView(customtkinter.CTkFrame):
         self.place(x=1500, y=415)
         self.pack_propagate(False)
         self.__widget.build()
+        if self.__options_widget is not None:
+            self.__options_widget.build()
 
     def update_state(self, state):
         self.__update(state)
 
     def reset(self):
         self.__update('NO_GARMENT_SELECTED')
+        if self.__options_widget is not None:
+            self.__options_widget.destroy()
+            self.__options_widget = None
+
+    def update_option(self, option):
+        if self.__options_widget is not None:
+            self.__options_widget.destroy()
+
+        if self.__state != 'NO_GARMENT_SELECTED':
+            self.__options_widget = FrameEditorView.__OPTIONS_ENUM[option](master=self)
+            self.__options_widget.build()
 
 
 class UI:
@@ -464,9 +554,9 @@ class UI:
     def __test(self):
         self.layout.show()
         self.layout.frame_pattern_editor.update_state('GARMENT_BLOUSE_SELECTED')
-        self.layout.frame_pattern_editor.update_state('GARMENT_DRESS_SELECTED')
-        self.layout.frame_pattern_editor.update_state('GARMENT_SKIRT_SELECTED')
-        self.layout.frame_pattern_editor.update_state('NO_GARMENT_SELECTED')
+        self.layout.frame_pattern_editor.update_option('collar')
+        self.layout.frame_pattern_editor.reset()
+        self.layout.frame_pattern_editor.update_state('GARMENT_BLOUSE_SELECTED')
 
 
 if __name__ == '__main__':
