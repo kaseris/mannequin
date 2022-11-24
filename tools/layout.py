@@ -26,6 +26,7 @@ class Layout:
         self.frame_retrieved = None
         self.frame_information = None
         self.frame_pattern_preview = None
+        self.frame_pattern_editor = None
 
         self.build()
 
@@ -52,7 +53,7 @@ class Layout:
             for i in range(4):
                 setattr(self, f'win_{i}', customtkinter.CTkToplevel(master=self.root))
                 getattr(self, f'win_{i}').geometry(f'260x260+{offsets[i][0]}+{offsets[i][1]}')
-                getattr(self, f'win_{i}').wm_transient(master=self.root)
+                # getattr(self, f'win_{i}').wm_transient(master=self.root)
                 getattr(self, f'win_{i}').title(f'Retrieved Garment {i + 1}')
             self.query_image_placeholder = QueryImagePlaceholder(master=self.root)
             self.root.bind('<Configure>', self.query_image_placeholder.dragging)
@@ -63,6 +64,10 @@ class Layout:
             self.frame_pattern_preview = FramePatternPreview(master=self.frame_watermark, corner_radius=9,
                                                              width=1290, height=553)
             self.frame_pattern_preview.build()
+            self.frame_pattern_editor = FrameEditorView(master=self.frame_pattern_preview,
+                                                        fg_color='#ff00ff', width=300, height=500)
+            self.frame_pattern_editor.build()
+
             self.shown = True
         else:
             print('shown')
@@ -283,8 +288,7 @@ class InteractivePatternViewer:
 
     def __init__(self,
                  master: Union[customtkinter.CTkFrame, customtkinter.CTkToplevel],
-                 figsize=(9, 5),
-                 **grid_params):
+                 figsize=(9, 5)):
         self.f = Figure(figsize=figsize)
         self.f.patch.set_facecolor('#525252')
 
@@ -304,11 +308,146 @@ class InteractivePatternViewer:
     def widget(self):
         return self.pattern_preview.get_tk_widget()
 
-    def draw(self):
-        self.f.canvas.draw_idle()
+    def draw(self,
+             data=None):
+        # Need to fill in the method that takes the data from the Model interface and then draws it.
+        if data is not None:
+            self.f.canvas.draw_idle()
+        else:
+            pass
+
+
+'''Pattern editor states are defined below.'''
+
+EDITOR_FONT_NORMAL = ('Roboto', 11, 'bold')
+
+
+class EditorStateNoPatternSelected:
+    def __init__(self, master):
+        self.master = master
+
+    def build(self):
+        pass
+
+    def destroy(self):
+        pass
+
+
+class EditorStateGarmentBlouseSelected:
+    def __init__(self, master):
+        self.master = master
+        self.label = None
+        self.choices = None
+
+    def build(self):
+        self.label = customtkinter.CTkLabel(master=self.master, text='Click on the pattern\nyou want to change',
+                                            text_font=EDITOR_FONT_NORMAL)
+        self.choices = customtkinter.CTkLabel(master=self.master, text='\u2022 Front\n\u2022 Back')
+        self.label.pack()
+        self.choices.pack()
+
+    def destroy(self):
+        self.label.pack_forget()
+        self.choices.pack_forget()
+        self.label = None
+        self.choices = None
+        self.master = None
+
+
+class EditorStateGarmentDressSelected:
+    def __init__(self, master):
+        self.master = master
+        self.label = None
+        self.choices = None
+
+    def build(self):
+        self.label = customtkinter.CTkLabel(master=self.master,
+                                            text='Click on the pattern\nyou want to change',
+                                            text_font=EDITOR_FONT_NORMAL)
+        self.choices = customtkinter.CTkLabel(master=self.master,
+                                              text='\u2022 Front\n\u2022 Back\n\u2022 Skirt Front\n\u2022'
+                                                   ' Skirt Back',
+                                              text_font=EDITOR_FONT_NORMAL)
+        self.label.pack()
+        self.choices.pack()
+
+    def destroy(self):
+        self.label.pack_forget()
+        self.choices.pack_forget()
+        self.label = None
+        self.choices = None
+        self.master = None
+
+
+class EditorStateGarmentSkirtSelected:
+    def __init__(self, master):
+        self.master = master
+        self.label = None
+        self.choices = None
+
+    def build(self):
+        self.label = customtkinter.CTkLabel(master=self.master,
+                                            text='Click on the pattern\nyou want to change',
+                                            text_font=EDITOR_FONT_NORMAL)
+        self.choices = customtkinter.CTkLabel(master=self.master,
+                                              text='\u2022 Skirt Front\n\u2022 Skirt Back',
+                                              text_font=EDITOR_FONT_NORMAL)
+        self.label.pack()
+        self.choices.pack()
+
+    def destroy(self):
+        self.label.pack_forget()
+        self.choices.pack_forget()
+        self.label = None
+        self.choices = None
+        self.master = None
+
+
+class FrameEditorView(customtkinter.CTkFrame):
+    """Code related to the pattern editor"""
+    __STATES_ENUM = {'NO_GARMENT_SELECTED':         EditorStateNoPatternSelected,
+                     'GARMENT_BLOUSE_SELECTED':     EditorStateGarmentBlouseSelected,
+                     'GARMENT_DRESS_SELECTED':      EditorStateGarmentDressSelected,
+                     'GARMENT_SKIRT_SELECTED':      EditorStateGarmentSkirtSelected}
+
+    def __init__(self, master, **kwargs):
+        super(FrameEditorView, self).__init__(**kwargs)
+        self.__state = None
+        self.__widget = None
+        self.initialize_view_state()
+        self.__build_layout_from_state()
+
+    def initialize_view_state(self):
+        self.__state = 'NO_GARMENT_SELECTED' # Needs to be implemented
+
+    def __build_layout_from_state(self):
+        # The following two statements do not exist for now.
+        self.__widget = FrameEditorView.__STATES_ENUM[self.__state](self)
+        self.__widget.build()
+
+    def __update(self, state):
+        self.__state = state
+        self.__clear()
+        self.__widget = FrameEditorView.__STATES_ENUM[self.__state](master=self)
+        self.__widget.build()
+
+    def __clear(self):
+        self.__widget.destroy()
+
+    def build(self):
+        self.place(x=1500, y=415)
+        self.pack_propagate(False)
+        self.__widget.build()
+
+    def update_state(self, state):
+        self.__update(state)
+
+    def reset(self):
+        self.__update('NO_GARMENT_SELECTED')
 
 
 class UI:
+    """The main user interface. All layout components will be created here."""
     def __init__(self, test_shown=False):
         self.layout = Layout(title='i-Mannequin')
         self.layout.sidebar.button_upload.configure(command=self.button_press)
@@ -324,6 +463,10 @@ class UI:
 
     def __test(self):
         self.layout.show()
+        self.layout.frame_pattern_editor.update_state('GARMENT_BLOUSE_SELECTED')
+        self.layout.frame_pattern_editor.update_state('GARMENT_DRESS_SELECTED')
+        self.layout.frame_pattern_editor.update_state('GARMENT_SKIRT_SELECTED')
+        self.layout.frame_pattern_editor.update_state('NO_GARMENT_SELECTED')
 
 
 if __name__ == '__main__':
