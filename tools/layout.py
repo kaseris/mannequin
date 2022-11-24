@@ -297,7 +297,7 @@ class InteractivePatternViewer:
         # Maybe lines and line dict can be sampled from a Pattern model interface (?)
         # Will leave it blank for now and test it from a model class
 
-        # TODO: Figure out; Is an editor required?
+        # Figure out; Is an editor required? YES
 
         # NOTE: An Editor class should contain the selected pattern's data and manage their contents from there.
         # The interactivePatternViewer is merely an user interface to render the results and listen to events.
@@ -325,6 +325,8 @@ EDITOR_FONT_BOLD_WARNING = {'text_font': ('Roboto', 11, 'bold'),
                             'text_color': '#dbb240'}
 EDITOR_FONT_BOLD_NOT_AVAILABLE = {'text_font': ('Roboto', 11, 'bold'),
                                   'text_color': '#cf1d11'}
+
+
 class EditorStateNoPatternSelected:
     def __init__(self, master):
         self.master = master
@@ -560,5 +562,5 @@ class UI:
 
 
 if __name__ == '__main__':
-    ui = UI(test_shown=True)
+    ui = UI(test_shown=False)
     ui.run()
