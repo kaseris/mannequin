@@ -6,7 +6,7 @@ import customtkinter
 
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
-from matplotlib.collections import LineCollection
+# from matplotlib.collections import LineCollection
 
 from PIL import Image, ImageTk, ImageOps
 
@@ -115,6 +115,8 @@ class Sidebar(customtkinter.CTkFrame):
 
     def change_appearance_mode(self, new_appearance):
         customtkinter.set_appearance_mode(new_appearance)
+        #TODO: Also change the pattern editor's frame color
+        #TODO: Set the pattern preview's facecolor
 
 
 class FrameESPA(customtkinter.CTkFrame):
@@ -253,7 +255,7 @@ class FrameGarmentInformation(customtkinter.CTkFrame):
             getattr(self, f'text_dummy_{i}').grid(row=i, column=1, sticky=tkinter.E)
 
         self.frame_image_preview.pack(pady=(30, 0))
-        self.frame_image_preview.pack_propagate(0)
+        self.frame_image_preview.pack_propagate(False)
         self.image_garment_preview.pack(anchor=tkinter.CENTER)
         self.button_launch_editor.pack(pady=(80, 0))
 
@@ -278,6 +280,9 @@ class FramePatternPreview(customtkinter.CTkFrame):
         self.label_title.pack(pady=(7, 0))
         self.interactive_preview.widget.pack(side=tkinter.LEFT, padx=(20, 0))
         self.interactive_preview.draw()
+
+    def draw_pattern(self, data):
+        self.interactive_preview.draw(data)
 
 
 class InteractivePatternViewer:
@@ -312,7 +317,29 @@ class InteractivePatternViewer:
              data=None):
         # Need to fill in the method that takes the data from the Model interface and then draws it.
         if data is not None:
+            self.f.clear()
+            self.f.subplots_adjust(top=1, bottom=0, right=1, left=0, hspace=0, wspace=0)
+            self.f.tight_layout()
+            ax = self.f.add_subplot(autoscale_on=False)
+            # For now, use a hand-picked value
+            ax.set_facecolor('#343638')
+            ax.axis('off')
+            ax.set_aspect('equal')
+            ax.set_xticks([])
+            ax.set_yticks([])
+            for collection in data:
+                ax.add_collection(collection.line)
+
+            x_min = min([l.min_x for l in data])
+            y_min = min([l.min_y for l in data])
+
+            x_max = max([l.max_x for l in data])
+            y_max = max([l.max_y for l in data])
+
+            ax.set_xlim([x_min - InteractivePatternViewer.MIN_Y, x_max + InteractivePatternViewer.MAX_X])
+            ax.set_ylim([y_min - InteractivePatternViewer.MIN_Y, y_max + InteractivePatternViewer.MAX_Y])
             self.f.canvas.draw_idle()
+
         else:
             pass
 
