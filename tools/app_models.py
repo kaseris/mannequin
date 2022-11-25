@@ -63,10 +63,12 @@ class IndividualPatternModel:
 
 
 class QueryModel:
-    def __init__(self):
+    def __init__(self,
+                 external_controller):
         self.__query = None
         # Obj/img?
         self.__kind = None
+        self.__external_controller = external_controller
 
     def build(self):
         if Path(self.__query).suffix == '.obj' or Path(self.__query).suffix == '.stl':
@@ -77,8 +79,29 @@ class QueryModel:
     def update(self, filename):
         self.__query = filename
         self.build()
-        print(f'Updated. Current query: {self.__query}\nKind: {self.__kind}')
+        self.notify_controller()
 
     def clear(self):
         self.__query = None
         self.__kind = None
+
+    @property
+    def kind(self):
+        return self.__kind
+
+    @property
+    def filename(self):
+        return self.__query
+
+    def notify_controller(self):
+        r"""
+        Notifies the controller that an event happened. For example if the user requests for the data to be cleared,
+        the method will let the controller know that the model data is now empty and issue a command to its bound view
+        to clear the drawn data. Same applies for the change of data.
+
+        Args:
+            controller (Any): A controller that binds a IndividualPatternModel instance to a view.
+            event_type (str): An event that lets the controller take a specific action to the corresponding view.
+                Types can be: `clear`, `data_updated`.
+        """
+        self.__external_controller.update_view()

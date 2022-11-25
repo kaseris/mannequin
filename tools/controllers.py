@@ -68,7 +68,7 @@ class ControllerPatternModelPreview:
         pass
 
 
-class QueryObjectModelUploadButtonController:
+class ControllerQueryObjectModelUploadButton:
     def __init__(self):
         self.model : QueryModel = None
         self.view : customtkinter.CTkButton = None
@@ -96,3 +96,23 @@ class QueryObjectModelUploadButtonController:
                                                                  ("STL Files", "*.stl"),
                                                                  ("all files", "*.*")))
         self.model.update(filename=filename)
+
+
+class ControllerQueryObjectQueryViewer:
+    def __init__(self):
+        self.model: QueryModel = None
+        self.view = None
+
+    def couple(self,
+               model: QueryModel,
+               view: Sidebar):
+        r"""
+        Couples a model instance to a view. For example we can couple the individual pattern's model to the
+        interactive preview view. Any events that happen in the interactive preview, are sent to the controller and in
+        turn, the controller updates the model's data.
+        """
+        self.model = model
+        self.view = view
+
+    def update_view(self):
+        self.view.draw(self.model.kind, self.model.filename)

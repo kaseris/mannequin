@@ -1,17 +1,22 @@
 from typing import Union
 
 import tkinter
+import vispy
+import vispy.scene as scene
+from vispy.io import imread
 
 import customtkinter
 
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
-# from matplotlib.collections import LineCollection
 
 from PIL import Image, ImageTk, ImageOps
 
+from query_mvc import Mesh
 
 class Layout:
+    VISPY_CANVAS_BG_COLOR_DARK = '#4a4949'
+
     def __init__(self,
                  title='i-Mannequin',
                  geometry='1920x1080'):
@@ -184,6 +189,13 @@ class QueryImagePlaceholder(customtkinter.CTkToplevel):
 
         self.update_idletasks()
 
+        self.vispy_canvas = scene.SceneCanvas(keys='interactive',
+                                              show=True,
+                                              parent=self)
+        self.vispy_canvas.native.pack(side=tkinter.TOP, fill=tkinter.BOTH,
+                                      expand=True)
+        self.vispy_view = self.vispy_canvas.central_widget.add_view(bgcolor=Layout.VISPY_CANVAS_BG_COLOR_DARK)
+
     def dragging(self, event):
         if event.widget is self.master:
             if self.drag_id == '':
@@ -198,6 +210,29 @@ class QueryImagePlaceholder(customtkinter.CTkToplevel):
 
     def stop_drag(self):
         self.drag_id = ''
+
+    def draw(self, kind, fname):
+        self.clear()
+        if kind == 'image':
+            im = imread(fname)
+            im_obj = vispy.scene.visuals.Image(im, parent=self.vispy_view)
+            self.vispy_view.add(im_obj)
+            self.vispy_view.camera = vispy.scene.PanZoomCamera(aspect=1)
+            self.vispy_view.camera.flip = (0, 1, 0)
+            self.vispy_view.camera.set_range()
+            self.vispy_view.camera.zoom(1., (250, 250))
+        else:
+            vertices, faces, _, _ = vispy.io.read_mesh(fname)
+            m = Mesh(vertices=vertices, faces=faces)
+            mesh = vispy.scene.visuals.Mesh(vertices=m.vertices,
+                                            shading='smooth',
+                                            faces=m.faces)
+            self.vispy_view.add(mesh)
+            self.vispy_view.camera = vispy.scene.TurntableCamera(elevation=90, azimuth=0, roll=90)
+
+    def clear(self):
+        self.vispy_view.parent = None
+        self.vispy_view = self.vispy_canvas.central_widget.add_view(bgcolor=Layout.VISPY_CANVAS_BG_COLOR_DARK)
 
 
 class FrameGarmentInformation(customtkinter.CTkFrame):
