@@ -1,4 +1,3 @@
-import os
 import os.path as osp
 
 import uuid
@@ -121,15 +120,18 @@ class Retrieval2DModel:
         self.__garments_path = []
         self.__retrieved = []
         self.__ind = []
+        self.__paths = []
+
+        self.__external_controller = None
 
     def build(self):
         self.extractor = load_test_model()
         self.deep_feats, self.color_feats, self.labels = load_feat_db()
         self.clf = load_kmeans_model()
-        with open(osp.join(self.database_path, 'paths/garment_paths.txt'), 'r') as f:
-            for line in f:
-                l = line.strip().split(', ')
-                self.__garments_path.append(osp.join(self.database_path, l[0][2:]))
+        with open(osp.join(self.database_path, 'paths/garment_paths.txt'), 'r') as _f:
+            for line in _f:
+                _l = line.strip().split(', ')
+                self.__garments_path.append(osp.join(self.database_path, _l[0][2:]))
 
     def infer(self, query_img):
         _features = dump_single_feature(query_img, self.extractor)
@@ -139,6 +141,13 @@ class Retrieval2DModel:
     def update(self, res, ind):
         self.__retrieved = res
         self.__ind = ind
+        self.__paths = list(map(lambda _x: str(Path(_x[0]).parent), res))
+        self.notify_controller()
+
+    def clear(self):
+        self.__retrieved = []
+        self.__ind = []
+        self.__paths = []
 
     @property
     def retrieved(self):
@@ -147,3 +156,13 @@ class Retrieval2DModel:
     @property
     def ind(self):
         return self.__ind
+
+    @property
+    def paths(self):
+        return self.__paths
+
+    def set_controller(self, controller):
+        self.__external_controller = controller
+
+    def notify_controller(self):
+        self.__external_controller.draw()

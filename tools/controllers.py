@@ -2,7 +2,7 @@ import tkinter.filedialog
 
 import customtkinter
 
-from app_models import IndividualPatternModel, QueryModel
+from app_models import IndividualPatternModel, QueryModel, Retrieval2DModel
 from layout import FramePatternPreview, Sidebar
 from interactive_mpl import InteractiveLine
 
@@ -142,3 +142,24 @@ class ControllerRetrievalApplyButton:
                 pass
         else:
             print('No query')
+
+
+class ControllerRetrievedViewportViews:
+    def __init__(self):
+        self.model: Retrieval2DModel = None
+
+    def couple(self,
+               model: Retrieval2DModel,
+               viewlist):
+        self.model = model
+        for idx, view in enumerate(viewlist):
+            setattr(self, f'view_{idx + 1}', view)
+        self.model.set_controller(self)
+
+    def bind(self):
+        pass
+
+    def draw(self):
+        for idx, retrieved in enumerate(self.model.retrieved):
+            # TODO: For now I placed 'image' but it should be inferred automatically.
+            getattr(self, f'view_{idx + 1}').draw('image', retrieved[0])

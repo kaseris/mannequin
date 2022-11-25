@@ -57,11 +57,9 @@ class Layout:
         if not self.shown:
             self.frame_retrieved = FrameRetrievedPlaceholder(master=self.frame_watermark, width=1290, height=355)
             self.frame_retrieved.build()
-            offsets = [(680, 115), (980, 115), (1280, 115), (1580, 115)]
             for i in range(4):
-                setattr(self, f'win_{i}', customtkinter.CTkToplevel(master=self.root))
-                getattr(self, f'win_{i}').geometry(f'260x260+{offsets[i][0]}+{offsets[i][1]}')
-                getattr(self, f'win_{i}').title(f'Retrieved Garment {i + 1}')
+                setattr(self, f'retrieved_viewport_{i+1}', RetrievedViewportPlaceholder(i, '260x260',
+                                                                                        master=self.root))
             self.query_image_placeholder = QueryImagePlaceholder(master=self.root)
             self.root.bind('<Configure>', self.query_image_placeholder.dragging)
             self.frame_information = FrameGarmentInformation(master=self.frame_watermark, corner_radius=9,
@@ -81,6 +79,62 @@ class Layout:
             print('shown')
 
 
+class RetrievedViewportPlaceholder(customtkinter.CTkToplevel):
+    OFFSETS = [(680, 115), (980, 115), (1280, 115), (1580, 115)]
+
+    def __init__(self, offset_index, geometry, **kwargs):
+        super(RetrievedViewportPlaceholder, self).__init__(**kwargs)
+        self.geometry(geometry+f'+{RetrievedViewportPlaceholder.OFFSETS[offset_index][0]}'
+                               f'+{RetrievedViewportPlaceholder.OFFSETS[offset_index][1]}')
+        self.title(f'Retrieved Garment: {offset_index + 1}')
+        self.wm_transient(self.master)
+        self.drag_id = ''
+        self.vispy_canvas = scene.SceneCanvas(keys='interactive',
+                                              show=True,
+                                              parent=self)
+        self.vispy_canvas.native.pack(side=tkinter.TOP, fill=tkinter.BOTH,
+                                      expand=True)
+        self.vispy_view = self.vispy_canvas.central_widget.add_view(bgcolor=Layout.VISPY_CANVAS_BG_COLOR_DARK)
+
+    def draw(self, kind, fname):
+        self.clear()
+        if kind == 'image':
+            im = imread(fname)
+            im_obj = vispy.scene.visuals.Image(im, parent=self.vispy_view)
+            self.vispy_view.add(im_obj)
+            self.vispy_view.camera = vispy.scene.PanZoomCamera(aspect=1)
+            self.vispy_view.camera.flip = (0, 1, 0)
+            self.vispy_view.camera.set_range()
+            self.vispy_view.camera.zoom(1., (250, 250))
+        else:
+            vertices, faces, _, _ = vispy.io.read_mesh(fname)
+            m = Mesh(vertices=vertices, faces=faces)
+            mesh = vispy.scene.visuals.Mesh(vertices=m.vertices,
+                                            shading='smooth',
+                                            faces=m.faces)
+            self.vispy_view.add(mesh)
+            self.vispy_view.camera = vispy.scene.TurntableCamera(elevation=90, azimuth=0, roll=90)
+
+    def clear(self):
+        self.vispy_view.parent = None
+        self.vispy_view = self.vispy_canvas.central_widget.add_view(bgcolor=Layout.VISPY_CANVAS_BG_COLOR_DARK)
+
+    def dragging(self, event):
+        if event.widget is self.master:
+            if self.drag_id == '':
+                pass
+            else:
+                self.master.after_cancel(self.drag_id)
+                x = self.master.winfo_x()
+                y = self.master.winfo_y()
+                self.geometry(f'400x300+{x + QueryImagePlaceholder.TOP_LEVEL_OFFSET_X}+'
+                              f'{y + QueryImagePlaceholder.TOP_LEVEL_OFFSET_Y}')
+            self.drag_id = self.master.after(1000, self.stop_drag)
+
+    def stop_drag(self):
+        self.drag_id = ''
+
+
 class Sidebar(customtkinter.CTkFrame):
     def __init__(self,
                  master,
@@ -98,7 +152,7 @@ class Sidebar(customtkinter.CTkFrame):
         self.instructions = customtkinter.CTkLabel(self,
                                                    text="\u2022 Left Click on"
                                                         " a retrieved image\n to view garmen"
-                                                        "t's infomation\n and its respective patterns.\n\n"
+                                                        "t's information\n and its respective patterns.\n\n"
                                                         "\u2022 Double-click on the pattern\n preview panel to view"
                                                         " similar\n garments.",
                                                    justify='left',
