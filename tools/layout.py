@@ -305,13 +305,14 @@ class InteractivePatternViewer:
 
         self.pattern_preview = FigureCanvasTkAgg(self.f, master=master)
         self.ax = None
+        self.annot = None
         # Maybe lines and line dict can be sampled from a Pattern model interface (?)
         # Will leave it blank for now and test it from a model class
 
         # Figure out; Is an editor required? YES
 
         # NOTE: An Editor class should contain the selected pattern's data and manage their contents from there.
-        # The interactivePatternViewer is merely an user interface to render the results and listen to events.
+        # The InteractivePatternViewer is merely an user interface to render the results and listen to events.
         # A PatternController will listen to these events and subsequently issue a command to the model interface
         # to manipulate its data.
 
@@ -340,11 +341,8 @@ class InteractivePatternViewer:
                                           arrowprops=dict(arrowstyle="->"))
             self.annot.set_visible(False)
 
-            try:
-                for collection in data:
-                    self.ax.add_collection(collection.line)
-            except ValueError:
-                pass
+            for collection in data:
+                self.ax.add_collection(collection.line)
 
             x_min = min([l.min_x for l in data])
             y_min = min([l.min_y for l in data])
