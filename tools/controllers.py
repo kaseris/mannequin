@@ -116,3 +116,29 @@ class ControllerQueryObjectQueryViewer:
 
     def update_view(self):
         self.view.draw(self.model.kind, self.model.filename)
+
+
+class ControllerRetrievalApplyButton:
+    def __init__(self, model_query: QueryModel):
+        self.model_2d_retrieval = None
+        self.model_3d_retrieval = None
+        self.view = None
+
+        self.model_query = model_query
+
+    def couple(self, view, model2d, model3d):
+        self.view = view
+        self.model_2d_retrieval = model2d
+        self.model_3d_retrieval = model3d
+
+    def bind(self, callback_fn):
+        self.view.configure(command=callback_fn)
+
+    def on_apply(self):
+        if not self.model_query.is_empty:
+            if self.model_query.kind == 'image':
+                self.model_2d_retrieval.infer(self.model_query.filename)
+            else:
+                pass
+        else:
+            print('No query')

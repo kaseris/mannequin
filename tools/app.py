@@ -2,17 +2,19 @@ from app_models import *
 from controllers import *
 from layout import UI
 
-import tkinter.filedialog as filedialog
-
 
 class App:
+    DATABASE_PATH = '/home/kaseris/Documents/database'
+
     def __init__(self):
         self.ui = UI(test_shown=True)
         self.pat_model = IndividualPatternModel()
-        self.query_model = None
-        self.controller_pat_preview = None
-        self.controller_query_sidebar = None
-        self.controller_query_query_viewer = None
+        self.query_model                    = None
+        self.retrieval_model_2d             = None
+        self.controller_pat_preview         = None
+        self.controller_query_sidebar       = None
+        self.controller_query_query_viewer  = None
+        self.controller_retrieval_apply     = None
 
     def run(self):
         self.setup()
@@ -24,7 +26,16 @@ class App:
         self.controller_pat_preview = ControllerPatternModelPreview()
         self.controller_query_sidebar = ControllerQueryObjectModelUploadButton()
         self.controller_query_query_viewer = ControllerQueryObjectQueryViewer()
+
         self.query_model = QueryModel(external_controller=self.controller_query_query_viewer)
+        self.retrieval_model_2d = Retrieval2DModel(App.DATABASE_PATH)
+        self.retrieval_model_2d.build()
+
+        self.controller_retrieval_apply = ControllerRetrievalApplyButton(self.query_model)
+        self.controller_retrieval_apply.couple(self.ui.layout.query_image_placeholder.button_apply,
+                                               self.retrieval_model_2d, None)
+        self.controller_retrieval_apply.bind(self.controller_retrieval_apply.on_apply)
+
         self.controller_query_query_viewer.couple(self.query_model, self.ui.layout.query_image_placeholder)
         self.controller_pat_preview.couple(self.pat_model, self.ui.layout.frame_pattern_preview)
         self.controller_query_sidebar.couple(self.query_model, self.ui.layout.sidebar.button_upload)

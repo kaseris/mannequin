@@ -1,3 +1,6 @@
+import os
+import os.path as osp
+
 import uuid
 
 from os import PathLike
@@ -6,6 +9,8 @@ from typing import Union
 
 from individual_pattern import IndividualPattern
 from interactive_mpl import InteractiveLine
+
+from mannequin.retrieval2d.retrieval_dimis import *
 
 
 class IndividualPatternModel:
@@ -93,15 +98,52 @@ class QueryModel:
     def filename(self):
         return self.__query
 
+    @property
+    def is_empty(self):
+        return self.__query is None
+
     def notify_controller(self):
         r"""
         Notifies the controller that an event happened. For example if the user requests for the data to be cleared,
         the method will let the controller know that the model data is now empty and issue a command to its bound view
         to clear the drawn data. Same applies for the change of data.
-
-        Args:
-            controller (Any): A controller that binds a IndividualPatternModel instance to a view.
-            event_type (str): An event that lets the controller take a specific action to the corresponding view.
-                Types can be: `clear`, `data_updated`.
         """
         self.__external_controller.update_view()
+
+
+class Retrieval2DModel:
+    def __init__(self, database_path):
+        self.extractor = None
+        self.deep_feats, self.color_feats, self.labels = None, None, None
+        self.clf = None
+        self.database_path = database_path
+
+        self.__garments_path = []
+        self.__retrieved = []
+        self.__ind = []
+
+    def build(self):
+        self.extractor = load_test_model()
+        self.deep_feats, self.color_feats, self.labels = load_feat_db()
+        self.clf = load_kmeans_model()
+        with open(osp.join(self.database_path, 'paths/garment_paths.txt'), 'r') as f:
+            for line in f:
+                l = line.strip().split(', ')
+                self.__garments_path.append(osp.join(self.database_path, l[0][2:]))
+
+    def infer(self, query_img):
+        _features = dump_single_feature(query_img, self.extractor)
+        res, ind = naive_query(_features, self.deep_feats, self.color_feats, self.__garments_path, retrieval_top_n=4)
+        self.update(res, ind)
+
+    def update(self, res, ind):
+        self.__retrieved = res
+        self.__ind = ind
+
+    @property
+    def retrieved(self):
+        return self.__retrieved
+
+    @property
+    def ind(self):
+        return self.__ind

@@ -14,6 +14,9 @@ from PIL import Image, ImageTk, ImageOps
 
 from query_mvc import Mesh
 
+vispy.use(app='tkinter')
+
+
 class Layout:
     VISPY_CANVAS_BG_COLOR_DARK = '#4a4949'
 
@@ -188,6 +191,11 @@ class QueryImagePlaceholder(customtkinter.CTkToplevel):
         self.drag_id = ''
 
         self.update_idletasks()
+
+        self.frame = customtkinter.CTkFrame(master=self)
+        self.frame.pack(side=tkinter.TOP, anchor=tkinter.CENTER)
+        self.button_apply = customtkinter.CTkButton(master=self.frame, text='Apply')
+        self.button_apply.pack()
 
         self.vispy_canvas = scene.SceneCanvas(keys='interactive',
                                               show=True,
