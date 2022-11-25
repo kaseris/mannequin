@@ -1,5 +1,3 @@
-from functools import partial
-
 from app_models import IndividualPatternModel
 from layout import FramePatternPreview
 from interactive_mpl import InteractiveLine
@@ -37,6 +35,7 @@ class ControllerPatternModelPreview:
 
     def on_hover(self, event):
         if event.inaxes == self.view.interactive_preview.ax:
+            self.view.interactive_preview.annot.set_visible(False)
             for interactive_line in self.model.interactive_lines:
                 cont, ind = interactive_line.line.contains(event)
                 if interactive_line.state == 1:
@@ -45,6 +44,16 @@ class ControllerPatternModelPreview:
                 if cont:
                     interactive_line.set_state(2)
                     interactive_line.line.set_color(InteractiveLine.normal_selected_color[2])
+
+                    x, y = event.x, event.y
+                    self.view.interactive_preview.annot.xy = (x, y)
+                    self.view.interactive_preview.annot.xyann = (x + 20, y + 20)
+
+                    self.view.interactive_preview.annot.set_text(interactive_line.label)
+                    self.view.interactive_preview.annot.get_bbox_patch().set_facecolor('#5577ad')
+                    self.view.interactive_preview.annot.get_bbox_patch().set_alpha(0.8)
+                    self.view.interactive_preview.annot.set_visible(True)
+
                     self.view.interactive_preview.f.canvas.draw_idle()
                 else:
                     interactive_line.set_state(0)

@@ -334,6 +334,12 @@ class InteractivePatternViewer:
             self.ax.set_aspect('equal')
             self.ax.set_xticks([])
             self.ax.set_yticks([])
+
+            self.annot = self.ax.annotate("", (0, 0), (10, 10), xycoords='figure pixels',
+                                          bbox=dict(boxstyle="round", fc="w"),
+                                          arrowprops=dict(arrowstyle="->"))
+            self.annot.set_visible(False)
+
             try:
                 for collection in data:
                     self.ax.add_collection(collection.line)
