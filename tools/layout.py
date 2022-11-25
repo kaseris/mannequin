@@ -304,7 +304,7 @@ class InteractivePatternViewer:
         self.f.patch.set_facecolor('#525252')
 
         self.pattern_preview = FigureCanvasTkAgg(self.f, master=master)
-
+        self.ax = None
         # Maybe lines and line dict can be sampled from a Pattern model interface (?)
         # Will leave it blank for now and test it from a model class
 
@@ -327,16 +327,16 @@ class InteractivePatternViewer:
             self.f.clear()
             self.f.subplots_adjust(top=1, bottom=0, right=1, left=0, hspace=0, wspace=0)
             self.f.tight_layout()
-            ax = self.f.add_subplot(autoscale_on=False)
+            self.ax = self.f.add_subplot(autoscale_on=False)
             # For now, use a hand-picked value
-            ax.set_facecolor('#343638')
-            ax.axis('off')
-            ax.set_aspect('equal')
-            ax.set_xticks([])
-            ax.set_yticks([])
+            self.ax.set_facecolor('#343638')
+            self.ax.axis('off')
+            self.ax.set_aspect('equal')
+            self.ax.set_xticks([])
+            self.ax.set_yticks([])
             try:
                 for collection in data:
-                    ax.add_collection(collection.line)
+                    self.ax.add_collection(collection.line)
             except ValueError:
                 pass
 
@@ -346,8 +346,8 @@ class InteractivePatternViewer:
             x_max = max([l.max_x for l in data])
             y_max = max([l.max_y for l in data])
 
-            ax.set_xlim([x_min - InteractivePatternViewer.MIN_Y, x_max + InteractivePatternViewer.MAX_X])
-            ax.set_ylim([y_min - InteractivePatternViewer.MIN_Y, y_max + InteractivePatternViewer.MAX_Y])
+            self.ax.set_xlim([x_min - InteractivePatternViewer.MIN_Y, x_max + InteractivePatternViewer.MAX_X])
+            self.ax.set_ylim([y_min - InteractivePatternViewer.MIN_Y, y_max + InteractivePatternViewer.MAX_Y])
             self.f.canvas.draw_idle()
         else:
             self.clear()
@@ -356,13 +356,13 @@ class InteractivePatternViewer:
         self.f.clf()
         self.f.subplots_adjust(top=1, bottom=0, right=1, left=0, hspace=0, wspace=0)
         self.f.tight_layout()
-        ax = self.f.add_subplot(autoscale_on=False, xlim=(0, 0), ylim=(0, 0))
-        ax.set_facecolor('#343638')
-        ax.set_xticks([])
-        ax.set_yticks([])
-        ax.axis('tight')
-        ax.axis('off')
-        ax.set_aspect('equal')
+        self.ax = self.f.add_subplot(autoscale_on=False, xlim=(0, 0), ylim=(0, 0))
+        self.ax.set_facecolor('#343638')
+        self.ax.set_xticks([])
+        self.ax.set_yticks([])
+        self.ax.axis('tight')
+        self.ax.axis('off')
+        self.ax.set_aspect('equal')
         self.f.canvas.draw_idle()
 
 

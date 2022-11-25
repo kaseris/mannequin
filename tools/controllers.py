@@ -35,5 +35,21 @@ class ControllerPatternModelPreview:
                 interactive_line.line.set_color(InteractiveLine.normal_selected_color[1])
         self.view.interactive_preview.f.canvas.draw_idle()
 
+    def on_hover(self, event):
+        if event.inaxes == self.view.interactive_preview.ax:
+            for interactive_line in self.model.interactive_lines:
+                cont, ind = interactive_line.line.contains(event)
+                if interactive_line.state == 1:
+                    continue
+
+                if cont:
+                    interactive_line.set_state(2)
+                    interactive_line.line.set_color(InteractiveLine.normal_selected_color[2])
+                    self.view.interactive_preview.f.canvas.draw_idle()
+                else:
+                    interactive_line.set_state(0)
+                    interactive_line.line.set_color(InteractiveLine.normal_selected_color[0])
+                    self.view.interactive_preview.f.canvas.draw_idle()
+
     def on_key_press(self, event):
         pass
