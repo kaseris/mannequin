@@ -284,6 +284,12 @@ class FramePatternPreview(customtkinter.CTkFrame):
     def draw_pattern(self, data):
         self.interactive_preview.draw(data)
 
+    def bind_event(self, event_type, callback_fn):
+        self.interactive_preview.f.canvas.mpl_connect(event_type, callback_fn)
+
+    def clear(self):
+        self.interactive_preview.clear()
+
 
 class InteractivePatternViewer:
     MIN_X = 20.0
@@ -314,7 +320,8 @@ class InteractivePatternViewer:
         return self.pattern_preview.get_tk_widget()
 
     def draw(self,
-             data=None):
+             data=None,
+             controller_fn=None):
         # Need to fill in the method that takes the data from the Model interface and then draws it.
         if data is not None:
             self.f.clear()
@@ -327,8 +334,11 @@ class InteractivePatternViewer:
             ax.set_aspect('equal')
             ax.set_xticks([])
             ax.set_yticks([])
-            for collection in data:
-                ax.add_collection(collection.line)
+            try:
+                for collection in data:
+                    ax.add_collection(collection.line)
+            except ValueError:
+                pass
 
             x_min = min([l.min_x for l in data])
             y_min = min([l.min_y for l in data])
@@ -339,9 +349,21 @@ class InteractivePatternViewer:
             ax.set_xlim([x_min - InteractivePatternViewer.MIN_Y, x_max + InteractivePatternViewer.MAX_X])
             ax.set_ylim([y_min - InteractivePatternViewer.MIN_Y, y_max + InteractivePatternViewer.MAX_Y])
             self.f.canvas.draw_idle()
-
         else:
-            pass
+            self.clear()
+
+    def clear(self):
+        self.f.clf()
+        self.f.subplots_adjust(top=1, bottom=0, right=1, left=0, hspace=0, wspace=0)
+        self.f.tight_layout()
+        ax = self.f.add_subplot(autoscale_on=False, xlim=(0, 0), ylim=(0, 0))
+        ax.set_facecolor('#343638')
+        ax.set_xticks([])
+        ax.set_yticks([])
+        ax.axis('tight')
+        ax.axis('off')
+        ax.set_aspect('equal')
+        self.f.canvas.draw_idle()
 
 
 '''Pattern editor states are defined below.'''
