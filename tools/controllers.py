@@ -1,5 +1,9 @@
-from app_models import IndividualPatternModel
-from layout import FramePatternPreview
+import tkinter.filedialog
+
+import customtkinter
+
+from app_models import IndividualPatternModel, QueryModel
+from layout import FramePatternPreview, Sidebar
 from interactive_mpl import InteractiveLine
 
 
@@ -62,3 +66,33 @@ class ControllerPatternModelPreview:
 
     def on_key_press(self, event):
         pass
+
+
+class QueryObjectModelUploadButtonController:
+    def __init__(self):
+        self.model : QueryModel = None
+        self.view : customtkinter.CTkButton = None
+
+    def couple(self,
+               model: QueryModel,
+               view: Sidebar):
+        r"""
+        Couples a model instance to a view. For example we can couple the individual pattern's model to the
+        interactive preview view. Any events that happen in the interactive preview, are sent to the controller and in
+        turn, the controller updates the model's data.
+        """
+        self.model = model
+        self.view = view
+
+    def bind_(self, event_type, callback_fn):
+        """Associate an event type to a callback function."""
+        self.view.configure(command=callback_fn)
+
+    def open_file(self):
+        filename = tkinter.filedialog.askopenfilename(title="Select file to open",
+                                                      filetypes=(("JPEG Image", "*.jpg"),
+                                                                 ("JPEG Image", "*.jpeg"),
+                                                                 ("OBJ files", "*.obj"),
+                                                                 ("STL Files", "*.stl"),
+                                                                 ("all files", "*.*")))
+        self.model.update(filename=filename)

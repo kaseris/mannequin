@@ -1,6 +1,7 @@
 import uuid
 
 from os import PathLike
+from pathlib import Path
 from typing import Union
 
 from individual_pattern import IndividualPattern
@@ -59,3 +60,25 @@ class IndividualPatternModel:
                 Types can be: `clear`, `data_updated`.
         """
         pass
+
+
+class QueryModel:
+    def __init__(self):
+        self.__query = None
+        # Obj/img?
+        self.__kind = None
+
+    def build(self):
+        if Path(self.__query).suffix == '.obj' or Path(self.__query).suffix == '.stl':
+            self.__kind = 'mesh'
+        else:
+            self.__kind = 'image'
+
+    def update(self, filename):
+        self.__query = filename
+        self.build()
+        print(f'Updated. Current query: {self.__query}\nKind: {self.__kind}')
+
+    def clear(self):
+        self.__query = None
+        self.__kind = None
