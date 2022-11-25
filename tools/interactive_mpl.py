@@ -300,7 +300,6 @@ class InteractivePatternPreview:
                             arrowprops=dict(arrowstyle="->"))
         annot.set_visible(False)
 
-
         x_min = min([l.min_x for l in self.__data])
         y_min = min([l.min_y for l in self.__data])
 
@@ -407,7 +406,7 @@ class InteractiveLine:
                                       [230 / 255, 67 / 255, 67 / 255, 1.0],
                                       [255 / 255, 190 / 255, 59 / 255, 1.0]])
 
-    def __init__(self, data, id):
+    def __init__(self, data, id, label):
         self.data = data
         # In order to perform a proper curve replacement, we need the alternative curve pairs to be stored in arrays of
         # shape [num_regions x num_points_per_region x 2]. Otherwise, the replacement will be wrong, especially in the
@@ -419,6 +418,7 @@ class InteractiveLine:
         self.__selected = False
         self.__line.set_picker(True)
         self.__id = id
+        self.__label = label
         setattr(self.__line, 'ID', self.__id)
 
         '''States:
@@ -471,6 +471,10 @@ class InteractiveLine:
     @property
     def data_array(self):
         return self.__data_array_np
+
+    @property
+    def label(self):
+        return self.__label
 
 
 if __name__ == '__main__':
