@@ -1,3 +1,4 @@
+import copy
 import os.path as osp
 
 from pathlib import Path
@@ -335,13 +336,14 @@ class FrameGarmentInformation(customtkinter.CTkFrame):
                                                                     justify=tkinter.RIGHT,
                                                                     text_font=('Roboto', 8),
                                                                     placeholder_text=f''))
-
+        self.img_resized = None
         self.frame_image_preview = customtkinter.CTkFrame(master=self, width=200, height=200)
-        img = Image.open('test_images/8.jpg')
-        img_resized = ImageOps.contain(img, (190, 190))
-        self.image_garment_preview = customtkinter.CTkButton(master=self.frame_image_preview,
-                                                             image=ImageTk.PhotoImage(img_resized),
-                                                             text='')
+        self.default_img = Image.open('test_images/8.jpg')
+
+        self.image_garment_preview = customtkinter.CTkLabel(master=self.frame_image_preview,
+                                                            text='',
+                                                            width=200,
+                                                            height=200)
 
         self.button_launch_editor = customtkinter.CTkButton(master=self, text='Launch 3D Editor')
 
@@ -368,8 +370,9 @@ class FrameGarmentInformation(customtkinter.CTkFrame):
     def update_thumbnail(self, path):
         image_path = osp.join(path, str(Path(path).name)) + '.jpg'
         img_obj = Image.open(image_path)
-        img_resized = ImageOps.contain(img_obj, (190, 190))
-        self.image_garment_preview.configure(image=ImageTk.PhotoImage(img_resized))
+        self.img_resized = ImageTk.PhotoImage(ImageOps.contain(img_obj, (190, 190)))
+        self.image_garment_preview.configure(image=self.img_resized)
+        self.image_garment_preview.pack()
 
 
 class FramePatternPreview(customtkinter.CTkFrame):

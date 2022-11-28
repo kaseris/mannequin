@@ -212,4 +212,4 @@ class ControllerRetrievedPatternPreview:
                 category = cat
         self.information_view.text_dummy_2.configure(placeholder_text=str(category.title()), state='normal')
         self.information_view.text_dummy_3.configure(placeholder_text=str(self.model.paths[idx - 1]), state='normal')
-        # self.information_view.update_thumbnail(self.model.paths[idx - 1])
+        self.information_view.update_thumbnail(self.model.paths[idx - 1])
