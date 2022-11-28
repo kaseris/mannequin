@@ -20,6 +20,9 @@ class IndividualPatternModel:
         self.__category = None
         self.__n_patterns = None
         self.__name = None
+        self.__selected_region = None
+
+        self.__editor_controller = None
 
     def build(self, garment_dir: Union[str, PathLike]):
         self.__ind_pat = IndividualPattern(garment_dir=garment_dir)
@@ -39,8 +42,9 @@ class IndividualPatternModel:
         self.__category = None
         self.__n_patterns = None
         self.__name = None
+        self.__selected_region = None
         self.__interactive_lines = []
-        self.notify_controller(event_type='data_cleared')
+        # self.notify_controller()
 
     def __build_interactive_lines(self):
         # TODO: I could use the __ind_pat.pattern keys to label the interactive lines
@@ -64,7 +68,6 @@ class IndividualPatternModel:
                 category = cat
         self.__category = category
         self.__build_interactive_lines()
-        self.notify_controller(event_type='data_updated')
 
     @property
     def ind_pat(self):
@@ -86,20 +89,24 @@ class IndividualPatternModel:
     def category(self):
         return self.__category
 
-    def notify_controller(self,
-                          controller=None,
-                          event_type=None):
+    def set_selected_region(self, region):
+        self.__selected_region = region
+        self.notify_controller()
+
+    @property
+    def selected_region(self):
+        return self.__selected_region
+
+    def set_controller(self, controller):
+        self.__editor_controller = controller
+
+    def notify_controller(self):
         r"""
         Notifies the controller that an event happened. For example if the user requests for the data to be cleared,
         the method will let the controller know that the model data is now empty and issue a command to its bound view
         to clear the drawn data. Same applies for the change of data.
-
-        Args:
-            controller (Any): A controller that binds a IndividualPatternModel instance to a view.
-            event_type (str): An event that lets the controller take a specific action to the corresponding view.
-                Types can be: `clear`, `data_updated`.
         """
-        pass
+        self.__editor_controller.on_notify()
 
 
 class QueryModel:

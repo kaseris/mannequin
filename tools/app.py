@@ -16,6 +16,7 @@ class App:
         self.controller_query_query_viewer = None
         self.controller_retrieval_apply = None
         self.controller_retrieved_views = None
+        self.controller_ind_pat_editor = None
 
     def run(self):
         self.setup()
@@ -49,6 +50,8 @@ class App:
                                self.ui.layout.frame_information)
             _controller.bind('<Button-1>', _controller.update_information)
 
+        self.controller_ind_pat_editor = ControllerIndividualPatternEditor()
+        self.controller_ind_pat_editor.couple(self.pat_model, self.ui.layout.frame_pattern_editor)
         self.controller_query_query_viewer.couple(self.query_model, self.ui.layout.query_image_placeholder)
         self.controller_pat_preview.couple(self.pat_model, self.ui.layout.frame_pattern_preview)
         self.controller_query_sidebar.couple(self.query_model, self.ui.layout.sidebar.button_upload)

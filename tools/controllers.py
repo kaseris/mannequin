@@ -208,3 +208,18 @@ class ControllerRetrievedPatternPreview:
         self.information_view.text_dummy_2.configure(placeholder_text=self.pat_model.category, state='normal')
         self.information_view.text_dummy_3.configure(placeholder_text=str(self.model.paths[idx - 1]), state='normal')
         self.information_view.update_thumbnail(self.model.paths[idx - 1])
+
+
+class ControllerIndividualPatternEditor:
+    def __init__(self):
+        self.model = None
+        self.view = None
+
+    def couple(self, model, view):
+        self.model = model
+        self.view = view
+        self.model.set_controller(self)
+
+    def on_notify(self):
+        self.view.update_state(f'GARMENT_{self.model.category.upper()}_SELECTED')
+        self.view.update_option(self.model.selected_region)

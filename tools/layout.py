@@ -648,14 +648,15 @@ class FrameEditorView(customtkinter.CTkFrame):
                      'GARMENT_DRESS_SELECTED':      EditorStateGarmentDressSelected,
                      'GARMENT_SKIRT_SELECTED':      EditorStateGarmentSkirtSelected}
 
-    __OPTIONS_ENUM = {'front':      ArmholeCollarOptions,
-                      'back':       ArmholeCollarOptions,
-                      'skirt':      SkirtOptions,
-                      'collar':     NotAvailableOptions,
-                      'sleeve l':   NotAvailableOptions,
-                      'sleeve r':   NotAvailableOptions,
-                      'cuff l':     NotAvailableOptions,
-                      'cuff r':     NotAvailableOptions}
+    __OPTIONS_ENUM = {'front': ArmholeCollarOptions,
+                      'back': ArmholeCollarOptions,
+                      'skirt front': SkirtOptions,
+                      'skirt back': SkirtOptions,
+                      'collar': NotAvailableOptions,
+                      'sleevel': NotAvailableOptions,
+                      'sleever': NotAvailableOptions,
+                      'cuffl': NotAvailableOptions,
+                      'cuffr': NotAvailableOptions}
 
     def __init__(self, master, **kwargs):
         super(FrameEditorView, self).__init__(**kwargs)
@@ -723,10 +724,7 @@ class UI:
 
     def __test(self):
         self.layout.show()
-        self.layout.frame_pattern_editor.update_state('GARMENT_BLOUSE_SELECTED')
-        self.layout.frame_pattern_editor.update_option('collar')
-        self.layout.frame_pattern_editor.reset()
-        self.layout.frame_pattern_editor.update_state('GARMENT_BLOUSE_SELECTED')
+        self.layout.frame_pattern_editor.update_state('NO_GARMENT_SELECTED')
 
 
 if __name__ == '__main__':
