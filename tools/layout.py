@@ -1,3 +1,6 @@
+import os.path as osp
+
+from pathlib import Path
 from typing import Union
 
 import tkinter
@@ -331,7 +334,7 @@ class FrameGarmentInformation(customtkinter.CTkFrame):
             setattr(self, f'text_dummy_{i}', customtkinter.CTkEntry(master=self.frame_text_placeholder,
                                                                     justify=tkinter.RIGHT,
                                                                     text_font=('Roboto', 8),
-                                                                    placeholder_text=f'dummy_{str(i)}'))
+                                                                    placeholder_text=f''))
 
         self.frame_image_preview = customtkinter.CTkFrame(master=self, width=200, height=200)
         img = Image.open('test_images/8.jpg')
@@ -361,6 +364,12 @@ class FrameGarmentInformation(customtkinter.CTkFrame):
         self.frame_image_preview.pack_propagate(False)
         self.image_garment_preview.pack(anchor=tkinter.CENTER)
         self.button_launch_editor.pack(pady=(80, 0))
+
+    def update_thumbnail(self, path):
+        image_path = osp.join(path, str(Path(path).name)) + '.jpg'
+        img_obj = Image.open(image_path)
+        img_resized = ImageOps.contain(img_obj, (190, 190))
+        self.image_garment_preview.configure(image=ImageTk.PhotoImage(img_resized))
 
 
 class FramePatternPreview(customtkinter.CTkFrame):
