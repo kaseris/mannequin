@@ -17,13 +17,28 @@ class IndividualPatternModel:
     def __init__(self):
         self.__ind_pat = None
         self.__interactive_lines = []
+        self.__category = None
+        self.__n_patterns = None
+        self.__name = None
 
     def build(self, garment_dir: Union[str, PathLike]):
         self.__ind_pat = IndividualPattern(garment_dir=garment_dir)
+        self.__name = Path(garment_dir).name
+        _ind_patterns_path = osp.join(garment_dir, 'individual patterns')
+        _n_pats = len(os.listdir(_ind_patterns_path)) // 2
+        self.__n_patterns = _n_pats
+        categories = ['dress', 'blouse', 'skirt']
+        for cat in categories:
+            if cat in garment_dir:
+                category = cat
+        self.__category = category
         self.__build_interactive_lines()
 
     def clear(self):
         self.__ind_pat = None
+        self.__category = None
+        self.__n_patterns = None
+        self.__name = None
         self.__interactive_lines = []
         self.notify_controller(event_type='data_cleared')
 
@@ -39,6 +54,15 @@ class IndividualPatternModel:
     def update(self, new_garment_dir):
         self.clear()
         self.__ind_pat = IndividualPattern(new_garment_dir)
+        self.__name = Path(new_garment_dir).name
+        _ind_patterns_path = osp.join(new_garment_dir, 'individual patterns')
+        _n_pats = len(os.listdir(_ind_patterns_path)) // 2
+        self.__n_patterns = _n_pats
+        categories = ['dress', 'blouse', 'skirt']
+        for cat in categories:
+            if cat in new_garment_dir:
+                category = cat
+        self.__category = category
         self.__build_interactive_lines()
         self.notify_controller(event_type='data_updated')
 
@@ -49,6 +73,18 @@ class IndividualPatternModel:
     @property
     def interactive_lines(self):
         return self.__interactive_lines
+
+    @property
+    def name(self):
+        return self.__name
+
+    @property
+    def n_patterns(self):
+        return self.__n_patterns
+
+    @property
+    def category(self):
+        return self.__category
 
     def notify_controller(self,
                           controller=None,

@@ -199,17 +199,10 @@ class ControllerRetrievedPatternPreview:
         garment_dir = self.model.paths[idx - 1]
         self.pat_model.update(garment_dir)
         self.pattern_preview.draw_pattern(self.pat_model.interactive_lines)
-        self.information_view.text_dummy_0.configure(placeholder_text=str(Path(self.model.paths[idx - 1]).name),
+        self.information_view.text_dummy_0.configure(placeholder_text=str(self.pat_model.name),
                                                      state='normal')
-        ind_patterns_path = osp.join(self.model.paths[idx - 1], 'individual patterns')
-        # Workaround
-        n_patterns = len(os.listdir(ind_patterns_path)) // 2
-        self.information_view.text_dummy_1.configure(placeholder_text=str(n_patterns),
+        self.information_view.text_dummy_1.configure(placeholder_text=str(self.pat_model.n_patterns),
                                                      state='normal')
-        categories = ['dress', 'blouse', 'skirt']
-        for cat in categories:
-            if cat in self.model.paths[idx - 1]:
-                category = cat
-        self.information_view.text_dummy_2.configure(placeholder_text=str(category.title()), state='normal')
+        self.information_view.text_dummy_2.configure(placeholder_text=self.pat_model.category, state='normal')
         self.information_view.text_dummy_3.configure(placeholder_text=str(self.model.paths[idx - 1]), state='normal')
         self.information_view.update_thumbnail(self.model.paths[idx - 1])
