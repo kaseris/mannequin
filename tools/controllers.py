@@ -37,9 +37,11 @@ class ControllerPatternModelPreview:
             if ind != id:
                 interactive_line.set_state(0)
                 interactive_line.line.set_color(InteractiveLine.normal_selected_color[0])
+
             else:
                 interactive_line.set_state(1)
                 interactive_line.line.set_color(InteractiveLine.normal_selected_color[1])
+                self.model.set_selected_region(interactive_line.label)
         self.view.interactive_preview.f.canvas.draw_idle()
 
     def on_hover(self, event):
@@ -194,7 +196,7 @@ class ControllerRetrievedPatternPreview:
         # Need to update some other views, i.e. the pattern info view and the editor view. For now, I only update the
         # pattern preview view.
 
-    def say_hi(self, event):
+    def update_information(self, event):
         idx = self.view.idx
         garment_dir = self.model.paths[idx - 1]
         self.pat_model.update(garment_dir)

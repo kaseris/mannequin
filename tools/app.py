@@ -9,13 +9,13 @@ class App:
     def __init__(self):
         self.ui = UI(test_shown=True)
         self.pat_model = IndividualPatternModel()
-        self.query_model                    = None
-        self.retrieval_model_2d             = None
-        self.controller_pat_preview         = None
-        self.controller_query_sidebar       = None
-        self.controller_query_query_viewer  = None
-        self.controller_retrieval_apply     = None
-        self.controller_retrieved_views     = None
+        self.query_model = None
+        self.retrieval_model_2d = None
+        self.controller_pat_preview = None
+        self.controller_query_sidebar = None
+        self.controller_query_query_viewer = None
+        self.controller_retrieval_apply = None
+        self.controller_retrieved_views = None
 
     def run(self):
         self.setup()
@@ -47,7 +47,7 @@ class App:
             _controller.couple(self.retrieval_model_2d, getattr(self.ui.layout, f'retrieved_viewport_{i+1}'),
                                self.ui.layout.frame_pattern_preview, self.pat_model,
                                self.ui.layout.frame_information)
-            _controller.bind('<Button-1>', _controller.say_hi)
+            _controller.bind('<Button-1>', _controller.update_information)
 
         self.controller_query_query_viewer.couple(self.query_model, self.ui.layout.query_image_placeholder)
         self.controller_pat_preview.couple(self.pat_model, self.ui.layout.frame_pattern_preview)
