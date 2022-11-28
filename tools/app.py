@@ -7,7 +7,7 @@ class App:
     DATABASE_PATH = '/home/kaseris/Documents/database'
 
     def __init__(self):
-        self.ui = UI(test_shown=False)
+        self.ui = UI(test_shown=True)
         self.pat_model = IndividualPatternModel()
         self.query_model                    = None
         self.retrieval_model_2d             = None
@@ -18,7 +18,7 @@ class App:
         self.controller_retrieved_views     = None
 
     def run(self):
-        # self.setup()
+        self.setup()
         self.ui.run()
 
     def setup(self):
@@ -40,6 +40,13 @@ class App:
         self.controller_retrieved_views = ControllerRetrievedViewportViews()
         self.controller_retrieved_views.couple(self.retrieval_model_2d,
                                                [getattr(self.ui.layout, f'retrieved_viewport_{i+1}') for i in range(4)])
+
+        for i in range(4):
+            setattr(self, f'controller_retrieved_pattern_preview_{i + 1}', ControllerRetrievedPatternPreview())
+            _controller = getattr(self, f'controller_retrieved_pattern_preview_{i + 1}')
+            _controller.couple(self.retrieval_model_2d, getattr(self.ui.layout, f'retrieved_viewport_{i+1}'),
+                               self.ui.layout.frame_pattern_preview, self.pat_model)
+            _controller.bind('<Button-1>', _controller.say_hi)
 
         self.controller_query_query_viewer.couple(self.query_model, self.ui.layout.query_image_placeholder)
         self.controller_pat_preview.couple(self.pat_model, self.ui.layout.frame_pattern_preview)

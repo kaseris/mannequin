@@ -24,7 +24,7 @@ class IndividualPatternModel:
 
     def clear(self):
         self.__ind_pat = None
-        self.__interactive_lines = None
+        self.__interactive_lines = []
         self.notify_controller(event_type='data_cleared')
 
     def __build_interactive_lines(self):

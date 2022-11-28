@@ -86,6 +86,8 @@ class RetrievedViewportPlaceholder(customtkinter.CTkToplevel):
         super(RetrievedViewportPlaceholder, self).__init__(**kwargs)
         self.geometry(geometry+f'+{RetrievedViewportPlaceholder.OFFSETS[offset_index][0]}'
                                f'+{RetrievedViewportPlaceholder.OFFSETS[offset_index][1]}')
+        self.__idx = offset_index + 1
+
         self.title(f'Retrieved Garment: {offset_index + 1}')
         self.wm_transient(self.master)
         self.drag_id = ''
@@ -133,6 +135,10 @@ class RetrievedViewportPlaceholder(customtkinter.CTkToplevel):
 
     def stop_drag(self):
         self.drag_id = ''
+
+    @property
+    def idx(self):
+        return self.__idx
 
 
 class Sidebar(customtkinter.CTkFrame):

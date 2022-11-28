@@ -163,3 +163,28 @@ class ControllerRetrievedViewportViews:
         for idx, retrieved in enumerate(self.model.retrieved):
             # TODO: For now I placed 'image' but it should be inferred automatically.
             getattr(self, f'view_{idx + 1}').draw('image', retrieved[0])
+
+
+class ControllerRetrievedPatternPreview:
+    def __init__(self):
+        self.model = None
+        self.view = None
+        self.pattern_preview = None
+        self.pat_model = None
+
+    def couple(self, model, view, pattern_preview, pat_model):
+        self.model = model
+        self.view = view
+        self.pattern_preview = pattern_preview
+        self.pat_model = pat_model
+
+    def bind(self, event_type, callback_fn):
+        self.view.bind(event_type, callback_fn)
+        # Need to update some other views, i.e. the pattern info view and the editor view. For now, I only update the
+        # pattern preview view.
+
+    def say_hi(self, event):
+        idx = self.view.idx
+        garment_dir = self.model.paths[idx - 1]
+        self.pat_model.update(garment_dir)
+        self.pattern_preview.draw_pattern(self.pat_model.interactive_lines)
