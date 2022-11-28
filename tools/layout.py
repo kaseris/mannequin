@@ -585,13 +585,19 @@ class ArmholeCollarOptions:
         self.button_search = None
         self.button_replace = None
 
+        self.choice_var = None
+
     def build(self):
-        self.rb1 = customtkinter.CTkRadioButton(master=self.master, text='Armhole', text_font=EDITOR_FONT_NORMAL)
-        self.rb2 = customtkinter.CTkRadioButton(master=self.master, text='Collar', text_font=EDITOR_FONT_NORMAL)
+        self.choice_var = tkinter.IntVar()
+        self.rb1 = customtkinter.CTkRadioButton(master=self.master, text='Armhole', text_font=EDITOR_FONT_NORMAL,
+                                                variable=self.choice_var, value=0)
+        self.rb2 = customtkinter.CTkRadioButton(master=self.master, text='Collar', text_font=EDITOR_FONT_NORMAL,
+                                                variable=self.choice_var, value=1)
         self.button_search = customtkinter.CTkButton(master=self.master, text='Search Alternative Curves',
                                                      text_font=EDITOR_FONT_NORMAL)
         self.button_replace = customtkinter.CTkButton(master=self.master, text='Replace Curve',
                                                       text_font=EDITOR_FONT_NORMAL)
+        self.rb1.select()
 
         self.rb1.pack()
         self.rb2.pack()
@@ -705,6 +711,12 @@ class FrameEditorView(customtkinter.CTkFrame):
         if self.__state != 'NO_GARMENT_SELECTED':
             self.__options_widget = FrameEditorView.__OPTIONS_ENUM[option](master=self)
             self.__options_widget.build()
+
+    @property
+    def options_widget(self):
+        if self.__options_widget is not None:
+            return self.__options_widget
+        return None
 
 
 class UI:

@@ -23,8 +23,8 @@ class App:
         self.ui.run()
 
     def setup(self):
-        self.pat_model.build('/home/kaseris/Documents/database/dress/d1/W62K92')
-        self.ui.layout.frame_pattern_preview.draw_pattern(self.pat_model.interactive_lines)
+        # self.pat_model.build('/home/kaseris/Documents/database/dress/d1/W62K92')
+        # self.ui.layout.frame_pattern_preview.draw_pattern(self.pat_model.interactive_lines)
         self.controller_pat_preview = ControllerPatternModelPreview()
         self.controller_query_sidebar = ControllerQueryObjectModelUploadButton()
         self.controller_query_query_viewer = ControllerQueryObjectQueryViewer()
@@ -50,7 +50,7 @@ class App:
                                self.ui.layout.frame_information)
             _controller.bind('<Button-1>', _controller.update_information)
 
-        self.controller_ind_pat_editor = ControllerIndividualPatternEditor()
+        self.controller_ind_pat_editor = ControllerIndividualPatternEditor(master=self.ui.layout.root)
         self.controller_ind_pat_editor.couple(self.pat_model, self.ui.layout.frame_pattern_editor)
         self.controller_query_query_viewer.couple(self.query_model, self.ui.layout.query_image_placeholder)
         self.controller_pat_preview.couple(self.pat_model, self.ui.layout.frame_pattern_preview)

@@ -11,6 +11,8 @@ from app_models import IndividualPatternModel, QueryModel, Retrieval2DModel
 from layout import FramePatternPreview, Sidebar
 from interactive_mpl import InteractiveLine
 
+from altcurves import AltCurvesApp
+
 
 class ControllerPatternModelPreview:
     def __init__(self):
@@ -211,9 +213,10 @@ class ControllerRetrievedPatternPreview:
 
 
 class ControllerIndividualPatternEditor:
-    def __init__(self):
+    def __init__(self, master):
         self.model = None
         self.view = None
+        self.master = master
 
     def couple(self, model, view):
         self.model = model
@@ -223,3 +226,37 @@ class ControllerIndividualPatternEditor:
     def on_notify(self):
         self.view.update_state(f'GARMENT_{self.model.category.upper()}_SELECTED')
         self.view.update_option(self.model.selected_region)
+        controller = ControllerAltCurvesAppEditor(master=self.master)
+        controller.couple(self.model, self.view)
+        controller.bind(controller.open_alt_curve_app)
+
+
+class ControllerAltCurvesAppEditor:
+    #TODO: Need to handle the case where the options widget does not contain a search button
+    def __init__(self, master):
+        self.model = None
+        self.view = None
+
+        self.master = master
+
+    def couple(self, model, view):
+        self.model = model
+        self.view = view
+
+    def bind(self, callback_fn):
+        if self.view.options_widget is None:
+            pass
+        else:
+            if hasattr(self.view.options_widget, 'button_search'):
+                self.view.options_widget.button_search.configure(command=self.open_alt_curve_app)
+            else:
+                pass
+
+    def open_alt_curve_app(self):
+        choices = ['armhole', 'collar']
+        _choice_var = self.view.options_widget.choice_var.get()
+        app = AltCurvesApp(master=self.master,
+                           choice=choices[_choice_var],
+                           category=self.model.category,
+                           pattern_selection=self.model.selected_region)
+        app.render()
