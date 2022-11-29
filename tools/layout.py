@@ -517,8 +517,8 @@ class EditorStateGarmentBlouseSelected:
                                             text_font=EDITOR_FONT_BOLD)
         self.choices = customtkinter.CTkLabel(master=self.master, text='\u2022 Front\n\u2022 Back',
                                               text_font=EDITOR_FONT_NORMAL)
-        self.label.pack()
-        self.choices.pack()
+        self.label.pack(pady=(10, 0))
+        self.choices.pack(pady=(10, 0))
 
     def destroy(self):
         self.label.pack_forget()
@@ -542,8 +542,8 @@ class EditorStateGarmentDressSelected:
                                               text='\u2022 Front\n\u2022 Back\n\u2022 Skirt Front\n\u2022'
                                                    ' Skirt Back',
                                               text_font=EDITOR_FONT_NORMAL)
-        self.label.pack()
-        self.choices.pack()
+        self.label.pack(pady=(10, 0))
+        self.choices.pack(pady=(10, 0))
 
     def destroy(self):
         self.label.pack_forget()
@@ -566,8 +566,8 @@ class EditorStateGarmentSkirtSelected:
         self.choices = customtkinter.CTkLabel(master=self.master,
                                               text='\u2022 Skirt Front\n\u2022 Skirt Back',
                                               text_font=EDITOR_FONT_NORMAL)
-        self.label.pack()
-        self.choices.pack()
+        self.label.pack(pady=(10, 0))
+        self.choices.pack(pady=(10, 0))
 
     def destroy(self):
         self.label.pack_forget()
@@ -580,6 +580,7 @@ class EditorStateGarmentSkirtSelected:
 class ArmholeCollarOptions:
     def __init__(self, master):
         self.master = master
+        self.select_message = None
         self.rb1 = None
         self.rb2 = None
         self.button_search = None
@@ -590,25 +591,32 @@ class ArmholeCollarOptions:
     def build(self):
         self.choice_var = tkinter.IntVar()
         self.rb1 = customtkinter.CTkRadioButton(master=self.master, text='Armhole', text_font=EDITOR_FONT_NORMAL,
-                                                variable=self.choice_var, value=0)
+                                                variable=self.choice_var, value=0, width=15, height=15)
         self.rb2 = customtkinter.CTkRadioButton(master=self.master, text='Collar', text_font=EDITOR_FONT_NORMAL,
-                                                variable=self.choice_var, value=1)
+                                                variable=self.choice_var, value=1, width=15, height=15)
+
+        self.select_message = customtkinter.CTkLabel(master=self.master,
+                                                     text='Please select the region\n you want to change:',
+                                                     text_font=EDITOR_FONT_BOLD)
+
         self.button_search = customtkinter.CTkButton(master=self.master, text='Search Alternative Curves',
                                                      text_font=EDITOR_FONT_NORMAL)
         self.button_replace = customtkinter.CTkButton(master=self.master, text='Replace Curve',
                                                       text_font=EDITOR_FONT_NORMAL)
         self.rb1.select()
-
-        self.rb1.pack()
+        self.select_message.pack(pady=(55, 0))
+        self.rb1.pack(pady=(10, 0))
         self.rb2.pack()
-        self.button_search.pack()
-        self.button_replace.pack()
+        self.button_search.pack(pady=(50, 0))
+        self.button_replace.pack(pady=(10, 0))
 
     def destroy(self):
+        self.select_message.pack_forget()
         self.rb1.pack_forget()
         self.rb2.pack_forget()
         self.button_search.pack_forget()
         self.button_replace.pack_forget()
+        self.select_message = None
         self.rb1 = None
         self.rb2 = None
         self.button_search = None
@@ -625,7 +633,7 @@ class SkirtOptions:
         self.label = customtkinter.CTkLabel(master=self.master, text='The sides region will\n'
                                                                      'automatically be changed!',
                                             **EDITOR_FONT_BOLD_WARNING)
-        self.label.pack()
+        self.label.pack(pady=(50, 0))
 
     def destroy(self):
         self.label.pack_forget()
@@ -640,7 +648,7 @@ class NotAvailableOptions:
     def build(self):
         self.label = customtkinter.CTkLabel(master=self.master, text='You cannot change\nthis pattern!',
                                             **EDITOR_FONT_BOLD_NOT_AVAILABLE)
-        self.label.pack()
+        self.label.pack(pady=(50, 0))
 
     def destroy(self):
         self.label.pack_forget()
