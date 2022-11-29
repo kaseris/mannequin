@@ -205,9 +205,9 @@ class ControllerRetrievedPatternPreview:
         self.pattern_preview.draw_pattern(self.pat_model.interactive_lines)
         self.information_view.text_dummy_0.configure(placeholder_text=str(self.pat_model.name),
                                                      state='normal')
-        self.information_view.text_dummy_1.configure(placeholder_text=str(self.pat_model.n_patterns),
+        self.information_view.text_dummy_1.configure(placeholder_text=str(self.pat_model.category),
                                                      state='normal')
-        self.information_view.text_dummy_2.configure(placeholder_text=self.pat_model.category, state='normal')
+        self.information_view.text_dummy_2.configure(placeholder_text=self.pat_model.n_patterns, state='normal')
         self.information_view.text_dummy_3.configure(placeholder_text=str(self.model.paths[idx - 1]), state='normal')
         self.information_view.update_thumbnail(self.model.paths[idx - 1])
 
