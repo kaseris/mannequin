@@ -10,6 +10,7 @@ from individual_pattern import IndividualPattern
 from interactive_mpl import InteractiveLine
 
 from mannequin.retrieval2d.retrieval_dimis import *
+from infer_retrieval import infer
 
 
 class IndividualPatternModel:
@@ -185,6 +186,52 @@ class Retrieval2DModel:
         self.__retrieved = res
         self.__ind = ind
         self.__paths = list(map(lambda _x: str(Path(_x[0]).parent), res))
+        self.notify_controller()
+
+    def clear(self):
+        self.__retrieved = []
+        self.__ind = []
+        self.__paths = []
+
+    @property
+    def retrieved(self):
+        return self.__retrieved
+
+    @property
+    def ind(self):
+        return self.__ind
+
+    @property
+    def paths(self):
+        return self.__paths
+
+    def set_controller(self, controller):
+        self.__external_controller = controller
+
+    def notify_controller(self):
+        self.__external_controller.draw()
+
+
+class Retrieval3DModel:
+    def __init__(self):
+        self.__garments_path = []
+        self.__retrieved = []
+        self.__ind = []
+        self.__paths = []
+
+        self.__external_controller = None
+
+    def build(self):
+        pass
+
+    def infer(self, query_obj):
+        retrieved, ind = infer(query_obj, k=4, gallery_paths=None, object_type='obj')
+        self.update(retrieved, ind)
+
+    def update(self, res, ind):
+        self.__retrieved = res
+        self.__ind = ind
+        self.__paths = list(map(lambda _x: str(Path(_x).parent), res))
         self.notify_controller()
 
     def clear(self):

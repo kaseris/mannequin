@@ -38,14 +38,13 @@ def infer_2d(query_img: Union[str, PathLike], k, gallery_paths):
 
 
 def infer_3d(model: Union[str, PathLike],
-          n_points=2500,
-          feature_transform=False,
-          model_path='/home/kaseris/Documents/pointnet.pytorch/utils/cls/cls_model_99.pth',
-          embeddings_path='/home/kaseris/Documents/database/embeddings',
-          retrieval_k=4) -> Any:
+             n_points=2500,
+             feature_transform=False,
+             model_path='/home/kaseris/Documents/pointnet.pytorch/utils/cls/cls_model_99.pth',
+             embeddings_path='/home/kaseris/Documents/database/embeddings',
+             retrieval_k=4) -> Any:
     pcd = o3d.io.read_triangle_mesh(model)
     pcd = np.asarray(pcd.vertices)
-    print(pcd)
     logging.basicConfig(level=logging.DEBUG)
 
     pcd_resampled = resample_point_cloud(pcd, n_points)
@@ -60,19 +59,19 @@ def infer_3d(model: Union[str, PathLike],
 
     model = PointNetCls(k=9,
                         feature_transform=feature_transform)
-    logging.info('Loading model')
+    # logging.info('Loading model')
     state_dict = torch.load(model_path)
     model.load_state_dict(state_dict)
     # Set the model to eval mode
     model.eval().cuda()
 
-    logging.info(f'point_set type: {point_set}')
-    logging.info(f'point_set size: {point_set.size()}')
+    # logging.info(f'point_set type: {point_set}')
+    # logging.info(f'point_set size: {point_set.size()}')
 
     with torch.no_grad():
         pred, trans, trans_feat, glob_feat = model(point_set.unsqueeze(0).permute(0, 2, 1).cuda())
 
-    logging.info(f'glob_Feat size: {glob_feat.size()}')
+    # logging.info(f'glob_Feat size: {glob_feat.size()}')
 
     # Perform search
     # Loading database embeddings
@@ -87,9 +86,11 @@ def infer_3d(model: Union[str, PathLike],
     dists = (-1.0) * torch.cdist(glob_feat.cpu(), gallery)
     _, idx = torch.topk(dists, k=retrieval_k+1)
     retrieved = [paths[i] for i in idx[0][1:]]
-    print(retrieved)
+    # print(retrieved)
     return retrieved, idx[0][1:].tolist()
 
 
 if __name__ == '__main__':
-    infer('/home/kaseris/Documents/Q9417.obj')
+    a, b = infer('/home/kaseris/Documents/database/blouse/b1/Q9417/Q9417.obj', k=4, gallery_paths=None, object_type='obj')
+    print(f'a: {a}')
+    print(f'b: {b}')

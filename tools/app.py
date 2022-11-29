@@ -11,12 +11,14 @@ class App:
         self.pat_model = IndividualPatternModel()
         self.query_model = None
         self.retrieval_model_2d = None
+        self.retrieval_model_3d = None
         self.controller_pat_preview = None
         self.controller_query_sidebar = None
         self.controller_query_query_viewer = None
         self.controller_retrieval_apply = None
         self.controller_retrieved_views = None
         self.controller_ind_pat_editor = None
+        self.controller_retrieved_views3d = None
 
     def run(self):
         self.setup()
@@ -31,17 +33,22 @@ class App:
 
         self.query_model = QueryModel(external_controller=self.controller_query_query_viewer)
         self.retrieval_model_2d = Retrieval2DModel(App.DATABASE_PATH)
+        self.retrieval_model_3d = Retrieval3DModel()
         self.retrieval_model_2d.build()
 
-        self.controller_retrieval_apply = ControllerRetrievalApplyButton(self.query_model)
-        self.controller_retrieval_apply.couple(self.ui.layout.query_image_placeholder.button_apply,
-                                               self.retrieval_model_2d, None)
-        self.controller_retrieval_apply.bind(self.controller_retrieval_apply.on_apply)
-
         self.controller_retrieved_views = ControllerRetrievedViewportViews()
+        self.controller_retrieved_views3d = ControllerRetrieved3DViewportViews()
+        self.controller_retrieved_views3d.couple(self.retrieval_model_3d,
+                                                 [getattr(self.ui.layout,
+                                                          f'retrieved_viewport_{i+1}') for i in range(4)])
         self.controller_retrieved_views.couple(self.retrieval_model_2d,
                                                [getattr(self.ui.layout, f'retrieved_viewport_{i+1}') for i in range(4)])
 
+        self.controller_retrieval_apply = ControllerRetrievalApplyButton(self.query_model)
+        self.controller_retrieval_apply.couple(self.ui.layout.query_image_placeholder.button_apply,
+                                               self.retrieval_model_2d, self.retrieval_model_3d)
+
+        self.controller_retrieval_apply.bind(self.controller_retrieval_apply.on_apply)
         for i in range(4):
             setattr(self, f'controller_retrieved_pattern_preview_{i + 1}', ControllerRetrievedPatternPreview())
             _controller = getattr(self, f'controller_retrieved_pattern_preview_{i + 1}')

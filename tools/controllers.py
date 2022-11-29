@@ -7,7 +7,7 @@ import tkinter.filedialog
 
 import customtkinter
 
-from app_models import IndividualPatternModel, QueryModel, Retrieval2DModel
+from app_models import IndividualPatternModel, QueryModel, Retrieval3DModel, Retrieval2DModel
 from layout import FramePatternPreview, Sidebar
 from interactive_mpl import InteractiveLine
 
@@ -148,7 +148,7 @@ class ControllerRetrievalApplyButton:
             if self.model_query.kind == 'image':
                 self.model_2d_retrieval.infer(self.model_query.filename)
             else:
-                pass
+                self.model_3d_retrieval.infer(self.model_query.filename)
         else:
             print('No query')
 
@@ -172,6 +172,27 @@ class ControllerRetrievedViewportViews:
         for idx, retrieved in enumerate(self.model.retrieved):
             # TODO: For now I placed 'image' but it should be inferred automatically.
             getattr(self, f'view_{idx + 1}').draw('image', retrieved[0])
+
+
+class ControllerRetrieved3DViewportViews:
+    def __init__(self):
+        self.model: Retrieval3DModel = None
+
+    def couple(self,
+               model: Retrieval3DModel,
+               viewlist):
+        self.model = model
+        for idx, view in enumerate(viewlist):
+            setattr(self, f'view_{idx + 1}', view)
+        self.model.set_controller(self)
+
+    def bind(self):
+        pass
+
+    def draw(self):
+        for idx, retrieved in enumerate(self.model.retrieved):
+            # TODO: For now I placed 'image' but it should be inferred automatically.
+            getattr(self, f'view_{idx + 1}').draw('mesh', retrieved)
 
 
 class ControllerRetrievedPatternPreview:
@@ -232,7 +253,6 @@ class ControllerIndividualPatternEditor:
 
 
 class ControllerAltCurvesAppEditor:
-    #TODO: Need to handle the case where the options widget does not contain a search button
     def __init__(self, master):
         self.model = None
         self.view = None
