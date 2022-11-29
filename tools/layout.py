@@ -352,7 +352,7 @@ class FrameGarmentInformation(customtkinter.CTkFrame):
         self.pack_propagate(False)
         self.label.pack(anchor=tkinter.CENTER, pady=(5, 0))
 
-        self.frame_text_placeholder.pack()
+        self.frame_text_placeholder.pack(pady=(40, 0))
         self.frame_text_placeholder.grid_columnconfigure(0, weight=1)
         self.frame_text_placeholder.grid_columnconfigure(1, weight=3)
         self.text_name.grid(row=0, column=0, sticky=tkinter.W)
@@ -362,10 +362,10 @@ class FrameGarmentInformation(customtkinter.CTkFrame):
         for i in range(4):
             getattr(self, f'text_dummy_{i}').grid(row=i, column=1, sticky=tkinter.E)
 
-        self.frame_image_preview.pack(pady=(30, 0))
+        self.frame_image_preview.pack(pady=(60, 0))
         self.frame_image_preview.pack_propagate(False)
         self.image_garment_preview.pack(anchor=tkinter.CENTER)
-        self.button_launch_editor.pack(pady=(80, 0))
+        self.button_launch_editor.pack(pady=(50, 0))
 
     def update_thumbnail(self, path):
         image_path = osp.join(path, str(Path(path).name)) + '.jpg'
