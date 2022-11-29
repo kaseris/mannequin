@@ -195,7 +195,9 @@ class FrameESPA(customtkinter.CTkFrame):
     def __init__(self, master, height, corner_radius, fg_color):
         super(FrameESPA, self).__init__(master=master, height=height, corner_radius=corner_radius,
                                         fg_color=fg_color)
-        self.img = ImageTk.PhotoImage(Image.open('test_images/espa-eng-768x152.png').resize((768//2, 152//2)))
+        img = Image.open('test_images/banner.png')
+        img = ImageOps.contain(img, (1800, 70))
+        self.img = ImageTk.PhotoImage(img)
         self.label = customtkinter.CTkLabel(master=self, image=self.img)
 
     def build(self):
