@@ -125,17 +125,12 @@ class ControllerQueryObjectModelUploadButton:
 
     def request_state_update(self, update_flag, filename, next_state):
         # TODO: Pio sovaros elegxos sto filename
-        # print(type(self.__app_state))
-        # if isinstance(self.__app_state, AppStateInit):
         if not self.opened_query:
             self.__app_state.notify_manager(update_flag, filename=filename,
                                             next_state=next_state)
             self.opened_query = True
         else:
             self.__app_state.update()
-        # elif isinstance(self.__app_state, AppStateQueryUploaded2D):
-        #     if self.model.filename is not None:
-        #         self.__app_state.update(filename=self.model.filename)
 
     def set_app_state(self, new_state):
         self.__app_state = None
