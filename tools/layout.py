@@ -733,7 +733,7 @@ class UI:
     """The main user interface. All layout components will be created here."""
     def __init__(self, test_shown=False):
         self.layout = Layout(title='i-Mannequin')
-        self.layout.sidebar.button_upload.configure(command=self.button_press)
+        # self.layout.sidebar.button_upload.configure(command=self.button_press)
 
         if test_shown:
             self.__test()

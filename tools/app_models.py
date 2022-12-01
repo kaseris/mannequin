@@ -127,7 +127,7 @@ class QueryModel:
     def update(self, filename):
         self.__query = filename
         self.build()
-        self.notify_controller()
+        # self.notify_controller()
 
     def clear(self):
         self.__query = None

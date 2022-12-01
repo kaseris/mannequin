@@ -1,5 +1,5 @@
 from app_models import *
-from controllers import *
+# from controllers import *
 from layout import UI
 
 
@@ -7,7 +7,7 @@ class App:
     DATABASE_PATH = '/home/kaseris/Documents/database'
 
     def __init__(self):
-        self.ui = UI(test_shown=True)
+        self.ui = UI(test_shown=False)
         self.pat_model = IndividualPatternModel()
         self.query_model = None
         self.retrieval_model_2d = None
@@ -21,7 +21,7 @@ class App:
         self.controller_retrieved_views3d = None
 
     def run(self):
-        self.setup()
+        # self.setup()
         self.ui.run()
 
     def setup(self):

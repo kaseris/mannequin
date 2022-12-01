@@ -13,6 +13,9 @@ from interactive_mpl import InteractiveLine
 
 from altcurves import AltCurvesApp
 
+from statemanager import AppState, AppStateEnum
+
+from utils import check_path_type
 
 class ControllerPatternModelPreview:
     def __init__(self):
@@ -78,9 +81,12 @@ class ControllerPatternModelPreview:
 
 
 class ControllerQueryObjectModelUploadButton:
-    def __init__(self):
-        self.model : QueryModel = None
-        self.view : customtkinter.CTkButton = None
+    def __init__(self,
+                 app_state: AppState):
+        self.model: QueryModel = None
+        self.view: customtkinter.CTkButton = None
+
+        self.__app_state = app_state
 
     def couple(self,
                model: QueryModel,
@@ -104,13 +110,27 @@ class ControllerQueryObjectModelUploadButton:
                                                                  ("OBJ files", "*.obj"),
                                                                  ("STL Files", "*.stl"),
                                                                  ("all files", "*.*")))
-        self.model.update(filename=filename)
+        if check_path_type(filename, ['.jpg', '.obj', '.stl', '.jpeg']):
+            self.model.update(filename=filename)
+            if self.model.kind == 'image':
+                self.request_state_update(True, filename, AppStateEnum.APP_QUERY_UPLOADED_2D)
+            else:
+                self.request_state_update(True, filename, AppStateEnum.APP_QUERY_UPLOADED_3D)
+        else:
+            self.request_state_update(False, filename, AppStateEnum.APP_INIT)
+
+    def request_state_update(self, update_flag, filename, next_state):
+        # TODO: Pio sovaros elegxos sto filename
+        self.__app_state.notify_manager(update_flag, filename=filename, next_state=next_state)
 
 
 class ControllerQueryObjectQueryViewer:
-    def __init__(self):
+    def __init__(self,
+                 app_state: AppState):
         self.model: QueryModel = None
         self.view = None
+
+        self.__app_state = app_state
 
     def couple(self,
                model: QueryModel,
@@ -232,6 +252,8 @@ class ControllerRetrievedPatternPreview:
         self.information_view.text_dummy_3.configure(placeholder_text=str(self.model.paths[idx - 1]), state='normal')
         self.information_view.update_thumbnail(self.model.paths[idx - 1])
 
+    def request_state_update(self):
+        self.__app_state
 
 class ControllerIndividualPatternEditor:
     def __init__(self, master):
