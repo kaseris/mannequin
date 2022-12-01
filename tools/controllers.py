@@ -13,9 +13,10 @@ from interactive_mpl import InteractiveLine
 
 from altcurves import AltCurvesApp
 
-from statemanager import AppState, AppStateEnum
+from statemanager import AppState, AppStateEnum, AppStateInit, AppStateQueryUploaded2D
 
 from utils import check_path_type
+
 
 class ControllerPatternModelPreview:
     def __init__(self):
@@ -82,11 +83,14 @@ class ControllerPatternModelPreview:
 
 class ControllerQueryObjectModelUploadButton:
     def __init__(self,
-                 app_state: AppState):
+                 app_state):
+
         self.model: QueryModel = None
         self.view: customtkinter.CTkButton = None
 
         self.__app_state = app_state
+
+        self.opened_query = False
 
     def couple(self,
                model: QueryModel,
@@ -121,7 +125,21 @@ class ControllerQueryObjectModelUploadButton:
 
     def request_state_update(self, update_flag, filename, next_state):
         # TODO: Pio sovaros elegxos sto filename
-        self.__app_state.notify_manager(update_flag, filename=filename, next_state=next_state)
+        # print(type(self.__app_state))
+        # if isinstance(self.__app_state, AppStateInit):
+        if not self.opened_query:
+            self.__app_state.notify_manager(update_flag, filename=filename,
+                                            next_state=next_state)
+            self.opened_query = True
+        else:
+            self.__app_state.update()
+        # elif isinstance(self.__app_state, AppStateQueryUploaded2D):
+        #     if self.model.filename is not None:
+        #         self.__app_state.update(filename=self.model.filename)
+
+    def set_app_state(self, new_state):
+        self.__app_state = None
+        self.__app_state = new_state
 
 
 class ControllerQueryObjectQueryViewer:
