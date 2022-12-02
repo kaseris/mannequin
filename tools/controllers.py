@@ -187,8 +187,11 @@ class ControllerRetrievalApplyButton:
 
 
 class ControllerRetrievedViewportViews:
-    def __init__(self):
+    def __init__(self, app_state: AppState):
         self.model: Retrieval2DModel = None
+        self.__app_state = app_state
+
+        self.needs_update_state = True
 
     def couple(self,
                model: Retrieval2DModel,
@@ -205,6 +208,11 @@ class ControllerRetrievedViewportViews:
         for idx, retrieved in enumerate(self.model.retrieved):
             # TODO: For now I placed 'image' but it should be inferred automatically.
             getattr(self, f'view_{idx + 1}').draw('image', retrieved[0])
+
+    def on_notify(self):
+        if self.needs_update_state:
+            self.__app_state.notify_manager()
+            self.needs_update_state = False
 
 
 class ControllerRetrieved3DViewportViews:
@@ -226,6 +234,9 @@ class ControllerRetrieved3DViewportViews:
         for idx, retrieved in enumerate(self.model.retrieved):
             # TODO: For now I placed 'image' but it should be inferred automatically.
             getattr(self, f'view_{idx + 1}').draw('mesh', retrieved)
+
+    def on_notify(self):
+        pass
 
 
 class ControllerRetrievedPatternPreview:

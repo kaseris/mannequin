@@ -2,9 +2,10 @@ import abc
 import enum
 
 from app import App
-from app_models import QueryModel
+# from app_models import QueryModel
 from controllers import *
-from layout import QueryImagePlaceholder, FrameRetrievedPlaceholder, RetrievedViewportPlaceholder
+from layout import QueryImagePlaceholder, FrameRetrievedPlaceholder, RetrievedViewportPlaceholder,\
+    FrameGarmentInformation, FramePatternPreview
 
 
 class AppStateEnum(enum.Enum):
@@ -78,7 +79,7 @@ class AppStateQueryUploaded(AppState):
         self.app.retrieval_model_3d = Retrieval3DModel()
 
         self.controller_retrieval_apply = ControllerRetrievalApplyButton(self.app.query_model)
-        self.app.controller_retrieved_views = ControllerRetrievedViewportViews()
+        self.app.controller_retrieved_views = ControllerRetrievedViewportViews(app_state=self)
         self.app.controller_retrieved_views3d = ControllerRetrieved3DViewportViews()
 
     def build(self):
@@ -110,6 +111,8 @@ class AppStateQueryUploaded(AppState):
         self.app.controller_retrieval_apply.couple(self.app.ui.layout.query_image_placeholder.button_apply,
                                                    self.app.retrieval_model_2d, self.app.retrieval_model_3d)
         self.app.controller_retrieval_apply.bind(self.app.controller_retrieval_apply.on_apply)
+        self.app.ui.layout.frame_watermark.label.configure(image='')
+        self.app.ui.layout.frame_watermark.label.configure(text='')
 
     def update(self):
         self.app.ui.layout.query_image_placeholder.draw(self.app.query_model.kind, self.app.query_model.filename)
@@ -117,8 +120,8 @@ class AppStateQueryUploaded(AppState):
     def destroy(self):
         pass
 
-    def notify_manager(self, filename):
-        pass
+    def notify_manager(self):
+        self.mediator.notify(new_state=AppStateEnum.APP_SELECTED_PATTERN)
 
 
 # class AppStateQueryUploaded3D(AppState):
@@ -139,11 +142,26 @@ class AppStateQueryUploaded(AppState):
 #
 
 class AppStateGarmentSelected(AppState):
-    def __init__(self, _app):
-        super(AppStateGarmentSelected, self).__init__(_app=_app)
+    def __init__(self, _app, _mediator):
+        super(AppStateGarmentSelected, self).__init__(_app=_app, _mediator=_mediator)
+        for i in range(4):
+            setattr(self.app, f'controller_retrieved_pattern_preview_{i + 1}',
+                    ControllerRetrievedPatternPreview())
 
     def build(self):
-        pass
+        self.app.ui.layout.frame_information = FrameGarmentInformation(master=self.app.ui.layout.frame_watermark,
+                                                                       corner_radius=9, width=327, height=553)
+        self.app.ui.layout.frame_pattern_preview = FramePatternPreview(master=self.app.ui.layout.frame_watermark,
+                                                                       corner_radius=9, width=1290, height=553)
+        self.app.ui.layout.frame_information.build()
+        self.app.ui.layout.frame_pattern_preview.build()
+
+        for i in range(4):
+            _controller = getattr(self.app, f'controller_retrieved_pattern_preview_{i + 1}')
+            _controller.couple(self.app.retrieval_model_2d, getattr(self.app.ui.layout, f'retrieved_viewport_{i + 1}'),
+                               self.app.ui.layout.frame_pattern_preview, self.app.pat_model,
+                               self.app.ui.layout.frame_information)
+            _controller.bind('<Button-1>', _controller.update_information)
 
     def update(self):
         pass

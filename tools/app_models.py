@@ -210,6 +210,7 @@ class Retrieval2DModel:
 
     def notify_controller(self):
         self.__external_controller.draw()
+        self.__external_controller.on_notify()
 
 
 class Retrieval3DModel:
