@@ -13,7 +13,7 @@ from interactive_mpl import InteractiveLine
 
 from altcurves import AltCurvesApp
 
-from statemanager import AppState, AppStateEnum, AppStateInit, AppStateQueryUploaded2D
+from statemanager import AppState, AppStateEnum, AppStateInit, AppStateQueryUploaded
 
 from utils import check_path_type
 
@@ -117,9 +117,9 @@ class ControllerQueryObjectModelUploadButton:
         if check_path_type(filename, ['.jpg', '.obj', '.stl', '.jpeg']):
             self.model.update(filename=filename)
             if self.model.kind == 'image':
-                self.request_state_update(True, filename, AppStateEnum.APP_QUERY_UPLOADED_2D)
+                self.request_state_update(True, filename, AppStateEnum.APP_QUERY_UPLOADED)
             else:
-                self.request_state_update(True, filename, AppStateEnum.APP_QUERY_UPLOADED_3D)
+                self.request_state_update(True, filename, AppStateEnum.APP_QUERY_UPLOADED)
         else:
             self.request_state_update(False, filename, AppStateEnum.APP_INIT)
 
@@ -266,7 +266,8 @@ class ControllerRetrievedPatternPreview:
         self.information_view.update_thumbnail(self.model.paths[idx - 1])
 
     def request_state_update(self):
-        self.__app_state
+        pass
+
 
 class ControllerIndividualPatternEditor:
     def __init__(self, master):

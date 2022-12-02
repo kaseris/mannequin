@@ -4,14 +4,13 @@ import enum
 from app import App
 from app_models import QueryModel
 from controllers import *
-from layout import QueryImagePlaceholder
+from layout import QueryImagePlaceholder, FrameRetrievedPlaceholder, RetrievedViewportPlaceholder
 
 
 class AppStateEnum(enum.Enum):
     APP_INIT = 0
-    APP_QUERY_UPLOADED_2D = 1
-    APP_QUERY_UPLOADED_3D = 2
-    APP_SELECTED_PATTERN = 3
+    APP_QUERY_UPLOADED = 1
+    APP_SELECTED_PATTERN = 2
 
 
 class AppState(abc.ABC):
@@ -71,47 +70,73 @@ class AppStateInit(AppState):
             print(f'I wont go to the next state')
 
 
-class AppStateQueryUploaded2D(AppState):
+class AppStateQueryUploaded(AppState):
     def __init__(self, _app, _mediator):
-        super(AppStateQueryUploaded2D, self).__init__(_app=_app, _mediator=_mediator)
+        super(AppStateQueryUploaded, self).__init__(_app=_app, _mediator=_mediator)
         self.app.controller_retrieval_apply = ControllerRetrievalApplyButton(self.app.query_model)
         self.app.retrieval_model_2d = Retrieval2DModel(App.DATABASE_PATH)
+        self.app.retrieval_model_3d = Retrieval3DModel()
+
+        self.controller_retrieval_apply = ControllerRetrievalApplyButton(self.app.query_model)
+        self.app.controller_retrieved_views = ControllerRetrievedViewportViews()
+        self.app.controller_retrieved_views3d = ControllerRetrieved3DViewportViews()
 
     def build(self):
         self.app.controller_query_sidebar.set_app_state(self)
         self.app.ui.layout.query_image_placeholder = QueryImagePlaceholder(master=self.app.ui.layout.root)
         self.app.ui.layout.root.bind('<Configure>', self.app.ui.layout.query_image_placeholder.dragging)
+
+        self.app.ui.layout.frame_retrieved = FrameRetrievedPlaceholder(master=self.app.ui.layout.frame_watermark,
+                                                                       width=1290,
+                                                                       height=355)
+        self.app.ui.layout.frame_retrieved.build()
+        for i in range(4):
+            setattr(self.app.ui.layout, f'retrieved_viewport_{i + 1}',
+                    RetrievedViewportPlaceholder(i, '260x260',
+                                                 master=self.app.ui.layout.root))
+
+        self.app.controller_retrieved_views3d.couple(self.app.retrieval_model_3d,
+                                                     [getattr(self.app.ui.layout,
+                                                              f'retrieved_viewport_{i + 1}') for i in range(4)])
+        self.app.controller_retrieved_views.couple(self.app.retrieval_model_2d,
+                                                   [getattr(self.app.ui.layout, f'retrieved_viewport_{i + 1}') for i in
+                                                    range(4)])
+
         self.app.retrieval_model_2d.build()
         self.app.controller_retrieval_apply.couple(self.app.ui.layout.query_image_placeholder.button_apply,
                                                    self.app.retrieval_model_2d, self.app.retrieval_model_3d)
         self.app.ui.layout.query_image_placeholder.draw(self.app.query_model.kind, self.app.query_model.filename)
 
+        self.app.controller_retrieval_apply.couple(self.app.ui.layout.query_image_placeholder.button_apply,
+                                                   self.app.retrieval_model_2d, self.app.retrieval_model_3d)
+        self.app.controller_retrieval_apply.bind(self.app.controller_retrieval_apply.on_apply)
+
     def update(self):
         self.app.ui.layout.query_image_placeholder.draw(self.app.query_model.kind, self.app.query_model.filename)
 
     def destroy(self):
         pass
 
-    def notify_manager(self):
+    def notify_manager(self, filename):
         pass
 
 
-class AppStateQueryUploaded3D(AppState):
-    def __init__(self, _app, _mediator):
-        super(AppStateQueryUploaded3D, self).__init__(_app=_app, _mediator=_mediator)
-
-    def build(self):
-        pass
-
-    def update(self):
-        pass
-
-    def destroy(self):
-        pass
-
-    def notify_manager(self):
-        pass
-
+# class AppStateQueryUploaded3D(AppState):
+#     def __init__(self, _app, _mediator):
+#         super(AppStateQueryUploaded3D, self).__init__(_app=_app, _mediator=_mediator)
+#
+#     def build(self):
+#         pass
+#
+#     def update(self):
+#         pass
+#
+#     def destroy(self):
+#         pass
+#
+#     def notify_manager(self):
+#         pass
+#
 
 class AppStateGarmentSelected(AppState):
     def __init__(self, _app):
@@ -154,9 +179,8 @@ class StateManager:
 
 class StateGenerator:
     __states = {0: AppStateInit,
-                1: AppStateQueryUploaded2D,
-                2: AppStateQueryUploaded3D,
-                3: AppStateGarmentSelected}
+                1: AppStateQueryUploaded,
+                2: AppStateGarmentSelected}
 
     @staticmethod
     def create_state(state, *args, **kwargs) -> AppState:
