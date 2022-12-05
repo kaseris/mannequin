@@ -310,3 +310,7 @@ class RelevantGarmentsModel:
 
     def set_controller(self, controller):
         self.__controller = controller
+
+    @property
+    def suggested(self):
+        return self._suggested

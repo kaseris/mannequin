@@ -1,6 +1,8 @@
 import abc
 import enum
 
+from functools import partial
+
 from app import App
 # from app_models import QueryModel
 from controllers import *
@@ -147,7 +149,8 @@ class AppStateGarmentSelected(AppState):
         self.app.controller_pat_preview.bind_('pick_event', self.app.controller_pat_preview.on_pick)
         self.app.controller_pat_preview.bind_('motion_notify_event', self.app.controller_pat_preview.on_hover)
         self.app.controller_pat_preview.bind_('button_press_event',
-                                              self.app.controller_pat_preview.on_double_click_canvas)
+                                              partial(self.app.controller_pat_preview.on_double_click_canvas,
+                                                      self.app.relevant_garments_model))
 
         self.app.ui.layout.frame_pattern_editor = FrameEditorView(master=self.app.ui.layout.frame_pattern_preview,
                                                                   fg_color='#343638', width=300, height=500,

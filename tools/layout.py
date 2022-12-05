@@ -730,13 +730,15 @@ class FrameEditorView(customtkinter.CTkFrame):
 
 
 class ShapeSimilarityWindow(customtkinter.CTkToplevel):
-    def __init__(self):
+    def __init__(self,
+                 relevant):
         super(ShapeSimilarityWindow, self).__init__()
         # self.withdraw()
         self.title('Relevant Patterns')
         self.geometry('1290x315+620+72')
         # self.bind('<Configure>', self.get_info)
         self.frame = None
+        self.__relevant = relevant
 
     def build(self):
         self.frame = customtkinter.CTkFrame(master=self, width=1280, height=305, corner_radius=9)
@@ -744,14 +746,16 @@ class ShapeSimilarityWindow(customtkinter.CTkToplevel):
         for i in range(4):
             setattr(self, f'frame_info_{i + 1}', customtkinter.CTkFrame(master=self.frame))
             getattr(self, f'frame_info_{i + 1}').grid(row=5, column=i, pady=10, padx=10)
-            setattr(self, f'img_out_{i + 1}',
-                    ImageTk.PhotoImage(Image.open("test_images/bg_image.png").resize((250, 250))))
+            pth = self.__relevant.suggested[i]
+            img_path = osp.join(pth, Path(pth).name) + '.jpg'
+            img_obj = ImageOps.contain(Image.open(img_path), (250, 250))
+            setattr(self, f'img_out_{i + 1}', ImageTk.PhotoImage(img_obj))
             setattr(self, f'out_img_{i + 1}', customtkinter.CTkButton(getattr(self, f'frame_info_{i + 1}'),
                                                                       image=getattr(self, f'img_out_{i + 1}'),
                                                                       text="",
                                                                       corner_radius=5, width=265, height=265,
-                                                                      fg_color="#6687d9",
-                                                                      hover_color="#1751e3",
+                                                                      fg_color="#2b2b2b",
+                                                                      hover_color="#757272",
                                                                       command=None))
             getattr(self, f'out_img_{i + 1}').grid(row=5, column=0, pady=10, padx=10)
         self.mainloop()

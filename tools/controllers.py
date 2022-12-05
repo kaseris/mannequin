@@ -80,9 +80,9 @@ class ControllerPatternModelPreview:
     def on_key_press(self, event):
         pass
 
-    def on_double_click_canvas(self, event):
+    def on_double_click_canvas(self, relevant, event):
         if event.dblclick:
-            a = ShapeSimilarityWindow()
+            a = ShapeSimilarityWindow(relevant)
             a.build()
 
 
