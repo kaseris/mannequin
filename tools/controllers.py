@@ -7,8 +7,8 @@ import tkinter.filedialog
 
 import customtkinter
 
-from app_models import IndividualPatternModel, QueryModel, Retrieval3DModel, Retrieval2DModel
-from layout import FramePatternPreview, Sidebar
+from app_models import IndividualPatternModel, QueryModel, Retrieval3DModel, Retrieval2DModel, RelevantGarmentsModel
+from layout import FramePatternPreview, Sidebar, ShapeSimilarityWindow
 from interactive_mpl import InteractiveLine
 
 from altcurves import AltCurvesApp
@@ -20,8 +20,8 @@ from utils import check_path_type
 
 class ControllerPatternModelPreview:
     def __init__(self):
-        self.model : IndividualPatternModel = None
-        self.view : FramePatternPreview = None
+        self.model: IndividualPatternModel = None
+        self.view: FramePatternPreview = None
 
     def couple(self,
                model: IndividualPatternModel,
@@ -79,6 +79,11 @@ class ControllerPatternModelPreview:
 
     def on_key_press(self, event):
         pass
+
+    def on_double_click_canvas(self, event):
+        if event.dblclick:
+            a = ShapeSimilarityWindow()
+            a.build()
 
 
 class ControllerQueryObjectModelUploadButton:
@@ -246,17 +251,20 @@ class ControllerRetrievedPatternPreview:
         self.pattern_preview = None
         self.pat_model = None
         self.information_view = None
+        self.relevant_ss_garment_model: RelevantGarmentsModel = None
 
     def couple(self, model,
                view,
                pattern_preview,
                pat_model,
-               information_view):
+               information_view,
+               relevant_ss_garment_model: RelevantGarmentsModel):
         self.model = model
         self.view = view
         self.pattern_preview = pattern_preview
         self.pat_model = pat_model
         self.information_view = information_view
+        self.relevant_ss_garment_model = relevant_ss_garment_model
 
     def bind(self, event_type, callback_fn):
         self.view.bind(event_type, callback_fn)
@@ -275,6 +283,7 @@ class ControllerRetrievedPatternPreview:
         self.information_view.text_dummy_2.configure(placeholder_text=self.pat_model.n_patterns, state='normal')
         self.information_view.text_dummy_3.configure(placeholder_text=str(self.model.paths[idx - 1]), state='normal')
         self.information_view.update_thumbnail(self.model.paths[idx - 1])
+        self.relevant_ss_garment_model.update(self.model.paths[idx - 1])
 
     def request_state_update(self):
         pass
@@ -327,3 +336,46 @@ class ControllerAltCurvesAppEditor:
                            category=self.model.category,
                            pattern_selection=self.model.selected_region)
         app.render()
+
+
+class ControllerRelevantPatternViews:
+    def __init__(self):
+        self.model: RelevantGarmentsModel = None
+        self.view = None
+
+    def couple(self,
+               model: RelevantGarmentsModel,
+               view):
+        self.model = model
+        self.view = view
+
+    def bind(self, event_type, callback_fn):
+        pass
+
+
+class ControllerRelevantPatternPatternPreview:
+    def __init__(self):
+        self.model = None
+        self.view = None
+
+    def couple(self,
+               model,
+               view):
+        self.model = model
+        self.view = view
+
+    def bind(self, event_type, callback_fn):
+        pass
+
+
+class ControllerRelevantPatternFrameInformation:
+    def __init__(self):
+        self.model = None
+        self.view = None
+
+    def couple(self, model, view):
+        self.model = model
+        self.view = view
+
+    def bind(self, event_type, callback_fn):
+        pass

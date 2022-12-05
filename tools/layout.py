@@ -729,6 +729,38 @@ class FrameEditorView(customtkinter.CTkFrame):
         return None
 
 
+class ShapeSimilarityWindow(customtkinter.CTkToplevel):
+    def __init__(self):
+        super(ShapeSimilarityWindow, self).__init__()
+        # self.withdraw()
+        self.title('Relevant Patterns')
+        self.geometry('1290x315+620+72')
+        # self.bind('<Configure>', self.get_info)
+        self.frame = None
+
+    def build(self):
+        self.frame = customtkinter.CTkFrame(master=self, width=1280, height=305, corner_radius=9)
+        self.frame.pack(anchor=tkinter.CENTER)
+        for i in range(4):
+            setattr(self, f'frame_info_{i + 1}', customtkinter.CTkFrame(master=self.frame))
+            getattr(self, f'frame_info_{i + 1}').grid(row=5, column=i, pady=10, padx=10)
+            setattr(self, f'img_out_{i + 1}',
+                    ImageTk.PhotoImage(Image.open("test_images/bg_image.png").resize((250, 250))))
+            setattr(self, f'out_img_{i + 1}', customtkinter.CTkButton(getattr(self, f'frame_info_{i + 1}'),
+                                                                      image=getattr(self, f'img_out_{i + 1}'),
+                                                                      text="",
+                                                                      corner_radius=5, width=265, height=265,
+                                                                      fg_color="#6687d9",
+                                                                      hover_color="#1751e3",
+                                                                      command=None))
+            getattr(self, f'out_img_{i + 1}').grid(row=5, column=0, pady=10, padx=10)
+        self.mainloop()
+
+    def get_info(self, event):
+        print(f'w, h: {self.winfo_width()}, {self.winfo_height()}')
+        print(f'x, y: {self.winfo_x(), self.winfo_y()}')
+
+
 class UI:
     """The main user interface. All layout components will be created here."""
     def __init__(self, test_shown=False):

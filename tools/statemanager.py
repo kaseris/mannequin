@@ -5,7 +5,7 @@ from app import App
 # from app_models import QueryModel
 from controllers import *
 from layout import QueryImagePlaceholder, FrameRetrievedPlaceholder, RetrievedViewportPlaceholder,\
-    FrameGarmentInformation, FramePatternPreview
+    FrameGarmentInformation, FramePatternPreview, FrameEditorView
 
 
 class AppStateEnum(enum.Enum):
@@ -124,43 +124,43 @@ class AppStateQueryUploaded(AppState):
         self.mediator.notify(new_state=AppStateEnum.APP_SELECTED_PATTERN)
 
 
-# class AppStateQueryUploaded3D(AppState):
-#     def __init__(self, _app, _mediator):
-#         super(AppStateQueryUploaded3D, self).__init__(_app=_app, _mediator=_mediator)
-#
-#     def build(self):
-#         pass
-#
-#     def update(self):
-#         pass
-#
-#     def destroy(self):
-#         pass
-#
-#     def notify_manager(self):
-#         pass
-#
-
 class AppStateGarmentSelected(AppState):
     def __init__(self, _app, _mediator):
         super(AppStateGarmentSelected, self).__init__(_app=_app, _mediator=_mediator)
         for i in range(4):
             setattr(self.app, f'controller_retrieved_pattern_preview_{i + 1}',
                     ControllerRetrievedPatternPreview())
+        self.app.controller_pat_preview = ControllerPatternModelPreview()
+        self.app.controller_relevant_view = ControllerRelevantPatternViews()
+        self.app.controller_relevant_pattern_preview = ControllerRelevantPatternPatternPreview()
+        self.app.controller_relevant_garment_info = ControllerRelevantPatternFrameInformation()
+        self.app.relevant_garments_model = RelevantGarmentsModel(database_path=self.app.DATABASE_PATH)
 
     def build(self):
         self.app.ui.layout.frame_information = FrameGarmentInformation(master=self.app.ui.layout.frame_watermark,
                                                                        corner_radius=9, width=327, height=553)
         self.app.ui.layout.frame_pattern_preview = FramePatternPreview(master=self.app.ui.layout.frame_watermark,
                                                                        corner_radius=9, width=1290, height=553)
+        self.app.controller_pat_preview.couple(self.app.pat_model, self.app.ui.layout.frame_pattern_preview)
         self.app.ui.layout.frame_information.build()
         self.app.ui.layout.frame_pattern_preview.build()
+        self.app.controller_pat_preview.bind_('pick_event', self.app.controller_pat_preview.on_pick)
+        self.app.controller_pat_preview.bind_('motion_notify_event', self.app.controller_pat_preview.on_hover)
+        self.app.controller_pat_preview.bind_('button_press_event',
+                                              self.app.controller_pat_preview.on_double_click_canvas)
 
+        self.app.ui.layout.frame_pattern_editor = FrameEditorView(master=self.app.ui.layout.frame_pattern_preview,
+                                                                  fg_color='#343638', width=300, height=500,
+                                                                  bg_color='#343638')
+        self.app.ui.layout.frame_pattern_editor.build()
+
+        self.app.controller_ind_pat_editor = ControllerIndividualPatternEditor(master=self.app.ui.layout.root)
+        self.app.controller_ind_pat_editor.couple(self.app.pat_model, self.app.ui.layout.frame_pattern_editor)
         for i in range(4):
             _controller = getattr(self.app, f'controller_retrieved_pattern_preview_{i + 1}')
             _controller.couple(self.app.retrieval_model_2d, getattr(self.app.ui.layout, f'retrieved_viewport_{i + 1}'),
                                self.app.ui.layout.frame_pattern_preview, self.app.pat_model,
-                               self.app.ui.layout.frame_information)
+                               self.app.ui.layout.frame_information, self.app.relevant_garments_model)
             _controller.bind('<Button-1>', _controller.update_information)
 
     def update(self):

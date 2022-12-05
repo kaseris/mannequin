@@ -1,3 +1,4 @@
+import os
 import os.path as osp
 
 import uuid
@@ -11,6 +12,8 @@ from interactive_mpl import InteractiveLine
 
 from mannequin.retrieval2d.retrieval_dimis import *
 from infer_retrieval import infer
+from shape_similarities_idx import ss_dict_name_to_idx, ss_dict_idx_to_name
+from utils import create_ss_matrix, similarity
 
 
 class IndividualPatternModel:
@@ -257,3 +260,53 @@ class Retrieval3DModel:
 
     def notify_controller(self):
         self.__external_controller.draw()
+
+
+class RelevantGarmentsModel:
+    def __init__(self,
+                 database_path):
+        self.selected_garment = IndividualPatternModel()
+        self.database_path = database_path
+        self._suggested = []
+        self.filenames = []
+        self.__controller = None
+
+    def build(self):
+        path_to_ss = osp.join(self.database_path,
+                              self.selected_garment.category,
+                              f'ss_{self.selected_garment.category}.txt')
+        try:
+            selected_idx = ss_dict_name_to_idx[self.selected_garment.category][self.selected_garment.name]
+        except KeyError:
+            selected_idx = ss_dict_name_to_idx[self.selected_garment.category][self.selected_garment.name]
+        ss_mat = create_ss_matrix(path_to_ss)
+
+        list_similarities = []
+        for i in range(len(ss_mat)):
+            list_similarities.append(similarity(selected_idx, i, ss_mat))
+
+        arr = np.asarray(list_similarities)
+        suggested = arr.argsort()[-4:]
+        # self._suggested = [osp.join(self.database_path,
+        #                             self.selected_garment.category,
+        #                             ss_dict_idx_to_name[self.selected_garment.category][idx]) for idx in suggested]
+        filenames = []
+        for root, dirs, files in os.walk(self.database_path):
+            for name in dirs:
+                filenames.append(os.path.join(root, name))
+        self._suggested = []
+        for idx, s in enumerate(suggested):
+            for dirname in filenames:
+                if ss_dict_idx_to_name[self.selected_garment.category][s] in dirname:
+                    self._suggested.append(dirname)
+                    break
+            # self._suggested = [a for a in filenames if a in ss_dict_idx_to_name[self.selected_garment.category][_]]
+
+        self._suggested[0] = self.selected_garment.ind_pat.garment_dir
+
+    def update(self, new_garment):
+        self.selected_garment.update(new_garment_dir=new_garment)
+        self.build()
+
+    def set_controller(self, controller):
+        self.__controller = controller

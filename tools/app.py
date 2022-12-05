@@ -19,6 +19,10 @@ class App:
         self.controller_retrieved_views = None
         self.controller_ind_pat_editor = None
         self.controller_retrieved_views3d = None
+        self.controller_relevant_view = None
+        self.controller_relevant_pattern_preview = None
+        self.controller_relevant_garment_info = None
+        self.relevant_garments_model = None
 
     def run(self):
         # self.setup()
