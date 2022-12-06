@@ -1,7 +1,9 @@
 import os
 import os.path as osp
 
+from functools import partial
 from pathlib import Path
+from typing import Union
 
 import tkinter.filedialog
 
@@ -19,9 +21,12 @@ from utils import check_path_type
 
 
 class ControllerPatternModelPreview:
-    def __init__(self):
-        self.model: IndividualPatternModel = None
-        self.view: FramePatternPreview = None
+    def __init__(self,
+                 app_state: AppState):
+        self.model: Union[None, IndividualPatternModel] = None
+        self.view: Union[None, FramePatternPreview] = None
+
+        self.app_state = app_state
 
     def couple(self,
                model: IndividualPatternModel,
@@ -80,10 +85,37 @@ class ControllerPatternModelPreview:
     def on_key_press(self, event):
         pass
 
+    # TODO: Maybe ShapeSimilarityWindow be an app property?
     def on_double_click_canvas(self, relevant, event):
         if event.dblclick:
-            a = ShapeSimilarityWindow(relevant)
-            a.build()
+            self.app_state.app.ui.layout.shape_similarity_window = ShapeSimilarityWindow(relevant)
+            self.app_state.app.ui.layout.shape_similarity_window.build()
+            self.app_state.app.controller_relevant_garment_info.couple(
+                relevant, self.app_state.app.ui.layout.shape_similarity_window,
+                self.app_state.app.ui.layout.frame_information
+            )
+
+            self.bind(self.on_press)
+            self.app_state.app.ui.layout.shape_similarity_window.run()
+
+    def bind(self, fn):
+        for i in range(1, 4):
+            getattr(self.app_state.app.ui.layout.shape_similarity_window,
+                    f'out_img_{i + 1}').configure(command=partial(fn, i))
+
+    def on_press(self, index):
+        self.app_state.app.relevant_garments_model.set_selected(index)
+        ind_pat = IndividualPatternModel()
+        ind_pat.build(self.app_state.app.relevant_garments_model.suggested[index])
+        self.app_state.app.ui.layout.frame_information.text_dummy_0.configure(placeholder_text=ind_pat.name,
+                                                                              state='normal')
+        self.app_state.app.ui.layout.frame_information.text_dummy_1.configure(placeholder_text=ind_pat.category,
+                                                                              state='normal')
+        self.app_state.app.ui.layout.frame_information.text_dummy_2.configure(placeholder_text=str(ind_pat.n_patterns),
+                                                                              state='normal')
+        self.app_state.app.ui.layout.frame_information.text_dummy_3.configure(placeholder_text=str(
+            ind_pat.ind_pat.garment_dir),
+            state='normal')
 
 
 class ControllerQueryObjectModelUploadButton:
@@ -371,11 +403,13 @@ class ControllerRelevantPatternPatternPreview:
 class ControllerRelevantPatternFrameInformation:
     def __init__(self):
         self.model = None
-        self.view = None
+        self.view_relevant = None
+        self.view_info = None
 
-    def couple(self, model, view):
+    def couple(self, model, view_relevant, view_info):
         self.model = model
-        self.view = view
+        self.view_relevant = view_relevant
+        self.view_info = view_info
 
     def bind(self, event_type, callback_fn):
         pass

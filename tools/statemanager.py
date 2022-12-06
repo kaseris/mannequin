@@ -132,7 +132,7 @@ class AppStateGarmentSelected(AppState):
         for i in range(4):
             setattr(self.app, f'controller_retrieved_pattern_preview_{i + 1}',
                     ControllerRetrievedPatternPreview())
-        self.app.controller_pat_preview = ControllerPatternModelPreview()
+        self.app.controller_pat_preview = ControllerPatternModelPreview(app_state=self)
         self.app.controller_relevant_view = ControllerRelevantPatternViews()
         self.app.controller_relevant_pattern_preview = ControllerRelevantPatternPatternPreview()
         self.app.controller_relevant_garment_info = ControllerRelevantPatternFrameInformation()

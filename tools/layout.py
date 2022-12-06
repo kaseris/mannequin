@@ -39,6 +39,7 @@ class Layout:
         self.frame_information = None
         self.frame_pattern_preview = None
         self.frame_pattern_editor = None
+        self.shape_similarity_window = None
 
         self.build()
 
@@ -733,10 +734,8 @@ class ShapeSimilarityWindow(customtkinter.CTkToplevel):
     def __init__(self,
                  relevant):
         super(ShapeSimilarityWindow, self).__init__()
-        # self.withdraw()
         self.title('Relevant Patterns')
         self.geometry('1290x315+620+72')
-        # self.bind('<Configure>', self.get_info)
         self.frame = None
         self.__relevant = relevant
 
@@ -755,21 +754,17 @@ class ShapeSimilarityWindow(customtkinter.CTkToplevel):
                                                                       text="",
                                                                       corner_radius=5, width=265, height=265,
                                                                       fg_color="#2b2b2b",
-                                                                      hover_color="#757272",
-                                                                      command=None))
+                                                                      hover_color="#757272"))
             getattr(self, f'out_img_{i + 1}').grid(row=5, column=0, pady=10, padx=10)
-        self.mainloop()
 
-    def get_info(self, event):
-        print(f'w, h: {self.winfo_width()}, {self.winfo_height()}')
-        print(f'x, y: {self.winfo_x(), self.winfo_y()}')
+    def run(self):
+        self.mainloop()
 
 
 class UI:
     """The main user interface. All layout components will be created here."""
     def __init__(self, test_shown=False):
         self.layout = Layout(title='i-Mannequin')
-        # self.layout.sidebar.button_upload.configure(command=self.button_press)
 
         if test_shown:
             self.__test()
