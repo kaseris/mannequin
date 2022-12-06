@@ -270,6 +270,7 @@ class RelevantGarmentsModel:
         self._suggested = []
         self.filenames = []
         self.__controller = None
+        self.__selected = None
 
     def build(self):
         path_to_ss = osp.join(self.database_path,
@@ -314,3 +315,10 @@ class RelevantGarmentsModel:
     @property
     def suggested(self):
         return self._suggested
+
+    @property
+    def selected(self):
+        return self.__selected
+
+    def set_selected(self, idx):
+        self.__selected = idx
