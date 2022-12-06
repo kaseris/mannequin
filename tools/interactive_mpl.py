@@ -85,9 +85,9 @@ class MplFrameGrid:
                                                             index=i * self.rows + j,
                                                             parent=self)
                     interactive_frame.grid(row=i, column=j, padx=(20, 20), pady=(20, 20))
-                    interactive_frame.bind('<Enter>', on_enter)
-                    interactive_frame.bind('<Leave>', on_leave)
-                    interactive_frame.bind_all('<Button-1>', on_frame_click)
+                    # interactive_frame.bind('<Enter>', on_enter)
+                    # interactive_frame.bind('<Leave>', on_leave)
+                    # interactive_frame.bind_all('<Button-1>', on_frame_click)
                     interactive_frame.render()
                     self.mpl_frames.append(interactive_frame)
 
