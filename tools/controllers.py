@@ -105,18 +105,20 @@ class ControllerPatternModelPreview:
 
     def on_press(self, index):
         self.app_state.app.relevant_garments_model.set_selected(index)
-        ind_pat = IndividualPatternModel()
-        ind_pat.build(self.app_state.app.relevant_garments_model.suggested[index])
-        self.app_state.app.ui.layout.frame_information.text_dummy_0.configure(placeholder_text=ind_pat.name,
+        # ind_pat = IndividualPatternModel()
+        # ind_pat.build(self.app_state.app.relevant_garments_model.suggested[index])
+        self.app_state.app.pat_model.update(self.app_state.app.relevant_garments_model.suggested[index])
+        self.app_state.app.ui.layout.frame_information.text_dummy_0.configure(placeholder_text=self.app_state.app.pat_model.name,
                                                                               state='normal')
-        self.app_state.app.ui.layout.frame_information.text_dummy_1.configure(placeholder_text=ind_pat.category,
+        self.app_state.app.ui.layout.frame_information.text_dummy_1.configure(placeholder_text=self.app_state.app.pat_model.category,
                                                                               state='normal')
-        self.app_state.app.ui.layout.frame_information.text_dummy_2.configure(placeholder_text=str(ind_pat.n_patterns),
+        self.app_state.app.ui.layout.frame_information.text_dummy_2.configure(placeholder_text=str(self.app_state.app.pat_model.n_patterns),
                                                                               state='normal')
         self.app_state.app.ui.layout.frame_information.text_dummy_3.configure(placeholder_text=str(
-            ind_pat.ind_pat.garment_dir),
+            self.app_state.app.pat_model.ind_pat.garment_dir),
             state='normal')
-        self.app_state.app.ui.layout.frame_information.update_thumbnail(ind_pat.ind_pat.garment_dir)
+        self.app_state.app.ui.layout.frame_information.update_thumbnail(self.app_state.app.pat_model.ind_pat.garment_dir)
+        self.app_state.app.ui.layout.frame_pattern_preview.draw_pattern(self.app_state.app.pat_model.interactive_lines)
 
 
 class ControllerQueryObjectModelUploadButton:
