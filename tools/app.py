@@ -22,7 +22,9 @@ class App:
         self.controller_relevant_view = None
         self.controller_relevant_pattern_preview = None
         self.controller_relevant_garment_info = None
+
         self.relevant_garments_model = None
+        self.shape_similarity_window = None
 
     def run(self):
         # self.setup()
