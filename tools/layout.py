@@ -16,6 +16,7 @@ from matplotlib.figure import Figure
 
 from PIL import Image, ImageTk, ImageOps
 
+from interactive_mpl import MplFrameGrid
 from query_mvc import Mesh
 
 vispy.use(app='tkinter')
@@ -759,6 +760,27 @@ class ShapeSimilarityWindow(customtkinter.CTkToplevel):
 
     def run(self):
         self.mainloop()
+
+
+class WindowAlternativeCurves(customtkinter.CTkToplevel):
+
+    GEOMETRY = (1218, 497)
+    OFFSET = (636, 445)
+
+    def __init__(self, master):
+        super(WindowAlternativeCurves, self).__init__(master=master)
+        self.geometry(f'{WindowAlternativeCurves.GEOMETRY[0]}x{WindowAlternativeCurves.GEOMETRY[1]}+'
+                      f'{WindowAlternativeCurves.OFFSET[0]}+{WindowAlternativeCurves.OFFSET[1]}')
+        self.title('Curve Editor')
+
+        self.grid = None
+        self.__selected_alt_curve = None
+
+    def build(self, data):
+        self.grid = MplFrameGrid(master=self, data_list=data,
+                                 mpl_width=60, mpl_height=64, column_size=5)
+        self.grid.build_grid()
+        # self.wm_transient(master=self.master)
 
 
 class UI:

@@ -11,9 +11,13 @@ from individual_pattern import IndividualPattern
 from interactive_mpl import InteractiveLine
 
 from mannequin.retrieval2d.retrieval_dimis import *
+
+from fusion import get_keypoint_count, get_filename_for_bezier_points, read_bezier_points_from_txt, align_regions, \
+    propose_intermediate_curves
 from infer_retrieval import infer
 from shape_similarities_idx import ss_dict_name_to_idx, ss_dict_idx_to_name
 from utils import create_ss_matrix, similarity
+from rules import rules_blouse
 
 
 class IndividualPatternModel:
@@ -322,3 +326,45 @@ class RelevantGarmentsModel:
 
     def set_selected(self, idx):
         self.__selected = idx
+
+
+class AlternativeCurvesModel:
+    def __init__(self, region_choice='collar',
+                 garment_category='dress',
+                 pattern_choice='front',
+                 database=None):
+        self.region_choice = region_choice
+        self.garment_category = garment_category
+        self.pattern_choice = pattern_choice
+        self.curves = []
+        self.alt_garments = []
+        self.database = database
+
+    def build(self):
+        self.alt_garments = self.find_garments_based_on_choice()
+        self.get_corresponding_pattern_part()
+
+    def reset(self):
+        self.curves = []
+        self.alt_garments = []
+
+    def find_garments_based_on_choice(self):
+        category_path = osp.join(self.database, self.garment_category)
+        list_subfolders_with_paths = [f.path for f in os.scandir(category_path) if f.is_dir()]
+        l = []
+        for subfolder in list_subfolders_with_paths:
+            for s in os.listdir(subfolder):
+                l.append(osp.join(subfolder, s))
+        return l
+
+    def get_corresponding_pattern_part(self):
+        for g in self.alt_garments:
+            try:
+                which1 = rules_blouse[self.region_choice][get_keypoint_count(g, pattern=self.pattern_choice)]
+                fnames1 = [get_filename_for_bezier_points(g, self.pattern_choice, n=n) for n in which1]
+                curve = []
+                for fname in fnames1:
+                    curve.append(read_bezier_points_from_txt(fname))
+                self.curves.append(curve)
+            except FileNotFoundError:
+                continue

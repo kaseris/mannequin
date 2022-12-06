@@ -26,6 +26,10 @@ class App:
         self.relevant_garments_model = None
         self.shape_similarity_window = None
 
+        self.alt_curves_app = None
+        self.alt_curves_model = None
+        self.alt_curves_controller = None
+
     def run(self):
         # self.setup()
         self.ui.run()

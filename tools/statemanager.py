@@ -138,6 +138,7 @@ class AppStateGarmentSelected(AppState):
         self.app.controller_relevant_garment_info = ControllerRelevantPatternFrameInformation()
         self.app.relevant_garments_model = RelevantGarmentsModel(database_path=self.app.DATABASE_PATH)
 
+
     def build(self):
         self.app.ui.layout.frame_information = FrameGarmentInformation(master=self.app.ui.layout.frame_watermark,
                                                                        corner_radius=9, width=327, height=553)

@@ -9,8 +9,9 @@ import tkinter.filedialog
 
 import customtkinter
 
-from app_models import IndividualPatternModel, QueryModel, Retrieval3DModel, Retrieval2DModel, RelevantGarmentsModel
-from layout import FramePatternPreview, Sidebar, ShapeSimilarityWindow
+from app_models import IndividualPatternModel, QueryModel, Retrieval3DModel, Retrieval2DModel, RelevantGarmentsModel,\
+    AlternativeCurvesModel
+from layout import FramePatternPreview, Sidebar, ShapeSimilarityWindow, WindowAlternativeCurves
 from interactive_mpl import InteractiveLine
 
 from altcurves import AltCurvesApp
@@ -343,6 +344,36 @@ class ControllerIndividualPatternEditor:
         controller.bind(controller.open_alt_curve_app)
 
 
+class ControllerAltCurvesAltCurvesWindow:
+    def __init__(self):
+        self.model = None
+        self.ind_pat_model = None
+        self.view = None
+
+    def couple(self, model, ind_pat_model, view):
+        self.model: AlternativeCurvesModel = model
+        self.ind_pat_model = ind_pat_model
+        self.view = view
+
+    def bind(self, event_type, callback_fn):
+        for view in self.view:
+            if event_type == '<Button-1>':
+                view.bind_all(event_type, callback_fn)
+            else:
+                view.bind(event_type, callback_fn)
+
+    def on_enter(self, event):
+        event.widget.f.patch.set_facecolor('#64676b')
+        event.widget.preview.draw()
+
+    def on_leave(self, event):
+        event.widget.f.patch.set_facecolor('#343638')
+        event.widget.preview.draw()
+
+    def on_select(self, event):
+        print(event.widget.master.index)
+
+
 class ControllerAltCurvesAppEditor:
     def __init__(self, master):
         self.model = None
@@ -366,11 +397,25 @@ class ControllerAltCurvesAppEditor:
     def open_alt_curve_app(self):
         choices = ['armhole', 'collar']
         _choice_var = self.view.options_widget.choice_var.get()
-        app = AltCurvesApp(master=self.master,
-                           choice=choices[_choice_var],
-                           category=self.model.category,
-                           pattern_selection=self.model.selected_region)
-        app.render()
+        # app = AltCurvesApp(master=self.master,
+        #                    choice=choices[_choice_var],
+        #                    category=self.model.category,
+        #                    pattern_selection=self.model.selected_region)
+        # app.render()
+        model = AlternativeCurvesModel(region_choice=choices[_choice_var],
+                                       garment_category=self.model.category,
+                                       pattern_choice=self.model.selected_region,
+                                       database='/home/kaseris/Documents/database')
+        model.build()
+        controller = ControllerAltCurvesAltCurvesWindow()
+        alt_curve_window = WindowAlternativeCurves(master=self.master)
+        alt_curve_window.build(model.curves)
+        controller.couple(model, self.model, alt_curve_window.grid.mpl_frames)
+        # for mpl_frame in alt_curve_window.grid.mpl_frames:
+        controller.bind('<Enter>', controller.on_enter)
+        controller.bind('<Leave>', controller.on_leave)
+        controller.bind('<Button-1>', controller.on_select)
+        alt_curve_window.mainloop()
 
 
 class ControllerRelevantPatternViews:
