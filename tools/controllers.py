@@ -116,6 +116,7 @@ class ControllerPatternModelPreview:
         self.app_state.app.ui.layout.frame_information.text_dummy_3.configure(placeholder_text=str(
             ind_pat.ind_pat.garment_dir),
             state='normal')
+        self.app_state.app.ui.layout.frame_information.update_thumbnail(ind_pat.ind_pat.garment_dir)
 
 
 class ControllerQueryObjectModelUploadButton:
