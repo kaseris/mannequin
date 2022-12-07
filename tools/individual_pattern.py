@@ -107,8 +107,8 @@ class IndividualPattern:
             self.__patterns[k] = curve
 
     def __getitem__(self, item):
-        # if item not in [l.replace('.xyz', '') for l in IndividualPattern.pattern_files]:
-        #     raise KeyError(f'{item}')
+        if item not in [l.replace('.xyz', '') for l in IndividualPattern.pattern_files] or 'alternative' in item:
+            raise KeyError(f'{item}')
         return self.__patterns[item]
 
 
