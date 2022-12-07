@@ -326,10 +326,11 @@ class ControllerRetrievedPatternPreview:
 
 
 class ControllerIndividualPatternEditor:
-    def __init__(self, master):
+    def __init__(self, master, app_state):
         self.model = None
         self.view = None
         self.master = master
+        self.app_state = app_state
 
     def couple(self, model, view):
         self.model = model
@@ -339,16 +340,19 @@ class ControllerIndividualPatternEditor:
     def on_notify(self):
         self.view.update_state(f'GARMENT_{self.model.category.upper()}_SELECTED')
         self.view.update_option(self.model.selected_region)
-        controller = ControllerAltCurvesAppEditor(master=self.master)
+        controller = ControllerAltCurvesAppEditor(master=self.master,
+                                                  app_state=self.app_state)
         controller.couple(self.model, self.view)
         controller.bind(controller.open_alt_curve_app)
 
 
 class ControllerAltCurvesAltCurvesWindow:
-    def __init__(self):
+    def __init__(self, app_state):
         self.model = None
         self.ind_pat_model = None
         self.view = None
+
+        self.app_state = app_state
 
     def couple(self, model, ind_pat_model, view):
         self.model: AlternativeCurvesModel = model
@@ -376,15 +380,19 @@ class ControllerAltCurvesAltCurvesWindow:
         self.view.grid.set_selected(widget_idx)
         curve = self.view.grid.get_curve()
         self.model.set_curve_to_replace(curve)
+        self.model.update_curves(self.ind_pat_model.ind_pat.garment_dir, self.ind_pat_model)
         self.view.destroy()
+        self.app_state.app.ui.layout.frame_pattern_preview.draw_pattern(self.ind_pat_model.interactive_lines)
 
 
 class ControllerAltCurvesAppEditor:
-    def __init__(self, master):
+    def __init__(self, master,
+                 app_state):
         self.model = None
         self.view = None
 
         self.master = master
+        self.__app_state = app_state
 
     def couple(self, model, view):
         self.model = model
@@ -407,7 +415,7 @@ class ControllerAltCurvesAppEditor:
                                        pattern_choice=self.model.selected_region,
                                        database='/home/kaseris/Documents/database')
         model.build()
-        controller = ControllerAltCurvesAltCurvesWindow()
+        controller = ControllerAltCurvesAltCurvesWindow(app_state=self.__app_state)
         alt_curve_window = WindowAlternativeCurves(master=self.master)
         alt_curve_window.build(model.curves)
         controller.couple(model, self.model, alt_curve_window)

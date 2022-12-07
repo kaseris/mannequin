@@ -138,7 +138,6 @@ class AppStateGarmentSelected(AppState):
         self.app.controller_relevant_garment_info = ControllerRelevantPatternFrameInformation()
         self.app.relevant_garments_model = RelevantGarmentsModel(database_path=self.app.DATABASE_PATH)
 
-
     def build(self):
         self.app.ui.layout.frame_information = FrameGarmentInformation(master=self.app.ui.layout.frame_watermark,
                                                                        corner_radius=9, width=327, height=553)
@@ -158,7 +157,8 @@ class AppStateGarmentSelected(AppState):
                                                                   bg_color='#343638')
         self.app.ui.layout.frame_pattern_editor.build()
 
-        self.app.controller_ind_pat_editor = ControllerIndividualPatternEditor(master=self.app.ui.layout.root)
+        self.app.controller_ind_pat_editor = ControllerIndividualPatternEditor(master=self.app.ui.layout.root,
+                                                                               app_state=self)
         self.app.controller_ind_pat_editor.couple(self.app.pat_model, self.app.ui.layout.frame_pattern_editor)
         for i in range(4):
             _controller = getattr(self.app, f'controller_retrieved_pattern_preview_{i + 1}')

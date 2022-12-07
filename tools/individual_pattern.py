@@ -101,9 +101,14 @@ class IndividualPattern:
         part1 = array[:idx + 1]
         return np.vstack((array[idx:], part1))
 
+    def add_alternative_curves(self, curves):
+        for idx, curve in enumerate(curves):
+            k = f'alternative_{idx}'
+            self.__patterns[k] = curve
+
     def __getitem__(self, item):
-        if item not in [l.replace('.xyz', '') for l in IndividualPattern.pattern_files]:
-            raise KeyError(f'{item}')
+        # if item not in [l.replace('.xyz', '') for l in IndividualPattern.pattern_files]:
+        #     raise KeyError(f'{item}')
         return self.__patterns[item]
 
 

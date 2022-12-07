@@ -46,7 +46,7 @@ class IndividualPatternModel:
         self.__build_interactive_lines()
 
     def clear(self):
-        self.__ind_pat = None
+        self.__ind_pat: Union[None, IndividualPattern] = None
         self.__category = None
         self.__n_patterns = None
         self.__name = None
@@ -65,7 +65,7 @@ class IndividualPatternModel:
 
     def update(self, new_garment_dir):
         self.clear()
-        self.__ind_pat = IndividualPattern(new_garment_dir)
+        self.__ind_pat: IndividualPattern = IndividualPattern(new_garment_dir)
         self.__name = Path(new_garment_dir).name
         _ind_patterns_path = osp.join(new_garment_dir, 'individual patterns')
         _n_pats = len(os.listdir(_ind_patterns_path)) // 2
@@ -115,6 +115,22 @@ class IndividualPatternModel:
         to clear the drawn data. Same applies for the change of data.
         """
         self.__editor_controller.on_notify()
+
+    def add_alternative_curves(self, curves):
+        # if len(curve) == 4:
+        #     for i in range(len(curve) - 2):
+        #         pair = [curve[i], curve[i + 2]]
+        #         uid = str(uuid.uuid4())
+        #         line = InteractiveLine(pair, id=uid, label='alternative')
+        #         self.__interactive_lines.append(line)
+        # else:
+        #     for c in curve:
+        #         uid = str(uuid.uuid4())
+        #         line = InteractiveLine([c], id=uid, label='alternative')
+        #         self.__interactive_lines.append(line)
+        self.__ind_pat.add_alternative_curves(curves)
+        self.__interactive_lines = []
+        self.__build_interactive_lines()
 
 
 class QueryModel:
@@ -378,3 +394,14 @@ class AlternativeCurvesModel:
     @property
     def curve_to_replace(self):
         return self.__curve_to_replace
+
+    def update_curves(self, path_to_garment1, ind_pat_model):
+        aligned_alt_curve = align_regions(path_to_garment1,
+                                          self.curve_to_replace,
+                                          pattern=self.pattern_choice,
+                                          selection=self.region_choice)
+        proposed_curves = propose_intermediate_curves(path_to_garment1,
+                                                      aligned_alt_curve,
+                                                      pattern=self.pattern_choice,
+                                                      selection=self.region_choice)
+        ind_pat_model.add_alternative_curves(proposed_curves)
