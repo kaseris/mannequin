@@ -1,4 +1,3 @@
-import os
 import os.path as osp
 
 import uuid
@@ -39,6 +38,7 @@ class IndividualPatternModel:
         _n_pats = len(os.listdir(_ind_patterns_path)) // 2
         self.__n_patterns = _n_pats
         categories = ['dress', 'blouse', 'skirt']
+        category = ''
         for cat in categories:
             if cat in garment_dir:
                 category = cat
@@ -71,6 +71,7 @@ class IndividualPatternModel:
         _n_pats = len(os.listdir(_ind_patterns_path)) // 2
         self.__n_patterns = _n_pats
         categories = ['dress', 'blouse', 'skirt']
+        category = ''
         for cat in categories:
             if cat in new_garment_dir:
                 category = cat
