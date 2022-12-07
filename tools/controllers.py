@@ -356,7 +356,7 @@ class ControllerAltCurvesAltCurvesWindow:
         self.view = view
 
     def bind(self, event_type, callback_fn):
-        for view in self.view:
+        for view in self.view.grid.mpl_frames:
             if event_type == '<Button-1>':
                 view.bind_all(event_type, callback_fn)
             else:
@@ -372,6 +372,11 @@ class ControllerAltCurvesAltCurvesWindow:
 
     def on_select(self, event):
         print(event.widget.master.index)
+        widget_idx = event.widget.master.index
+        self.view.grid.set_selected(widget_idx)
+        curve = self.view.grid.get_curve()
+        self.model.set_curve_to_replace(curve)
+        self.view.destroy()
 
 
 class ControllerAltCurvesAppEditor:
@@ -397,11 +402,6 @@ class ControllerAltCurvesAppEditor:
     def open_alt_curve_app(self):
         choices = ['armhole', 'collar']
         _choice_var = self.view.options_widget.choice_var.get()
-        # app = AltCurvesApp(master=self.master,
-        #                    choice=choices[_choice_var],
-        #                    category=self.model.category,
-        #                    pattern_selection=self.model.selected_region)
-        # app.render()
         model = AlternativeCurvesModel(region_choice=choices[_choice_var],
                                        garment_category=self.model.category,
                                        pattern_choice=self.model.selected_region,
@@ -410,8 +410,7 @@ class ControllerAltCurvesAppEditor:
         controller = ControllerAltCurvesAltCurvesWindow()
         alt_curve_window = WindowAlternativeCurves(master=self.master)
         alt_curve_window.build(model.curves)
-        controller.couple(model, self.model, alt_curve_window.grid.mpl_frames)
-        # for mpl_frame in alt_curve_window.grid.mpl_frames:
+        controller.couple(model, self.model, alt_curve_window)
         controller.bind('<Enter>', controller.on_enter)
         controller.bind('<Leave>', controller.on_leave)
         controller.bind('<Button-1>', controller.on_select)

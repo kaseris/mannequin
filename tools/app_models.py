@@ -338,6 +338,7 @@ class AlternativeCurvesModel:
         self.pattern_choice = pattern_choice
         self.curves = []
         self.alt_garments = []
+        self.__curve_to_replace = None
         self.database = database
 
     def build(self):
@@ -347,6 +348,7 @@ class AlternativeCurvesModel:
     def reset(self):
         self.curves = []
         self.alt_garments = []
+        self.__curve_to_replace = None
 
     def find_garments_based_on_choice(self):
         category_path = osp.join(self.database, self.garment_category)
@@ -368,3 +370,11 @@ class AlternativeCurvesModel:
                 self.curves.append(curve)
             except FileNotFoundError:
                 continue
+
+    def set_curve_to_replace(self, data):
+        print(f'Replacing with data:\n {data}')
+        self.__curve_to_replace = data
+
+    @property
+    def curve_to_replace(self):
+        return self.__curve_to_replace
