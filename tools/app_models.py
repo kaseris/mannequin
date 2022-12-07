@@ -60,7 +60,10 @@ class IndividualPatternModel:
         for region in self.__ind_pat.patterns.keys():
             points = self.__ind_pat[region]
             uid = str(uuid.uuid4())
-            line = InteractiveLine([points], id=uid, label=region)
+            try:
+                line = InteractiveLine([points], id=uid, label=region)
+            except ValueError:
+                line = InteractiveLine(points, id=uid, label=region)
             self.__interactive_lines.append(line)
 
     def update(self, new_garment_dir):
