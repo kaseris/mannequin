@@ -29,7 +29,7 @@ class IndividualPatternModel:
         self.__n_patterns = None
         self.__name = None
         self.__selected_region = None
-
+        self.__last_option = None
         self.__editor_controller = None
 
     def build(self, garment_dir: Union[str, PathLike]):
@@ -99,6 +99,11 @@ class IndividualPatternModel:
 
     def set_selected_region(self, region):
         self.__selected_region = region
+        if 'alternative' in self.__selected_region:
+            self.__selected_region = self.__last_option
+        else:
+            self.__selected_region = region
+            self.__last_option = region
         self.notify_controller()
 
     @property
@@ -117,17 +122,6 @@ class IndividualPatternModel:
         self.__editor_controller.on_notify()
 
     def add_alternative_curves(self, curves):
-        # if len(curve) == 4:
-        #     for i in range(len(curve) - 2):
-        #         pair = [curve[i], curve[i + 2]]
-        #         uid = str(uuid.uuid4())
-        #         line = InteractiveLine(pair, id=uid, label='alternative')
-        #         self.__interactive_lines.append(line)
-        # else:
-        #     for c in curve:
-        #         uid = str(uuid.uuid4())
-        #         line = InteractiveLine([c], id=uid, label='alternative')
-        #         self.__interactive_lines.append(line)
         self.__ind_pat.add_alternative_curves(curves)
         self.__interactive_lines = []
         self.__build_interactive_lines()
