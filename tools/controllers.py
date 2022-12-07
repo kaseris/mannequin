@@ -1,10 +1,8 @@
-import os
-import os.path as osp
-
 from functools import partial
 from pathlib import Path
 from typing import Union
 
+import numpy as np
 import tkinter.filedialog
 
 import customtkinter
@@ -84,7 +82,21 @@ class ControllerPatternModelPreview:
                     self.view.interactive_preview.f.canvas.draw_idle()
 
     def on_key_press(self, event):
-        pass
+        if event.key == 'z':
+            for il in self.model.interactive_lines:
+                if il.state == 1:
+                    self.view.interactive_preview.ax.set_xlim([il.min_x - 20., il.max_x + 20.0])
+                    self.view.interactive_preview.ax.set_ylim([il.min_y - 20., il.max_y + 20.0])
+                    self.view.interactive_preview.f.canvas.draw_idle()
+                    break
+        elif event.key == 'escape':
+            min_x = min([np.min(v[:, 0]) for v in self.model.ind_pat.patterns.values()])
+            min_y = min([np.min(v[:, 1]) for v in self.model.ind_pat.patterns.values()])
+            max_x = max([np.max(v[:, 0]) for v in self.model.ind_pat.patterns.values()])
+            max_y = max([np.max(v[:, 1]) for v in self.model.ind_pat.patterns.values()])
+            self.view.interactive_preview.ax.set_xlim([min_x - 20., max_x + 20.0])
+            self.view.interactive_preview.ax.set_ylim([min_y - 20., max_y + 20.0])
+            self.view.interactive_preview.f.canvas.draw_idle()
 
     # TODO: Maybe ShapeSimilarityWindow be an app property?
     def on_double_click_canvas(self, relevant, event):

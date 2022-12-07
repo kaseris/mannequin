@@ -21,6 +21,7 @@ class IndividualPattern:
         self.__parts = []
         self.__flags = {'armhole': False,
                         'collar': False}
+        self.__alternative_exists = None
         self.__build()
 
     def __build(self):
@@ -46,6 +47,7 @@ class IndividualPattern:
                 self.__flags['armhole'] = True
             elif 'collar' in part:
                 self.__flags['collar'] = True
+        self.__alternative_exists = False
 
     def replace(self, curve, region):
         def find_nearest(array, value):
@@ -111,11 +113,17 @@ class IndividualPattern:
                 pair = [curves[i], curves[i + 2]]
                 k = f'alternative_{i}'
                 self.__patterns[k] = pair
+        self.__alternative_exists = True
 
     def __getitem__(self, item):
-        if (item not in [l.replace('.xyz', '') for l in IndividualPattern.pattern_files]) and not ('alternative' in item):
+        if (item not in [l.replace('.xyz', '') for l in IndividualPattern.pattern_files]) and not (
+                'alternative' in item):
             raise KeyError(f'{item}')
         return self.__patterns[item]
+
+    @property
+    def alternative_exists(self):
+        return self.__alternative_exists
 
 
 if __name__ == '__main__':

@@ -151,6 +151,7 @@ class AppStateGarmentSelected(AppState):
         self.app.controller_pat_preview.bind_('button_press_event',
                                               partial(self.app.controller_pat_preview.on_double_click_canvas,
                                                       self.app.relevant_garments_model))
+        self.app.controller_pat_preview.bind_('key_press_event', self.app.controller_pat_preview.on_key_press)
 
         self.app.ui.layout.frame_pattern_editor = FrameEditorView(master=self.app.ui.layout.frame_pattern_preview,
                                                                   fg_color='#343638', width=300, height=500,
