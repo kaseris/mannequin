@@ -14,7 +14,7 @@ from interactive_mpl import InteractiveLine
 
 from altcurves import AltCurvesApp
 
-from statemanager import AppState, AppStateEnum, AppStateInit, AppStateQueryUploaded
+from statemanager import AppState, AppStateEnum, AppStateInit, AppStateQueryUploaded, AppStateGarmentSelected
 
 from utils import check_path_type
 
@@ -118,15 +118,16 @@ class ControllerPatternModelPreview:
 
     def on_press(self, index):
         self.app_state.app.relevant_garments_model.set_selected(index)
-        # ind_pat = IndividualPatternModel()
-        # ind_pat.build(self.app_state.app.relevant_garments_model.suggested[index])
         self.app_state.app.pat_model.update(self.app_state.app.relevant_garments_model.suggested[index])
-        self.app_state.app.ui.layout.frame_information.text_dummy_0.configure(placeholder_text=self.app_state.app.pat_model.name,
-                                                                              state='normal')
-        self.app_state.app.ui.layout.frame_information.text_dummy_1.configure(placeholder_text=self.app_state.app.pat_model.category,
-                                                                              state='normal')
-        self.app_state.app.ui.layout.frame_information.text_dummy_2.configure(placeholder_text=str(self.app_state.app.pat_model.n_patterns),
-                                                                              state='normal')
+        self.app_state.app.ui.layout.frame_information.text_dummy_0.configure(
+            placeholder_text=self.app_state.app.pat_model.name,
+            state='normal')
+        self.app_state.app.ui.layout.frame_information.text_dummy_1.configure(
+            placeholder_text=self.app_state.app.pat_model.category,
+            state='normal')
+        self.app_state.app.ui.layout.frame_information.text_dummy_2.configure(
+            placeholder_text=str(self.app_state.app.pat_model.n_patterns),
+            state='normal')
         self.app_state.app.ui.layout.frame_information.text_dummy_3.configure(placeholder_text=str(
             self.app_state.app.pat_model.ind_pat.garment_dir),
             state='normal')
@@ -241,7 +242,7 @@ class ControllerRetrievalApplyButton:
 
 class ControllerRetrievedViewportViews:
     def __init__(self, app_state: AppState):
-        self.model: Retrieval2DModel = None
+        self.model: Union[None, Retrieval2DModel] = None
         self.__app_state = app_state
 
         self.needs_update_state = True
@@ -299,7 +300,7 @@ class ControllerRetrievedPatternPreview:
         self.pattern_preview = None
         self.pat_model = None
         self.information_view = None
-        self.relevant_ss_garment_model: RelevantGarmentsModel = None
+        self.relevant_ss_garment_model: Union[None, RelevantGarmentsModel] = None
 
     def couple(self, model,
                view,
@@ -337,12 +338,27 @@ class ControllerRetrievedPatternPreview:
         pass
 
 
+class ControllerModelReplaceButton:
+    def __init__(self):
+        self.model = None
+        self.view = None
+
+    def couple(self, model, view):
+        self.model = model
+        self.view = view
+
+    def bind(self, event_type, callback_fn):
+        if self.view.options_widget is not None:
+            if hasattr(self.view.options_widget, 'button_replace'):
+                self.view.options_widget.button_replace.configure(command=callback_fn)
+
+
 class ControllerIndividualPatternEditor:
     def __init__(self, master, app_state):
         self.model = None
         self.view = None
         self.master = master
-        self.app_state = app_state
+        self.app_state: AppStateGarmentSelected = app_state
 
     def couple(self, model, view):
         self.model = model
@@ -356,6 +372,33 @@ class ControllerIndividualPatternEditor:
                                                   app_state=self.app_state)
         controller.couple(self.model, self.view)
         controller.bind(controller.open_alt_curve_app)
+        controller_model_replace_button = ControllerModelReplaceButton()
+        controller_model_replace_button.couple(self.model, self.view)
+        controller_model_replace_button.bind(None, self.on_press_replace)
+
+    def on_press_replace(self):
+        print(self.model.ind_pat.alternative_exists)
+        curve_to_replace = None
+        for il in self.model.interactive_lines:
+            if ('alternative' in il.label) and (il.state == 1):
+                curve_to_replace = il.data_array
+                break
+
+        choices = ['armhole', 'collar']
+
+        for _region in curve_to_replace:
+            self.model.ind_pat.replace(_region, self.model.selected_region)
+            self.model.update_interactive_lines()
+            if self.model.ind_pat.get_flag(choices[self.view.options_widget.choice_var.get()]):
+                print('I Will use seams')
+                # TODO: Declare seam and subpath inside the App class
+            else:
+                print('I will use subpath')
+
+        self.app_state.app.ui.layout.frame_pattern_preview.draw_pattern(self.model.interactive_lines)
+
+        if curve_to_replace is None:
+            pass
 
 
 class ControllerAltCurvesAltCurvesWindow:
@@ -387,14 +430,16 @@ class ControllerAltCurvesAltCurvesWindow:
         event.widget.preview.draw()
 
     def on_select(self, event):
-        print(event.widget.master.index)
-        widget_idx = event.widget.master.index
-        self.view.grid.set_selected(widget_idx)
-        curve = self.view.grid.get_curve()
-        self.model.set_curve_to_replace(curve)
-        self.model.update_curves(self.ind_pat_model.ind_pat.garment_dir, self.ind_pat_model)
-        self.view.destroy()
-        self.app_state.app.ui.layout.frame_pattern_preview.draw_pattern(self.ind_pat_model.interactive_lines)
+        try:
+            widget_idx = event.widget.master.index
+            self.view.grid.set_selected(widget_idx)
+            curve = self.view.grid.get_curve()
+            self.model.set_curve_to_replace(curve)
+            self.model.update_curves(self.ind_pat_model.ind_pat.garment_dir, self.ind_pat_model)
+            self.view.destroy()
+            self.app_state.app.ui.layout.frame_pattern_preview.draw_pattern(self.ind_pat_model.interactive_lines)
+        except AttributeError:
+            pass
 
 
 class ControllerAltCurvesAppEditor:

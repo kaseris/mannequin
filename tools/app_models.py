@@ -81,6 +81,20 @@ class IndividualPatternModel:
         self.__category = category
         self.__build_interactive_lines()
 
+    def update_interactive_lines(self):
+        self.__interactive_lines = []
+        for region in self.__ind_pat.patterns.keys():
+            if 'alternative' in region:
+                continue
+            else:
+                points = self.__ind_pat[region]
+                uid = str(uuid.uuid4())
+                try:
+                    line = InteractiveLine([points], id=uid, label=region)
+                except ValueError:
+                    line = InteractiveLine(points, id=uid, label=region)
+                self.__interactive_lines.append(line)
+
     @property
     def ind_pat(self):
         return self.__ind_pat
