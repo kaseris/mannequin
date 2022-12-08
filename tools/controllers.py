@@ -304,18 +304,22 @@ class ControllerRetrievedPatternPreview:
         self.information_view = None
         self.relevant_ss_garment_model: Union[None, RelevantGarmentsModel] = None
 
+        self.app_state: Union[None, AppStateGarmentSelected] = None
+
     def couple(self, model,
                view,
                pattern_preview,
                pat_model,
                information_view,
-               relevant_ss_garment_model: RelevantGarmentsModel):
+               relevant_ss_garment_model: RelevantGarmentsModel,
+               app_state):
         self.model = model
         self.view = view
         self.pattern_preview = pattern_preview
         self.pat_model = pat_model
         self.information_view = information_view
         self.relevant_ss_garment_model = relevant_ss_garment_model
+        self.app_state = app_state
 
     def bind(self, event_type, callback_fn):
         self.view.bind(event_type, callback_fn)
@@ -335,6 +339,9 @@ class ControllerRetrievedPatternPreview:
         self.information_view.text_dummy_3.configure(placeholder_text=str(self.model.paths[idx - 1]), state='normal')
         self.information_view.update_thumbnail(self.model.paths[idx - 1])
         self.relevant_ss_garment_model.update(self.model.paths[idx - 1])
+
+        self.app_state.app.seam = Seam(self.pat_model.ind_pat.garment_dir)
+        self.app_state.app.subpath = SubPath(self.pat_model.ind_pat.garment_dir)
 
     def request_state_update(self):
         pass
@@ -392,10 +399,10 @@ class ControllerIndividualPatternEditor:
             self.model.ind_pat.replace(_region, self.model.selected_region)
             self.model.update_interactive_lines()
             if self.model.ind_pat.get_flag(choices[self.view.options_widget.choice_var.get()]):
-                self.app_state.app.seam = Seam(self.model.ind_pat.garment_dir)
+                # self.app_state.app.seam = Seam(self.model.ind_pat.garment_dir)
                 self.app_state.app.seam.replace(_region)
             else:
-                self.app_state.app.subpath = SubPath(self.model.ind_pat.garment_dir)
+                # self.app_state.app.subpath = SubPath(self.model.ind_pat.garment_dir)
                 self.app_state.app.subpath.replace(_region)
 
         self.app_state.app.ui.layout.frame_pattern_preview.draw_pattern(self.model.interactive_lines)

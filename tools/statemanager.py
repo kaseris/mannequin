@@ -170,7 +170,8 @@ class AppStateGarmentSelected(AppState):
             _controller = getattr(self.app, f'controller_retrieved_pattern_preview_{i + 1}')
             _controller.couple(self.app.retrieval_model_2d, getattr(self.app.ui.layout, f'retrieved_viewport_{i + 1}'),
                                self.app.ui.layout.frame_pattern_preview, self.app.pat_model,
-                               self.app.ui.layout.frame_information, self.app.relevant_garments_model)
+                               self.app.ui.layout.frame_information, self.app.relevant_garments_model,
+                               self)
             _controller.bind('<Button-1>', _controller.update_information)
 
     def update(self):
