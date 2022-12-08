@@ -1,5 +1,8 @@
 import os.path as osp
 
+from os import PathLike
+from typing import Union, List
+
 import customtkinter
 import numpy as np
 from scipy.special import comb
@@ -36,6 +39,22 @@ def smoothstep(x, x_min=0, x_max=1, N=1):
     result *= x ** (N + 1)
 
     return np.expand_dims(result, axis=1)
+
+
+def check_path_type(s: Union[str, PathLike],
+                    extensions: List):
+    if not (isinstance(s, str) or isinstance(s, PathLike)):
+        return False
+
+    if not osp.isfile(s):
+        return False
+
+    _filt = list(filter(lambda _x: s.endswith(_x), extensions))
+
+    if any(_filt):
+        return True
+    else:
+        return False
 
 
 class ErrorPopup(customtkinter.CTkToplevel):

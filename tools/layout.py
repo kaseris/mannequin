@@ -1,17 +1,30 @@
+import copy
+import os.path as osp
+
+from pathlib import Path
 from typing import Union
 
 import tkinter
+import vispy
+import vispy.scene as scene
+from vispy.io import imread
 
 import customtkinter
 
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
-from matplotlib.collections import LineCollection
 
 from PIL import Image, ImageTk, ImageOps
 
+from interactive_mpl import MplFrameGrid
+from query_mvc import Mesh
+
+vispy.use(app='tkinter')
+
 
 class Layout:
+    VISPY_CANVAS_BG_COLOR_DARK = '#4a4949'
+
     def __init__(self,
                  title='i-Mannequin',
                  geometry='1920x1080'):
@@ -27,6 +40,7 @@ class Layout:
         self.frame_information = None
         self.frame_pattern_preview = None
         self.frame_pattern_editor = None
+        self.shape_similarity_window = None
 
         self.build()
 
@@ -49,11 +63,9 @@ class Layout:
         if not self.shown:
             self.frame_retrieved = FrameRetrievedPlaceholder(master=self.frame_watermark, width=1290, height=355)
             self.frame_retrieved.build()
-            offsets = [(680, 115), (980, 115), (1280, 115), (1580, 115)]
             for i in range(4):
-                setattr(self, f'win_{i}', customtkinter.CTkToplevel(master=self.root))
-                getattr(self, f'win_{i}').geometry(f'260x260+{offsets[i][0]}+{offsets[i][1]}')
-                getattr(self, f'win_{i}').title(f'Retrieved Garment {i + 1}')
+                setattr(self, f'retrieved_viewport_{i+1}', RetrievedViewportPlaceholder(i, '260x260',
+                                                                                        master=self.root))
             self.query_image_placeholder = QueryImagePlaceholder(master=self.root)
             self.root.bind('<Configure>', self.query_image_placeholder.dragging)
             self.frame_information = FrameGarmentInformation(master=self.frame_watermark, corner_radius=9,
@@ -73,6 +85,68 @@ class Layout:
             print('shown')
 
 
+class RetrievedViewportPlaceholder(customtkinter.CTkToplevel):
+    OFFSETS = [(680, 115), (980, 115), (1280, 115), (1580, 115)]
+
+    def __init__(self, offset_index, geometry, **kwargs):
+        super(RetrievedViewportPlaceholder, self).__init__(**kwargs)
+        self.geometry(geometry+f'+{RetrievedViewportPlaceholder.OFFSETS[offset_index][0]}'
+                               f'+{RetrievedViewportPlaceholder.OFFSETS[offset_index][1]}')
+        self.__idx = offset_index + 1
+
+        self.title(f'Retrieved Garment: {offset_index + 1}')
+        self.wm_transient(self.master)
+        self.drag_id = ''
+        self.vispy_canvas = scene.SceneCanvas(keys='interactive',
+                                              show=True,
+                                              parent=self)
+        self.vispy_canvas.native.pack(side=tkinter.TOP, fill=tkinter.BOTH,
+                                      expand=True)
+        self.vispy_view = self.vispy_canvas.central_widget.add_view(bgcolor=Layout.VISPY_CANVAS_BG_COLOR_DARK)
+
+    def draw(self, kind, fname):
+        self.clear()
+        if kind == 'image':
+            im = imread(fname)
+            im_obj = vispy.scene.visuals.Image(im, parent=self.vispy_view)
+            self.vispy_view.add(im_obj)
+            self.vispy_view.camera = vispy.scene.PanZoomCamera(aspect=1)
+            self.vispy_view.camera.flip = (0, 1, 0)
+            self.vispy_view.camera.set_range()
+            self.vispy_view.camera.zoom(1., (250, 250))
+        else:
+            vertices, faces, _, _ = vispy.io.read_mesh(fname)
+            m = Mesh(vertices=vertices, faces=faces)
+            mesh = vispy.scene.visuals.Mesh(vertices=m.vertices,
+                                            shading='smooth',
+                                            faces=m.faces)
+            self.vispy_view.add(mesh)
+            self.vispy_view.camera = vispy.scene.TurntableCamera(elevation=90, azimuth=0, roll=90)
+
+    def clear(self):
+        self.vispy_view.parent = None
+        self.vispy_view = self.vispy_canvas.central_widget.add_view(bgcolor=Layout.VISPY_CANVAS_BG_COLOR_DARK)
+
+    def dragging(self, event):
+        if event.widget is self.master:
+            if self.drag_id == '':
+                pass
+            else:
+                self.master.after_cancel(self.drag_id)
+                x = self.master.winfo_x()
+                y = self.master.winfo_y()
+                self.geometry(f'400x300+{x + QueryImagePlaceholder.TOP_LEVEL_OFFSET_X}+'
+                              f'{y + QueryImagePlaceholder.TOP_LEVEL_OFFSET_Y}')
+            self.drag_id = self.master.after(1000, self.stop_drag)
+
+    def stop_drag(self):
+        self.drag_id = ''
+
+    @property
+    def idx(self):
+        return self.__idx
+
+
 class Sidebar(customtkinter.CTkFrame):
     def __init__(self,
                  master,
@@ -90,7 +164,7 @@ class Sidebar(customtkinter.CTkFrame):
         self.instructions = customtkinter.CTkLabel(self,
                                                    text="\u2022 Left Click on"
                                                         " a retrieved image\n to view garmen"
-                                                        "t's infomation\n and its respective patterns.\n\n"
+                                                        "t's information\n and its respective patterns.\n\n"
                                                         "\u2022 Double-click on the pattern\n preview panel to view"
                                                         " similar\n garments.",
                                                    justify='left',
@@ -115,13 +189,17 @@ class Sidebar(customtkinter.CTkFrame):
 
     def change_appearance_mode(self, new_appearance):
         customtkinter.set_appearance_mode(new_appearance)
+        #TODO: Also change the pattern editor's frame color
+        #TODO: Set the pattern preview's facecolor
 
 
 class FrameESPA(customtkinter.CTkFrame):
     def __init__(self, master, height, corner_radius, fg_color):
         super(FrameESPA, self).__init__(master=master, height=height, corner_radius=corner_radius,
                                         fg_color=fg_color)
-        self.img = ImageTk.PhotoImage(Image.open('test_images/espa-eng-768x152.png').resize((768//2, 152//2)))
+        img = Image.open('test_images/banner.png')
+        img = ImageOps.contain(img, (1800, 70))
+        self.img = ImageTk.PhotoImage(img)
         self.label = customtkinter.CTkLabel(master=self, image=self.img)
 
     def build(self):
@@ -182,6 +260,18 @@ class QueryImagePlaceholder(customtkinter.CTkToplevel):
 
         self.update_idletasks()
 
+        self.frame = customtkinter.CTkFrame(master=self)
+        self.frame.pack(side=tkinter.TOP, anchor=tkinter.CENTER)
+        self.button_apply = customtkinter.CTkButton(master=self.frame, text='Apply')
+        self.button_apply.pack()
+
+        self.vispy_canvas = scene.SceneCanvas(keys='interactive',
+                                              show=True,
+                                              parent=self)
+        self.vispy_canvas.native.pack(side=tkinter.TOP, fill=tkinter.BOTH,
+                                      expand=True)
+        self.vispy_view = self.vispy_canvas.central_widget.add_view(bgcolor=Layout.VISPY_CANVAS_BG_COLOR_DARK)
+
     def dragging(self, event):
         if event.widget is self.master:
             if self.drag_id == '':
@@ -196,6 +286,29 @@ class QueryImagePlaceholder(customtkinter.CTkToplevel):
 
     def stop_drag(self):
         self.drag_id = ''
+
+    def draw(self, kind, fname):
+        self.clear()
+        if kind == 'image':
+            im = imread(fname)
+            im_obj = vispy.scene.visuals.Image(im, parent=self.vispy_view)
+            self.vispy_view.add(im_obj)
+            self.vispy_view.camera = vispy.scene.PanZoomCamera(aspect=1)
+            self.vispy_view.camera.flip = (0, 1, 0)
+            self.vispy_view.camera.set_range()
+            self.vispy_view.camera.zoom(1., (250, 250))
+        else:
+            vertices, faces, _, _ = vispy.io.read_mesh(fname)
+            m = Mesh(vertices=vertices, faces=faces)
+            mesh = vispy.scene.visuals.Mesh(vertices=m.vertices,
+                                            shading='smooth',
+                                            faces=m.faces)
+            self.vispy_view.add(mesh)
+            self.vispy_view.camera = vispy.scene.TurntableCamera(elevation=90, azimuth=0, roll=90)
+
+    def clear(self):
+        self.vispy_view.parent = None
+        self.vispy_view = self.vispy_canvas.central_widget.add_view(bgcolor=Layout.VISPY_CANVAS_BG_COLOR_DARK)
 
 
 class FrameGarmentInformation(customtkinter.CTkFrame):
@@ -226,14 +339,15 @@ class FrameGarmentInformation(customtkinter.CTkFrame):
             setattr(self, f'text_dummy_{i}', customtkinter.CTkEntry(master=self.frame_text_placeholder,
                                                                     justify=tkinter.RIGHT,
                                                                     text_font=('Roboto', 8),
-                                                                    placeholder_text=f'dummy_{str(i)}'))
-
+                                                                    placeholder_text=f''))
+        self.img_resized = None
         self.frame_image_preview = customtkinter.CTkFrame(master=self, width=200, height=200)
-        img = Image.open('test_images/8.jpg')
-        img_resized = ImageOps.contain(img, (190, 190))
-        self.image_garment_preview = customtkinter.CTkButton(master=self.frame_image_preview,
-                                                             image=ImageTk.PhotoImage(img_resized),
-                                                             text='')
+        self.default_img = Image.open('test_images/8.jpg')
+
+        self.image_garment_preview = customtkinter.CTkLabel(master=self.frame_image_preview,
+                                                            text='',
+                                                            width=200,
+                                                            height=200)
 
         self.button_launch_editor = customtkinter.CTkButton(master=self, text='Launch 3D Editor')
 
@@ -242,7 +356,7 @@ class FrameGarmentInformation(customtkinter.CTkFrame):
         self.pack_propagate(False)
         self.label.pack(anchor=tkinter.CENTER, pady=(5, 0))
 
-        self.frame_text_placeholder.pack()
+        self.frame_text_placeholder.pack(pady=(40, 0))
         self.frame_text_placeholder.grid_columnconfigure(0, weight=1)
         self.frame_text_placeholder.grid_columnconfigure(1, weight=3)
         self.text_name.grid(row=0, column=0, sticky=tkinter.W)
@@ -252,10 +366,17 @@ class FrameGarmentInformation(customtkinter.CTkFrame):
         for i in range(4):
             getattr(self, f'text_dummy_{i}').grid(row=i, column=1, sticky=tkinter.E)
 
-        self.frame_image_preview.pack(pady=(30, 0))
-        self.frame_image_preview.pack_propagate(0)
+        self.frame_image_preview.pack(pady=(60, 0))
+        self.frame_image_preview.pack_propagate(False)
         self.image_garment_preview.pack(anchor=tkinter.CENTER)
-        self.button_launch_editor.pack(pady=(80, 0))
+        self.button_launch_editor.pack(pady=(50, 0))
+
+    def update_thumbnail(self, path):
+        image_path = osp.join(path, str(Path(path).name)) + '.jpg'
+        img_obj = Image.open(image_path)
+        self.img_resized = ImageTk.PhotoImage(ImageOps.contain(img_obj, (190, 190)))
+        self.image_garment_preview.configure(image=self.img_resized)
+        self.image_garment_preview.pack()
 
 
 class FramePatternPreview(customtkinter.CTkFrame):
@@ -279,6 +400,15 @@ class FramePatternPreview(customtkinter.CTkFrame):
         self.interactive_preview.widget.pack(side=tkinter.LEFT, padx=(20, 0))
         self.interactive_preview.draw()
 
+    def draw_pattern(self, data):
+        self.interactive_preview.draw(data)
+
+    def bind_event(self, event_type, callback_fn):
+        self.interactive_preview.f.canvas.mpl_connect(event_type, callback_fn)
+
+    def clear(self):
+        self.interactive_preview.clear()
+
 
 class InteractivePatternViewer:
     MIN_X = 20.0
@@ -293,14 +423,15 @@ class InteractivePatternViewer:
         self.f.patch.set_facecolor('#525252')
 
         self.pattern_preview = FigureCanvasTkAgg(self.f, master=master)
-
+        self.ax = None
+        self.annot = None
         # Maybe lines and line dict can be sampled from a Pattern model interface (?)
         # Will leave it blank for now and test it from a model class
 
         # Figure out; Is an editor required? YES
 
         # NOTE: An Editor class should contain the selected pattern's data and manage their contents from there.
-        # The interactivePatternViewer is merely an user interface to render the results and listen to events.
+        # The InteractivePatternViewer is merely an user interface to render the results and listen to events.
         # A PatternController will listen to these events and subsequently issue a command to the model interface
         # to manipulate its data.
 
@@ -309,12 +440,53 @@ class InteractivePatternViewer:
         return self.pattern_preview.get_tk_widget()
 
     def draw(self,
-             data=None):
+             data=None,
+             controller_fn=None):
         # Need to fill in the method that takes the data from the Model interface and then draws it.
         if data is not None:
+            self.f.clear()
+            self.f.subplots_adjust(top=1, bottom=0, right=1, left=0, hspace=0, wspace=0)
+            self.f.tight_layout()
+            self.ax = self.f.add_subplot(autoscale_on=False)
+            # For now, use a hand-picked value
+            self.ax.set_facecolor('#343638')
+            self.ax.axis('off')
+            self.ax.set_aspect('equal')
+            self.ax.set_xticks([])
+            self.ax.set_yticks([])
+
+            self.annot = self.ax.annotate("", (0, 0), (10, 10), xycoords='figure pixels',
+                                          bbox=dict(boxstyle="round", fc="w"),
+                                          arrowprops=dict(arrowstyle="->"))
+            self.annot.set_visible(False)
+
+            for collection in data:
+                self.ax.add_collection(collection.line)
+
+            x_min = min([l.min_x for l in data])
+            y_min = min([l.min_y for l in data])
+
+            x_max = max([l.max_x for l in data])
+            y_max = max([l.max_y for l in data])
+
+            self.ax.set_xlim([x_min - InteractivePatternViewer.MIN_Y, x_max + InteractivePatternViewer.MAX_X])
+            self.ax.set_ylim([y_min - InteractivePatternViewer.MIN_Y, y_max + InteractivePatternViewer.MAX_Y])
             self.f.canvas.draw_idle()
         else:
-            pass
+            self.clear()
+
+    def clear(self):
+        self.f.clf()
+        self.f.subplots_adjust(top=1, bottom=0, right=1, left=0, hspace=0, wspace=0)
+        self.f.tight_layout()
+        self.ax = self.f.add_subplot(autoscale_on=False, xlim=(0, 0), ylim=(0, 0))
+        self.ax.set_facecolor('#343638')
+        self.ax.set_xticks([])
+        self.ax.set_yticks([])
+        self.ax.axis('tight')
+        self.ax.axis('off')
+        self.ax.set_aspect('equal')
+        self.f.canvas.draw_idle()
 
 
 '''Pattern editor states are defined below.'''
@@ -349,8 +521,8 @@ class EditorStateGarmentBlouseSelected:
                                             text_font=EDITOR_FONT_BOLD)
         self.choices = customtkinter.CTkLabel(master=self.master, text='\u2022 Front\n\u2022 Back',
                                               text_font=EDITOR_FONT_NORMAL)
-        self.label.pack()
-        self.choices.pack()
+        self.label.pack(pady=(10, 0))
+        self.choices.pack(pady=(10, 0))
 
     def destroy(self):
         self.label.pack_forget()
@@ -374,8 +546,8 @@ class EditorStateGarmentDressSelected:
                                               text='\u2022 Front\n\u2022 Back\n\u2022 Skirt Front\n\u2022'
                                                    ' Skirt Back',
                                               text_font=EDITOR_FONT_NORMAL)
-        self.label.pack()
-        self.choices.pack()
+        self.label.pack(pady=(10, 0))
+        self.choices.pack(pady=(10, 0))
 
     def destroy(self):
         self.label.pack_forget()
@@ -398,8 +570,8 @@ class EditorStateGarmentSkirtSelected:
         self.choices = customtkinter.CTkLabel(master=self.master,
                                               text='\u2022 Skirt Front\n\u2022 Skirt Back',
                                               text_font=EDITOR_FONT_NORMAL)
-        self.label.pack()
-        self.choices.pack()
+        self.label.pack(pady=(10, 0))
+        self.choices.pack(pady=(10, 0))
 
     def destroy(self):
         self.label.pack_forget()
@@ -412,29 +584,43 @@ class EditorStateGarmentSkirtSelected:
 class ArmholeCollarOptions:
     def __init__(self, master):
         self.master = master
+        self.select_message = None
         self.rb1 = None
         self.rb2 = None
         self.button_search = None
         self.button_replace = None
 
+        self.choice_var = None
+
     def build(self):
-        self.rb1 = customtkinter.CTkRadioButton(master=self.master, text='Armhole', text_font=EDITOR_FONT_NORMAL)
-        self.rb2 = customtkinter.CTkRadioButton(master=self.master, text='Collar', text_font=EDITOR_FONT_NORMAL)
+        self.choice_var = tkinter.IntVar()
+        self.rb1 = customtkinter.CTkRadioButton(master=self.master, text='Armhole', text_font=EDITOR_FONT_NORMAL,
+                                                variable=self.choice_var, value=0, width=15, height=15)
+        self.rb2 = customtkinter.CTkRadioButton(master=self.master, text='Collar', text_font=EDITOR_FONT_NORMAL,
+                                                variable=self.choice_var, value=1, width=15, height=15)
+
+        self.select_message = customtkinter.CTkLabel(master=self.master,
+                                                     text='Please select the region\n you want to change:',
+                                                     text_font=EDITOR_FONT_BOLD)
+
         self.button_search = customtkinter.CTkButton(master=self.master, text='Search Alternative Curves',
                                                      text_font=EDITOR_FONT_NORMAL)
         self.button_replace = customtkinter.CTkButton(master=self.master, text='Replace Curve',
                                                       text_font=EDITOR_FONT_NORMAL)
-
-        self.rb1.pack()
+        self.rb1.select()
+        self.select_message.pack(pady=(55, 0))
+        self.rb1.pack(pady=(10, 0))
         self.rb2.pack()
-        self.button_search.pack()
-        self.button_replace.pack()
+        self.button_search.pack(pady=(50, 0))
+        self.button_replace.pack(pady=(10, 0))
 
     def destroy(self):
+        self.select_message.pack_forget()
         self.rb1.pack_forget()
         self.rb2.pack_forget()
         self.button_search.pack_forget()
         self.button_replace.pack_forget()
+        self.select_message = None
         self.rb1 = None
         self.rb2 = None
         self.button_search = None
@@ -451,7 +637,7 @@ class SkirtOptions:
         self.label = customtkinter.CTkLabel(master=self.master, text='The sides region will\n'
                                                                      'automatically be changed!',
                                             **EDITOR_FONT_BOLD_WARNING)
-        self.label.pack()
+        self.label.pack(pady=(50, 0))
 
     def destroy(self):
         self.label.pack_forget()
@@ -466,7 +652,7 @@ class NotAvailableOptions:
     def build(self):
         self.label = customtkinter.CTkLabel(master=self.master, text='You cannot change\nthis pattern!',
                                             **EDITOR_FONT_BOLD_NOT_AVAILABLE)
-        self.label.pack()
+        self.label.pack(pady=(50, 0))
 
     def destroy(self):
         self.label.pack_forget()
@@ -480,14 +666,15 @@ class FrameEditorView(customtkinter.CTkFrame):
                      'GARMENT_DRESS_SELECTED':      EditorStateGarmentDressSelected,
                      'GARMENT_SKIRT_SELECTED':      EditorStateGarmentSkirtSelected}
 
-    __OPTIONS_ENUM = {'front':      ArmholeCollarOptions,
-                      'back':       ArmholeCollarOptions,
-                      'skirt':      SkirtOptions,
-                      'collar':     NotAvailableOptions,
-                      'sleeve l':   NotAvailableOptions,
-                      'sleeve r':   NotAvailableOptions,
-                      'cuff l':     NotAvailableOptions,
-                      'cuff r':     NotAvailableOptions}
+    __OPTIONS_ENUM = {'front': ArmholeCollarOptions,
+                      'back': ArmholeCollarOptions,
+                      'skirt front': SkirtOptions,
+                      'skirt back': SkirtOptions,
+                      'collar': NotAvailableOptions,
+                      'sleevel': NotAvailableOptions,
+                      'sleever': NotAvailableOptions,
+                      'cuffl': NotAvailableOptions,
+                      'cuffr': NotAvailableOptions}
 
     def __init__(self, master, **kwargs):
         super(FrameEditorView, self).__init__(**kwargs)
@@ -537,12 +724,69 @@ class FrameEditorView(customtkinter.CTkFrame):
             self.__options_widget = FrameEditorView.__OPTIONS_ENUM[option](master=self)
             self.__options_widget.build()
 
+    @property
+    def options_widget(self):
+        if self.__options_widget is not None:
+            return self.__options_widget
+        return None
+
+
+class ShapeSimilarityWindow(customtkinter.CTkToplevel):
+    def __init__(self,
+                 relevant):
+        super(ShapeSimilarityWindow, self).__init__()
+        self.title('Relevant Patterns')
+        self.geometry('1290x315+620+72')
+        self.frame = None
+        self.__relevant = relevant
+
+    def build(self):
+        self.frame = customtkinter.CTkFrame(master=self, width=1280, height=305, corner_radius=9)
+        self.frame.pack(anchor=tkinter.CENTER)
+        for i in range(4):
+            setattr(self, f'frame_info_{i + 1}', customtkinter.CTkFrame(master=self.frame))
+            getattr(self, f'frame_info_{i + 1}').grid(row=5, column=i, pady=10, padx=10)
+            pth = self.__relevant.suggested[i]
+            img_path = osp.join(pth, Path(pth).name) + '.jpg'
+            img_obj = ImageOps.contain(Image.open(img_path), (250, 250))
+            setattr(self, f'img_out_{i + 1}', ImageTk.PhotoImage(img_obj))
+            setattr(self, f'out_img_{i + 1}', customtkinter.CTkButton(getattr(self, f'frame_info_{i + 1}'),
+                                                                      image=getattr(self, f'img_out_{i + 1}'),
+                                                                      text="",
+                                                                      corner_radius=5, width=265, height=265,
+                                                                      fg_color="#2b2b2b",
+                                                                      hover_color="#757272"))
+            getattr(self, f'out_img_{i + 1}').grid(row=5, column=0, pady=10, padx=10)
+
+    def run(self):
+        self.mainloop()
+
+
+class WindowAlternativeCurves(customtkinter.CTkToplevel):
+
+    GEOMETRY = (1218, 497)
+    OFFSET = (636, 445)
+
+    def __init__(self, master):
+        super(WindowAlternativeCurves, self).__init__(master=master)
+        self.geometry(f'{WindowAlternativeCurves.GEOMETRY[0]}x{WindowAlternativeCurves.GEOMETRY[1]}+'
+                      f'{WindowAlternativeCurves.OFFSET[0]}+{WindowAlternativeCurves.OFFSET[1]}')
+        self.title('Curve Editor')
+
+        self.grid = None
+        self.__selected_alt_curve = None
+
+    def build(self, data):
+        self.grid = MplFrameGrid(master=self, data_list=data,
+                                 mpl_width=60, mpl_height=64, column_size=5)
+        self.grid.build_grid()
+        # self.wm_transient(master=self.master)
+
 
 class UI:
     """The main user interface. All layout components will be created here."""
     def __init__(self, test_shown=False):
         self.layout = Layout(title='i-Mannequin')
-        self.layout.sidebar.button_upload.configure(command=self.button_press)
 
         if test_shown:
             self.__test()
@@ -555,10 +799,7 @@ class UI:
 
     def __test(self):
         self.layout.show()
-        self.layout.frame_pattern_editor.update_state('GARMENT_BLOUSE_SELECTED')
-        self.layout.frame_pattern_editor.update_option('collar')
-        self.layout.frame_pattern_editor.reset()
-        self.layout.frame_pattern_editor.update_state('GARMENT_BLOUSE_SELECTED')
+        self.layout.frame_pattern_editor.update_state('NO_GARMENT_SELECTED')
 
 
 if __name__ == '__main__':
