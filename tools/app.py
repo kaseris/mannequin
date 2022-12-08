@@ -30,6 +30,11 @@ class App:
         self.alt_curves_model = None
         self.alt_curves_controller = None
 
+        self.seam = None
+        self.subpath = None
+
+        self.controller_3d_editor_launcher = None
+
     def run(self):
         # self.setup()
         self.ui.run()

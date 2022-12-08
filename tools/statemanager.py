@@ -161,6 +161,11 @@ class AppStateGarmentSelected(AppState):
         self.app.controller_ind_pat_editor = ControllerIndividualPatternEditor(master=self.app.ui.layout.root,
                                                                                app_state=self)
         self.app.controller_ind_pat_editor.couple(self.app.pat_model, self.app.ui.layout.frame_pattern_editor)
+
+        self.app.controller_3d_editor_launcher = Controller3DEditorLauncher(app_state=self)
+        self.app.controller_3d_editor_launcher.couple(None, self.app.ui.layout.frame_information.button_launch_editor)
+        self.app.controller_3d_editor_launcher.bind(self.app.controller_3d_editor_launcher.on_press)
+
         for i in range(4):
             _controller = getattr(self.app, f'controller_retrieved_pattern_preview_{i + 1}')
             _controller.couple(self.app.retrieval_model_2d, getattr(self.app.ui.layout, f'retrieved_viewport_{i + 1}'),

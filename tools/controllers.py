@@ -1,5 +1,7 @@
+import os
+import os.path as osp
+
 from functools import partial
-from pathlib import Path
 from typing import Union
 
 import numpy as np
@@ -12,9 +14,9 @@ from app_models import IndividualPatternModel, QueryModel, Retrieval3DModel, Ret
 from layout import FramePatternPreview, Sidebar, ShapeSimilarityWindow, WindowAlternativeCurves
 from interactive_mpl import InteractiveLine
 
-from altcurves import AltCurvesApp
-
-from statemanager import AppState, AppStateEnum, AppStateInit, AppStateQueryUploaded, AppStateGarmentSelected
+from seam import Seam
+from statemanager import AppState, AppStateEnum, AppStateGarmentSelected
+from subpath import SubPath
 
 from utils import check_path_type
 
@@ -390,10 +392,11 @@ class ControllerIndividualPatternEditor:
             self.model.ind_pat.replace(_region, self.model.selected_region)
             self.model.update_interactive_lines()
             if self.model.ind_pat.get_flag(choices[self.view.options_widget.choice_var.get()]):
-                print('I Will use seams')
-                # TODO: Declare seam and subpath inside the App class
+                self.app_state.app.seam = Seam(self.model.ind_pat.garment_dir)
+                self.app_state.app.seam.replace(_region)
             else:
-                print('I will use subpath')
+                self.app_state.app.subpath = SubPath(self.model.ind_pat.garment_dir)
+                self.app_state.app.subpath.replace(_region)
 
         self.app_state.app.ui.layout.frame_pattern_preview.draw_pattern(self.model.interactive_lines)
 
@@ -525,3 +528,49 @@ class ControllerRelevantPatternFrameInformation:
 
     def bind(self, event_type, callback_fn):
         pass
+
+
+class Controller3DEditorLauncher:
+    def __init__(self, app_state: AppStateGarmentSelected):
+        self.model = None
+        self.view = None
+        self.app_state: AppStateGarmentSelected = app_state
+
+    def couple(self, model, view):
+        self.model = model
+        self.view = view
+
+    def bind(self, callback_fn):
+        self.view.configure(command=callback_fn)
+
+    def on_press(self):
+        import subprocess
+        import shutil
+        if self.app_state.app.ui.layout.frame_information.text_dummy_3 != '':
+            old_dir = os.getcwd()
+
+            split_path = self.app_state.app.pat_model.ind_pat.garment_dir.split(osp.sep)
+            subcategory, model = split_path[-2], split_path[-1]
+
+            if osp.exists(osp.join(self.app_state.app.DATABASE_PATH, '.temp')):
+                shutil.rmtree(osp.join(self.app_state.app.DATABASE_PATH, '.temp'))
+
+            shutil.copytree(self.app_state.app.pat_model.ind_pat.garment_dir,
+                            osp.join(self.app_state.app.DATABASE_PATH, '.temp', subcategory, model))
+
+            if self.app_state.app.seam is None:
+                self.app_state.app.seam = Seam(self.app_state.app.pat_model.ind_pat.garment_dir)
+
+            if self.app_state.app.subpath is None:
+                self.app_state.app.subpath = SubPath(self.app_state.app.pat_model.ind_pat.garment_dir)
+
+            self.app_state.app.seam.export_to_file(
+                osp.join(self.app_state.app.DATABASE_PATH, '.temp', subcategory, model), 'seam.txt')
+            self.app_state.app.subpath.export_to_file(
+                osp.join(self.app_state.app.DATABASE_PATH, '.temp', subcategory, model), 'subpath.txt')
+            os.chdir('/home/kaseris/Documents/iMannequin_3D_Tool_v11_venia/')
+            subprocess.run([f'{osp.join(os.getcwd(), "main.out")}',
+                            osp.join(self.app_state.app.DATABASE_PATH, '.temp', subcategory, model) + '/'])
+            os.chdir(old_dir)
+        else:
+            pass
