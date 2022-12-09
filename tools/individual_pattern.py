@@ -38,9 +38,13 @@ class IndividualPattern:
                     self.__patterns[f.replace('.xyz', '')] = self.__rearrange(
                         read_coords_from_txt(osp.join(ind_patterns, f),
                                              delimiter=','))
-            with open(osp.join(self.garment_dir, 'category.txt'), 'r') as f:
-                for line in f:
-                    self.__parts.append(line.strip()[3:-3])
+            # with open(osp.join(self.garment_dir, 'category.txt'), 'r') as f:
+            #     for line in f:
+            #         self.__parts.append(line.strip()[3:-3])
+            _patterns = os.listdir(osp.join(self.garment_dir, 'individual patterns'))
+            for pt_file in _patterns:
+                if pt_file in IndividualPattern.pattern_files:
+                    self.__parts.append(pt_file.split('.xyz')[0])
 
         for part in self.__parts:
             if 'sleeve' in part:
