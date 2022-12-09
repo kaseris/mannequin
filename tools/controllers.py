@@ -386,7 +386,6 @@ class ControllerIndividualPatternEditor:
         controller_model_replace_button.bind(None, self.on_press_replace)
 
     def on_press_replace(self):
-        print(self.model.ind_pat.alternative_exists)
         curve_to_replace = None
         for il in self.model.interactive_lines:
             if ('alternative' in il.label) and (il.state == 1):
@@ -399,10 +398,8 @@ class ControllerIndividualPatternEditor:
             self.model.ind_pat.replace(_region, self.model.selected_region)
             self.model.update_interactive_lines()
             if self.model.ind_pat.get_flag(choices[self.view.options_widget.choice_var.get()]):
-                # self.app_state.app.seam = Seam(self.model.ind_pat.garment_dir)
                 self.app_state.app.seam.replace(_region)
             else:
-                # self.app_state.app.subpath = SubPath(self.model.ind_pat.garment_dir)
                 self.app_state.app.subpath.replace(_region)
 
         self.app_state.app.ui.layout.frame_pattern_preview.draw_pattern(self.model.interactive_lines)
