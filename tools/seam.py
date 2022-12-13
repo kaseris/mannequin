@@ -4,6 +4,9 @@ import re
 
 import numpy as np
 
+from mannequin.detection import detect_keypoints
+from mannequin.primitives.utils import sort_xy
+
 
 class Seam:
     FLOAT_2_STRING_PRECISION = 3
@@ -78,6 +81,22 @@ class Seam:
             self.seams_copy[found_j][found_idx][2:-2] = curve.flatten().tolist()[2:-2]
         else:
             self.seams_copy[found_j][found_idx][2:-2] = curve[::-1].flatten().tolist()[2:-2]
+
+    def __rearrange(self, array):
+        key_points = detect_keypoints(array)
+        sorted_keypoints = sort_xy(key_points)
+        idx_sorted_by_y_front = np.argsort(sorted_keypoints[:, 1])[:2]
+        lowest_points_front = sorted_keypoints[idx_sorted_by_y_front]
+        where_max_X_front = np.argmax(lowest_points_front[:, 0])
+
+        # Find the index of the lower-right point in the keypoints array
+        # We store it in the idx_key_point_start var
+        coords_key_point_start_front = lowest_points_front[where_max_X_front]
+        idx_key_point_start_front = np.where(np.all(sorted_keypoints == coords_key_point_start_front,
+                                                    axis=1))[0][0]
+        idx = int(np.where(np.all(sorted_keypoints[idx_key_point_start_front] == array, axis=1))[0][0])
+        part1 = array[:idx + 1]
+        return np.vstack((array[idx:], part1))
 
 
 if __name__ == '__main__':

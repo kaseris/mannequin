@@ -28,8 +28,7 @@ class SubPath:
                 line = re.sub('\[|]', '', line.strip())
                 nums = line.split(', ')
                 self.subpath.append([float(num[:num.find('.') + SubPath.FLOAT_2_STRING_PRECISION]) for num in nums])
-                self.subpath_copy.append(
-                    self.__rearrange(np.asarray([[float(n1), float(n2)] for n1, n2 in zip(nums[::2], nums[1::2])])))
+                self.subpath_copy.append(np.asarray([[float(n1), float(n2)] for n1, n2 in zip(nums[::2], nums[1::2])]))
 
     def __find_seam(self, curve: np.ndarray):
 
@@ -43,6 +42,8 @@ class SubPath:
         for idx, subpath in enumerate(self.subpath_copy):
             curve_start = curve[0, :]
             curve_end = curve[-1, :]
+            # dist_idx_pair_start.append(find_nearest(self.__rearrange(subpath), curve_start))
+            # dist_idx_pair_end.append(find_nearest(self.__rearrange(subpath), curve_end))
             dist_idx_pair_start.append(find_nearest(subpath, curve_start))
             dist_idx_pair_end.append(find_nearest(subpath, curve_end))
 
@@ -61,11 +62,12 @@ class SubPath:
         # if reverse:
         #     curve = curve[::-1]
 
-        amount_of_points_to_replace = abs(end - start) + 1
-        indices = sorted(np.random.permutation([n for n in range(6, 45)])[:amount_of_points_to_replace - 10])
-        curve_ = np.vstack((curve[:5], curve[indices], curve[-5:]))
+        # amount_of_points_to_replace = abs(end - start) + 1
+        # indices = sorted(np.random.permutation([n for n in range(6, 45)])[:amount_of_points_to_replace - 10])
+        # curve_ = np.vstack((curve[:5], curve[indices], curve[-5:]))
 
         region_copy = copy.deepcopy(self.subpath_copy[i_subpath])
+        # region_copy = copy.deepcopy(self.__rearrange(self.subpath_copy[i_subpath]))
         if reverse:
             idx_start = region_copy.shape[0] - end - 1
             idx_end = region_copy.shape[0] - start - 1
@@ -75,7 +77,7 @@ class SubPath:
         else:
             region_copy_part1 = region_copy[:start]
             region_copy_part2 = region_copy[end + 1:]
-        region_new = np.vstack((region_copy_part1, curve, region_copy_part2))
+        region_new = np.vstack((region_copy_part1, curve[::4], region_copy_part2))
         if reverse:
             region_new = region_new[::-1]
         self.subpath_copy[i_subpath] = region_new
@@ -83,7 +85,7 @@ class SubPath:
     def export_to_file(self, dst_path, target_filename):
         s = ''
         for idx, seam in enumerate(self.subpath_copy):
-            l2 = [f'{n:.8f}' for n in seam.flatten()]
+            l2 = [f'{n}' for n in seam.flatten()]
             s += '[' + f', '.join(l2) + ']'
             if idx < len(self.subpath_copy):
                 s += '\n'
