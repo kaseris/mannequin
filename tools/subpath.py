@@ -30,7 +30,7 @@ class SubPath:
                 self.subpath.append([float(num[:num.find('.') + SubPath.FLOAT_2_STRING_PRECISION]) for num in nums])
                 self.subpath_copy.append(np.asarray([[float(n1), float(n2)] for n1, n2 in zip(nums[::2], nums[1::2])]))
 
-    def __find_seam(self, curve: np.ndarray):
+    def __find_seam(self, curve: np.ndarray, rearrange=False):
 
         def find_nearest(array, value):
             dist = array - value
@@ -42,10 +42,12 @@ class SubPath:
         for idx, subpath in enumerate(self.subpath_copy):
             curve_start = curve[0, :]
             curve_end = curve[-1, :]
-            # dist_idx_pair_start.append(find_nearest(self.__rearrange(subpath), curve_start))
-            # dist_idx_pair_end.append(find_nearest(self.__rearrange(subpath), curve_end))
-            dist_idx_pair_start.append(find_nearest(subpath, curve_start))
-            dist_idx_pair_end.append(find_nearest(subpath, curve_end))
+            if rearrange:
+                dist_idx_pair_start.append(find_nearest(self.__rearrange(subpath), curve_start))
+                dist_idx_pair_end.append(find_nearest(self.__rearrange(subpath), curve_end))
+            else:
+                dist_idx_pair_start.append(find_nearest(subpath, curve_start))
+                dist_idx_pair_end.append(find_nearest(subpath, curve_end))
 
         dist_idx_pair_start_arr = np.asarray(dist_idx_pair_start)
 
@@ -54,33 +56,56 @@ class SubPath:
         return subpath_i, dist_idx_pair_start[subpath_i][0], dist_idx_pair_end[subpath_i][0]
 
     def replace(self, curve: np.ndarray):
-        i_subpath, start, end = self.__find_seam(curve)
-        reverse = False
-        if end < start:
-            reverse = True
 
-        # if reverse:
-        #     curve = curve[::-1]
+        def find_nearest(array, value):
+            dist = array - value
+            norm = np.linalg.norm(dist, axis=1)
+            return norm.argmin()
 
-        # amount_of_points_to_replace = abs(end - start) + 1
-        # indices = sorted(np.random.permutation([n for n in range(6, 45)])[:amount_of_points_to_replace - 10])
-        # curve_ = np.vstack((curve[:5], curve[indices], curve[-5:]))
-
+        i_subpath, start, end = self.__find_seam(curve, rearrange=True)
+        # Find the first element of the subpath
+        subpath_0 = self.subpath_copy[i_subpath][0]
+        key_point_1 = find_nearest(self.subpath_copy[i_subpath], curve[0])
+        key_point_2 = find_nearest(self.subpath_copy[i_subpath], curve[-1])
         region_copy = copy.deepcopy(self.subpath_copy[i_subpath])
-        # region_copy = copy.deepcopy(self.__rearrange(self.subpath_copy[i_subpath]))
-        if reverse:
-            idx_start = region_copy.shape[0] - end - 1
-            idx_end = region_copy.shape[0] - start - 1
-            region_copy = region_copy[::-1]
-            region_copy_part1 = region_copy[:idx_end]
-            region_copy_part2 = region_copy[idx_start:]
+
+        region_copy[:key_point_1] = curve[1:key_point_1 + 1][::-1]
+        new_region = np.vstack([region_copy[:key_point_1],
+                                region_copy[key_point_1:key_point_2],
+                                curve[key_point_1+1:][::-1],
+                                region_copy[0]])
+        d = False
+        if subpath_0 not in detect_keypoints(self.subpath_copy[i_subpath]):
+            self.subpath_copy[i_subpath] = new_region
         else:
-            region_copy_part1 = region_copy[:start]
-            region_copy_part2 = region_copy[end + 1:]
-        region_new = np.vstack((region_copy_part1, curve[::4], region_copy_part2))
-        if reverse:
-            region_new = region_new[::-1]
-        self.subpath_copy[i_subpath] = region_new
+            i_subpath, start, end = self.__find_seam(curve, rearrange=False)
+            reverse = False
+            if end < start:
+                reverse = True
+        #
+            # if reverse:
+            #     curve = curve[::-1]
+        #
+            amount_of_points_to_replace = abs(end - start) + 1
+            indices = sorted(np.random.permutation([n for n in range(6, 45)])[:amount_of_points_to_replace - 10])
+            curve_ = np.vstack((curve[:5], curve[indices], curve[-5:]))
+        #
+            region_copy = copy.deepcopy(self.subpath_copy[i_subpath])
+        # region_copy = copy.deepcopy(self.__rearrange(self.subpath_copy[i_subpath]))
+        # ind_pat_0 = self.subpath_copy[i_subpath][0]
+            if reverse:
+                idx_start = region_copy.shape[0] - end - 1
+                idx_end = region_copy.shape[0] - start - 1
+                region_copy = region_copy[::-1]
+                region_copy_part1 = region_copy[:idx_end]
+                region_copy_part2 = region_copy[idx_start:]
+            else:
+                region_copy_part1 = region_copy[:start]
+                region_copy_part2 = region_copy[end + 1:]
+            region_new = np.vstack((region_copy_part1, curve_, region_copy_part2))
+            if reverse:
+                region_new = region_new[::-1]
+            self.subpath_copy[i_subpath] = region_new
 
     def export_to_file(self, dst_path, target_filename):
         s = ''
@@ -166,4 +191,4 @@ if __name__ == '__main__':
                     [1131.94860, 442.51290]]
                    )
     subpath.replace(arr)
-    subpath.export_to_file('/home/kaseris/Documents/database/dress/d1/Q6089', '___subpath1.txt')
+    # subpath.export_to_file('/home/kaseris/Documents/database/dress/d1/Q6089', '___subpath1.txt')
