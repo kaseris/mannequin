@@ -35,6 +35,8 @@ class App:
 
         self.controller_3d_editor_launcher = None
 
+        self.editor_app_radio_button_last_choice = None
+
     def run(self):
         # self.setup()
         self.ui.run()

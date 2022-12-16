@@ -49,11 +49,14 @@ class ControllerPatternModelPreview:
             if ind != id:
                 interactive_line.set_state(0)
                 interactive_line.line.set_color(InteractiveLine.normal_selected_color[0])
-
             else:
                 interactive_line.set_state(1)
                 interactive_line.line.set_color(InteractiveLine.normal_selected_color[1])
                 self.model.set_selected_region(interactive_line.label)
+                if (self.app_state.app.editor_app_radio_button_last_choice is not None) and (self.app_state.app.ui.layout.frame_pattern_editor.options_widget is not None):
+                    getattr(self.app_state.app.ui.layout.frame_pattern_editor.options_widget,
+                            f'rb{self.app_state.app.editor_app_radio_button_last_choice + 1}').select()
+
         self.view.interactive_preview.f.canvas.draw_idle()
 
     def on_hover(self, event):
@@ -472,6 +475,7 @@ class ControllerAltCurvesAppEditor:
     def open_alt_curve_app(self):
         choices = ['armhole', 'collar']
         _choice_var = self.view.options_widget.choice_var.get()
+        self.__app_state.app.editor_app_radio_button_last_choice = self.view.options_widget.choice_var.get()
         model = AlternativeCurvesModel(region_choice=choices[_choice_var],
                                        garment_category=self.model.category,
                                        pattern_choice=self.model.selected_region,
