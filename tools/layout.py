@@ -158,7 +158,8 @@ class Sidebar(customtkinter.CTkFrame):
         self.label_1 = customtkinter.CTkLabel(master=self, image=self.img)
         self.button_upload = customtkinter.CTkButton(master=self,
                                                      text="Upload a Garment",
-                                                     command=None)
+                                                     command=None,
+                                                     cursor='hand2')
         self.instructions_title = customtkinter.CTkLabel(self, text="Instructions",
                                                          text_font=("Roboto", "14"))
         self.instructions = customtkinter.CTkLabel(self,
@@ -172,7 +173,8 @@ class Sidebar(customtkinter.CTkFrame):
         self.label_mode = customtkinter.CTkLabel(master=self, text="Appearance Mode:")
         self.optionmenu = customtkinter.CTkOptionMenu(master=self,
                                                       values=["Light", "Dark", "System"],
-                                                      command=self.change_appearance_mode)
+                                                      command=self.change_appearance_mode,
+                                                      cursor='hand2')
         customtkinter.set_appearance_mode("Dark")
         self.optionmenu.set("Dark")
 
@@ -262,7 +264,7 @@ class QueryImagePlaceholder(customtkinter.CTkToplevel):
 
         self.frame = customtkinter.CTkFrame(master=self)
         self.frame.pack(side=tkinter.TOP, anchor=tkinter.CENTER)
-        self.button_apply = customtkinter.CTkButton(master=self.frame, text='Apply')
+        self.button_apply = customtkinter.CTkButton(master=self.frame, text='Apply', cursor='hand2')
         self.button_apply.pack()
 
         self.vispy_canvas = scene.SceneCanvas(keys='interactive',
@@ -349,7 +351,7 @@ class FrameGarmentInformation(customtkinter.CTkFrame):
                                                             width=200,
                                                             height=200)
 
-        self.button_launch_editor = customtkinter.CTkButton(master=self, text='Launch 3D Editor')
+        self.button_launch_editor = customtkinter.CTkButton(master=self, text='Launch 3D Editor', cursor='hand2')
 
     def build(self):
         self.pack(side=tkinter.LEFT, anchor=tkinter.SW, pady=(7, 7), padx=(7, 0))
@@ -605,9 +607,11 @@ class ArmholeCollarOptions:
                                                      text_font=EDITOR_FONT_BOLD)
 
         self.button_search = customtkinter.CTkButton(master=self.master, text='Search Alternative Curves',
-                                                     text_font=EDITOR_FONT_NORMAL)
+                                                     text_font=EDITOR_FONT_NORMAL,
+                                                     cursor='hand2')
         self.button_replace = customtkinter.CTkButton(master=self.master, text='Replace Curve',
-                                                      text_font=EDITOR_FONT_NORMAL)
+                                                      text_font=EDITOR_FONT_NORMAL,
+                                                      cursor='hand2')
 
         if self.last_choice is None:
             self.rb1.select()

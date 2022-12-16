@@ -173,6 +173,8 @@ class AppStateGarmentSelected(AppState):
                                self.app.ui.layout.frame_information, self.app.relevant_garments_model,
                                self)
             _controller.bind('<Button-1>', _controller.update_information)
+            _controller.bind('<Enter>', _controller.on_enter)
+            _controller.bind('<Leave>', _controller.on_leave)
 
     def update(self):
         pass

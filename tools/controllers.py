@@ -348,6 +348,12 @@ class ControllerRetrievedPatternPreview:
         self.app_state.app.seam = Seam(self.pat_model.ind_pat.garment_dir)
         self.app_state.app.subpath = SubPath(self.pat_model.ind_pat.garment_dir)
 
+    def on_enter(self, event):
+        self.view.configure(cursor='hand2')
+
+    def on_leave(self, event):
+        self.view.configure(cursor='arrow')
+
     def request_state_update(self):
         pass
 
