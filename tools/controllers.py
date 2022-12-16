@@ -178,8 +178,10 @@ class ControllerQueryObjectModelUploadButton:
             self.model.update(filename=filename)
             if self.model.kind == 'image':
                 self.request_state_update(True, filename, AppStateEnum.APP_QUERY_UPLOADED)
+                self.__app_state.app.query_kind = 'image'
             else:
                 self.request_state_update(True, filename, AppStateEnum.APP_QUERY_UPLOADED)
+                self.__app_state.app.query_kind = 'mesh'
         else:
             self.request_state_update(False, filename, AppStateEnum.APP_INIT)
 
@@ -331,7 +333,11 @@ class ControllerRetrievedPatternPreview:
 
     def update_information(self, event):
         idx = self.view.idx
-        garment_dir = self.model.paths[idx - 1]
+        if self.app_state.app.query_kind == 'image':
+            model = self.app_state.app.retrieval_model_2d
+        else:
+            model = self.app_state.app.retrieval_model_3d
+        garment_dir = model.paths[idx - 1]
         self.pat_model.update(garment_dir)
         self.pattern_preview.draw_pattern(self.pat_model.interactive_lines)
         self.information_view.text_dummy_0.configure(placeholder_text=str(self.pat_model.name),
@@ -340,10 +346,10 @@ class ControllerRetrievedPatternPreview:
                                                      state='normal')
         self.information_view.text_dummy_2.configure(placeholder_text=self.pat_model.n_patterns, state='normal')
         self.information_view.text_dummy_3.configure(
-            placeholder_text=str(Path(*Path(self.model.paths[idx - 1]).parts[-3:])),
+            placeholder_text=str(Path(*Path(model.paths[idx - 1]).parts[-3:])),
             state='normal')
-        self.information_view.update_thumbnail(self.model.paths[idx - 1])
-        self.relevant_ss_garment_model.update(self.model.paths[idx - 1])
+        self.information_view.update_thumbnail(model.paths[idx - 1])
+        self.relevant_ss_garment_model.update(model.paths[idx - 1])
 
         self.app_state.app.seam = Seam(self.pat_model.ind_pat.garment_dir)
         self.app_state.app.subpath = SubPath(self.pat_model.ind_pat.garment_dir)

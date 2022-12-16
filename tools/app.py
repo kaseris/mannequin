@@ -37,6 +37,8 @@ class App:
 
         self.editor_app_radio_button_last_choice = None
 
+        self.query_kind = None
+
     def run(self):
         # self.setup()
         self.ui.run()
