@@ -1,5 +1,4 @@
 from app_models import *
-# from controllers import *
 from layout import UI
 
 
@@ -40,7 +39,6 @@ class App:
         self.query_kind = None
 
     def run(self):
-        # self.setup()
         self.ui.run()
 
     def setup(self):
