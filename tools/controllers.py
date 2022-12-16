@@ -2,6 +2,7 @@ import os
 import os.path as osp
 
 from functools import partial
+from pathlib import Path
 from typing import Union
 
 import numpy as np
@@ -338,7 +339,9 @@ class ControllerRetrievedPatternPreview:
         self.information_view.text_dummy_1.configure(placeholder_text=str(self.pat_model.category),
                                                      state='normal')
         self.information_view.text_dummy_2.configure(placeholder_text=self.pat_model.n_patterns, state='normal')
-        self.information_view.text_dummy_3.configure(placeholder_text=str(self.model.paths[idx - 1]), state='normal')
+        self.information_view.text_dummy_3.configure(
+            placeholder_text=str(Path(*Path(self.model.paths[idx - 1]).parts[-3:])),
+            state='normal')
         self.information_view.update_thumbnail(self.model.paths[idx - 1])
         self.relevant_ss_garment_model.update(self.model.paths[idx - 1])
 
