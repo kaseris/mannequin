@@ -49,11 +49,15 @@ class ControllerPatternModelPreview:
             if ind != id:
                 interactive_line.set_state(0)
                 interactive_line.line.set_color(InteractiveLine.normal_selected_color[0])
-
             else:
                 interactive_line.set_state(1)
                 interactive_line.line.set_color(InteractiveLine.normal_selected_color[1])
                 self.model.set_selected_region(interactive_line.label)
+                if (self.app_state.app.editor_app_radio_button_last_choice is not None) \
+                        and (self.app_state.app.ui.layout.frame_pattern_editor.options_widget is not None):
+                    getattr(self.app_state.app.ui.layout.frame_pattern_editor.options_widget,
+                            f'rb{self.app_state.app.editor_app_radio_button_last_choice + 1}').select()
+
         self.view.interactive_preview.f.canvas.draw_idle()
 
     def on_hover(self, event):
@@ -100,7 +104,6 @@ class ControllerPatternModelPreview:
             self.view.interactive_preview.ax.set_ylim([min_y - 20., max_y + 20.0])
             self.view.interactive_preview.f.canvas.draw_idle()
 
-    # TODO: Maybe ShapeSimilarityWindow be an app property?
     def on_double_click_canvas(self, relevant, event):
         if event.dblclick:
             self.app_state.app.ui.layout.shape_similarity_window = ShapeSimilarityWindow(relevant)
@@ -180,7 +183,6 @@ class ControllerQueryObjectModelUploadButton:
             self.request_state_update(False, filename, AppStateEnum.APP_INIT)
 
     def request_state_update(self, update_flag, filename, next_state):
-        # TODO: Pio sovaros elegxos sto filename
         if not self.opened_query:
             self.__app_state.notify_manager(update_flag, filename=filename,
                                             next_state=next_state)
@@ -474,6 +476,7 @@ class ControllerAltCurvesAppEditor:
     def open_alt_curve_app(self):
         choices = ['armhole', 'collar']
         _choice_var = self.view.options_widget.choice_var.get()
+        self.__app_state.app.editor_app_radio_button_last_choice = self.view.options_widget.choice_var.get()
         model = AlternativeCurvesModel(region_choice=choices[_choice_var],
                                        garment_category=self.model.category,
                                        pattern_choice=self.model.selected_region,

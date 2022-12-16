@@ -74,7 +74,7 @@ class SubPath:
                                 region_copy[key_point_1:key_point_2],
                                 curve[key_point_1+1:][::-1],
                                 region_copy[0]])
-        d = False
+
         if subpath_0 not in detect_keypoints(self.subpath_copy[i_subpath]):
             self.subpath_copy[i_subpath] = new_region
         else:

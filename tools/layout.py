@@ -591,6 +591,7 @@ class ArmholeCollarOptions:
         self.button_replace = None
 
         self.choice_var = None
+        self.last_choice = None
 
     def build(self):
         self.choice_var = tkinter.IntVar()
@@ -607,7 +608,11 @@ class ArmholeCollarOptions:
                                                      text_font=EDITOR_FONT_NORMAL)
         self.button_replace = customtkinter.CTkButton(master=self.master, text='Replace Curve',
                                                       text_font=EDITOR_FONT_NORMAL)
-        self.rb1.select()
+
+        if self.last_choice is None:
+            self.rb1.select()
+        else:
+            getattr(self, f'rb{self.last_choice+1}').select()
         self.select_message.pack(pady=(55, 0))
         self.rb1.pack(pady=(10, 0))
         self.rb2.pack()
