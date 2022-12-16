@@ -53,7 +53,8 @@ class ControllerPatternModelPreview:
                 interactive_line.set_state(1)
                 interactive_line.line.set_color(InteractiveLine.normal_selected_color[1])
                 self.model.set_selected_region(interactive_line.label)
-                if (self.app_state.app.editor_app_radio_button_last_choice is not None) and (self.app_state.app.ui.layout.frame_pattern_editor.options_widget is not None):
+                if (self.app_state.app.editor_app_radio_button_last_choice is not None) \
+                        and (self.app_state.app.ui.layout.frame_pattern_editor.options_widget is not None):
                     getattr(self.app_state.app.ui.layout.frame_pattern_editor.options_widget,
                             f'rb{self.app_state.app.editor_app_radio_button_last_choice + 1}').select()
 
