@@ -320,9 +320,6 @@ class RelevantGarmentsModel:
 
         arr = np.asarray(list_similarities)
         suggested = arr.argsort()[-4:]
-        # self._suggested = [osp.join(self.database_path,
-        #                             self.selected_garment.category,
-        #                             ss_dict_idx_to_name[self.selected_garment.category][idx]) for idx in suggested]
         filenames = []
         for root, dirs, files in os.walk(self.database_path):
             for name in dirs:
@@ -333,7 +330,6 @@ class RelevantGarmentsModel:
                 if ss_dict_idx_to_name[self.selected_garment.category][s] in dirname:
                     self._suggested.append(dirname)
                     break
-            # self._suggested = [a for a in filenames if a in ss_dict_idx_to_name[self.selected_garment.category][_]]
 
         self._suggested[0] = self.selected_garment.ind_pat.garment_dir
 
@@ -400,7 +396,6 @@ class AlternativeCurvesModel:
                 continue
 
     def set_curve_to_replace(self, data):
-        print(f'Replacing with data:\n {data}')
         self.__curve_to_replace = data
 
     @property

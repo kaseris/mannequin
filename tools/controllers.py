@@ -100,7 +100,6 @@ class ControllerPatternModelPreview:
             self.view.interactive_preview.ax.set_ylim([min_y - 20., max_y + 20.0])
             self.view.interactive_preview.f.canvas.draw_idle()
 
-    # TODO: Maybe ShapeSimilarityWindow be an app property?
     def on_double_click_canvas(self, relevant, event):
         if event.dblclick:
             self.app_state.app.ui.layout.shape_similarity_window = ShapeSimilarityWindow(relevant)
@@ -180,7 +179,6 @@ class ControllerQueryObjectModelUploadButton:
             self.request_state_update(False, filename, AppStateEnum.APP_INIT)
 
     def request_state_update(self, update_flag, filename, next_state):
-        # TODO: Pio sovaros elegxos sto filename
         if not self.opened_query:
             self.__app_state.notify_manager(update_flag, filename=filename,
                                             next_state=next_state)
