@@ -77,7 +77,18 @@ class Seam:
 
     def replace(self, curve: np.ndarray):
         found_idx, found_j, reverse = self.__find_seam(curve)
-        if not reverse:
+
+        def find_nearest(array, value):
+            dist = array - value
+            norm = np.linalg.norm(dist, axis=1)
+            return norm.argmin()
+
+        arr = np.asarray([[x, y] for x, y in zip(self.seams_copy[found_j][found_idx][::2],
+                                                 self.seams_copy[found_j][found_idx][1::2])])
+        idx_start = find_nearest(arr, curve[0])
+        idx_end = find_nearest(arr, curve[-1])
+
+        if idx_start < idx_end:
             self.seams_copy[found_j][found_idx][2:-2] = curve.flatten().tolist()[2:-2]
         else:
             self.seams_copy[found_j][found_idx][2:-2] = curve[::-1].flatten().tolist()[2:-2]
