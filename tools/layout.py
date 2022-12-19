@@ -353,6 +353,8 @@ class FrameGarmentInformation(customtkinter.CTkFrame):
 
         self.button_launch_editor = customtkinter.CTkButton(master=self, text='Launch 3D Editor', cursor='hand2')
 
+        self.texture_setting = customtkinter.CTkButton(master=self, text='Select a Texture', cursor='hand2')
+
     def build(self):
         self.pack(side=tkinter.LEFT, anchor=tkinter.SW, pady=(7, 7), padx=(7, 0))
         self.pack_propagate(False)
@@ -371,7 +373,8 @@ class FrameGarmentInformation(customtkinter.CTkFrame):
         self.frame_image_preview.pack(pady=(60, 0))
         self.frame_image_preview.pack_propagate(False)
         self.image_garment_preview.pack(anchor=tkinter.CENTER)
-        self.button_launch_editor.pack(pady=(50, 0))
+        self.button_launch_editor.pack(pady=(30, 0))
+        self.texture_setting.pack(pady=(10, 0))
 
     def update_thumbnail(self, path):
         image_path = osp.join(path, str(Path(path).name)) + '.jpg'
