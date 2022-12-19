@@ -4,6 +4,7 @@ from layout import UI
 
 class App:
     DATABASE_PATH = '/home/kaseris/Documents/database'
+    TEXTURES_PATH = '/home/kaseris/Documents/iMannequin_3D_Tool_v11_venia/texture'
 
     def __init__(self):
         self.ui = UI(test_shown=False)
@@ -33,10 +34,14 @@ class App:
         self.subpath = None
 
         self.controller_3d_editor_launcher = None
+        self.controller_texture_selection = None
 
         self.editor_app_radio_button_last_choice = None
 
         self.query_kind = None
+
+        self.texture_int_value = None
+        self.model_selected_texture = SelectedTextureModel(texture_dir=App.TEXTURES_PATH)
 
     def run(self):
         self.ui.run()
