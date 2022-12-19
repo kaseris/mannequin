@@ -412,3 +412,23 @@ class AlternativeCurvesModel:
                                                       pattern=self.pattern_choice,
                                                       selection=self.region_choice)
         ind_pat_model.add_alternative_curves(proposed_curves)
+
+
+class SelectedTextureModel:
+    def __init__(self, texture_dir):
+        self.texture_dir = texture_dir
+
+        self.__texture_files = [osp.join(self.texture_dir, name) for name in os.listdir(self.texture_dir) if
+                                name.endswith('.ppm')]
+        self.__selected_texture = None
+
+    def set_selected_texture(self, selected):
+        self.__selected_texture = selected
+
+    @property
+    def selected_texture(self):
+        return self.__selected_texture
+
+    @property
+    def texture_files(self):
+        return self.__texture_files
