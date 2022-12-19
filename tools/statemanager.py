@@ -137,6 +137,7 @@ class AppStateGarmentSelected(AppState):
         self.app.controller_relevant_pattern_preview = ControllerRelevantPatternPatternPreview()
         self.app.controller_relevant_garment_info = ControllerRelevantPatternFrameInformation()
         self.app.relevant_garments_model = RelevantGarmentsModel(database_path=self.app.DATABASE_PATH)
+        self.app.controller_texture_selection = ControllerTextureSelection(app_state=self)
 
     def build(self):
         self.app.ui.layout.frame_information = FrameGarmentInformation(master=self.app.ui.layout.frame_watermark,
@@ -175,6 +176,10 @@ class AppStateGarmentSelected(AppState):
             _controller.bind('<Button-1>', _controller.update_information)
             _controller.bind('<Enter>', _controller.on_enter)
             _controller.bind('<Leave>', _controller.on_leave)
+
+        self.app.controller_texture_selection.couple(self.app.model_selected_texture,
+                                                     self.app.ui.layout.frame_information.texture_setting)
+        self.app.controller_texture_selection.bind(None, self.app.controller_texture_selection.on_press_select_texture)
 
     def update(self):
         pass
