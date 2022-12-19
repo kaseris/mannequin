@@ -85,9 +85,9 @@ class MplFrameGrid:
                                                             index=i * self.rows + j,
                                                             parent=self)
                     interactive_frame.grid(row=i, column=j, padx=(20, 20), pady=(20, 20))
-                    # interactive_frame.bind('<Enter>', on_enter)
-                    # interactive_frame.bind('<Leave>', on_leave)
-                    # interactive_frame.bind_all('<Button-1>', on_frame_click)
+                    interactive_frame.bind('<Enter>', on_enter)
+                    interactive_frame.bind('<Leave>', on_leave)
+                    interactive_frame.bind_all('<Button-1>', on_frame_click)
                     interactive_frame.render()
                     self.mpl_frames.append(interactive_frame)
 
@@ -209,12 +209,12 @@ class InteractivePatternPreview:
                 for i in range(len(curve) - 2):
                     pair = [curve[i], curve[i + 2]]
                     uid = str(uuid.uuid4())
-                    line = InteractiveLine(pair, id=uid)
+                    line = InteractiveLine(pair, id=uid, label='alternative')
                     self.__data.append(line)
             else:
                 for c in curve:
                     uid = str(uuid.uuid4())
-                    line = InteractiveLine([c], id=uid)
+                    line = InteractiveLine([c], id=uid, label='alternative')
                     self.__data.append(line)
             self.__alternative_exists = True
             self.draw()
@@ -260,7 +260,7 @@ class InteractivePatternPreview:
                 # Assign a universal unique identifier (UUID) to every curve in the pattern preview
                 uid = str(uuid.uuid4())
                 self.included[uid] = f
-                line = InteractiveLine([points], id=uid)
+                line = InteractiveLine([points], id=uid, label='hi')
                 self.line_dict[uid] = line
                 self.__data.append(line)
         self.__copy = copy.deepcopy(self.__data)
@@ -276,7 +276,7 @@ class InteractivePatternPreview:
             points = ind_pat[region]
             uid = str(uuid.uuid4())
             self.included[uid] = osp.join(ind_pat.garment_dir, region)
-            line = InteractiveLine([points], id=uid)
+            line = InteractiveLine([points], id=uid, label='alternative')
             self.line_dict[uid] = line
             self.__data.append(line)
         self.__copy = copy.deepcopy(self.__data)
