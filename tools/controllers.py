@@ -12,7 +12,7 @@ import customtkinter
 
 from app_models import IndividualPatternModel, QueryModel, Retrieval3DModel, Retrieval2DModel, RelevantGarmentsModel,\
     AlternativeCurvesModel
-from layout import FramePatternPreview, Sidebar, ShapeSimilarityWindow, WindowAlternativeCurves
+from layout import FramePatternPreview, Sidebar, ShapeSimilarityWindow, WindowAlternativeCurves, WindowTextureChoose
 from interactive_mpl import InteractiveLine
 
 from seam import Seam
@@ -592,7 +592,34 @@ class Controller3DEditorLauncher:
                 osp.join(self.app_state.app.DATABASE_PATH, '.temp', subcategory, model), 'subpath.txt')
             os.chdir('/home/kaseris/Documents/iMannequin_3D_Tool_v11_venia/')
             subprocess.run([f'{osp.join(os.getcwd(), "main.out")}',
-                            osp.join(self.app_state.app.DATABASE_PATH, '.temp', subcategory, model) + '/'])
+                            osp.join(self.app_state.app.DATABASE_PATH, '.temp', subcategory, model) + '/',
+                            '11', f'{self.app_state.app.texture_int_value}'])
             os.chdir(old_dir)
         else:
             pass
+
+
+class ControllerTextureSelection:
+    def __init__(self, app_state):
+        self.model = None
+        self.view = None
+
+        self.app_state = app_state
+
+    def couple(self, model, view):
+        self.model = model
+        self.view = view
+
+    def bind(self, event_type, callback_fn):
+        self.view.configure(command=callback_fn)
+
+    def on_press_select_texture(self):
+        window = WindowTextureChoose(master=self.app_state.app.ui.layout.root)
+        window.bind('<Configure>', window.get_info)
+        window.build(self.model.texture_files, self.on_select)
+        window.mainloop()
+
+    def on_select(self, selected):
+        print(f'Setting {selected} as texture')
+        self.model.set_selected_texture(selected)
+        self.app_state.app.texture_int_value = self.model.selected_texture

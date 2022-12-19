@@ -1,6 +1,7 @@
 import copy
 import os.path as osp
 
+from functools import partial
 from pathlib import Path
 from typing import Union
 
@@ -18,6 +19,7 @@ from PIL import Image, ImageTk, ImageOps
 
 from interactive_mpl import MplFrameGrid
 from query_mvc import Mesh
+from scrollview import VerticalScrolledFrame
 
 vispy.use(app='tkinter')
 
@@ -793,6 +795,34 @@ class WindowAlternativeCurves(customtkinter.CTkToplevel):
                                  mpl_width=60, mpl_height=64, column_size=5)
         self.grid.build_grid()
         # self.wm_transient(master=self.master)
+
+
+class WindowTextureChoose(customtkinter.CTkToplevel):
+    def __init__(self, master):
+        super(WindowTextureChoose, self).__init__(master=master)
+        self.title('Texture Picker')
+        self.geometry('1218x497+636+445')
+        self.vs_frame = VerticalScrolledFrame(self)
+        self.vs_frame.pack(side=tkinter.BOTTOM, fill=tkinter.BOTH, expand=tkinter.TRUE)
+
+    def build(self, data, callback_fn):
+
+        columns = len(data) if len(data) < 6 else 6
+        rows = (len(data) // 6) + 1
+
+        # for idx, texture_file in enumerate(data[:3]):
+        for i in range(rows):
+            for j in range(columns):
+                img = Image.open(data[i * 6 + j])
+                img_obj = ImageTk.PhotoImage(ImageOps.contain(img, (150, 150)))
+                button = customtkinter.CTkButton(master=self.vs_frame.interior,
+                                                 text='',
+                                                 cursor='hand2',
+                                                 image=img_obj,
+                                                 width=160,
+                                                 height=160,
+                                                 command=partial(callback_fn, data[i * 6 + j]))
+                button.grid(row=i, column=j, padx=(60 if j == 0 else 10, 10), pady=(10, 10))
 
 
 class UI:
