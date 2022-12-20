@@ -362,8 +362,15 @@ class FrameGarmentInformation(customtkinter.CTkFrame):
                                                                    text_font=('Roboto', 8),
                                                                    text='',
                                                                    width=0, height=0)
-        self.button_select_mannequin = customtkinter.CTkButton(master=self, text='Choose a mannequin',
-                                                               cursor='hand2')
+        self.frame_mannequin_size = customtkinter.CTkFrame(master=self, width=200, height=100)
+        self.size_var = tkinter.IntVar()
+        self.label_mannequin_size = customtkinter.CTkLabel(master=self.frame_mannequin_size,
+                                                           text='Choose a mannequin size',
+                                                           text_font=('Roboto', 8))
+        self.rb1 = customtkinter.CTkRadioButton(master=self.frame_mannequin_size, value=0, variable=self.size_var,
+                                                text='Size 1')
+        self.rb2 = customtkinter.CTkRadioButton(master=self.frame_mannequin_size, value=1, variable=self.size_var,
+                                                text='Size 2')
         self.button_launch_editor = customtkinter.CTkButton(master=self, text='Launch 3D Editor', cursor='hand2')
 
         self.texture_setting = customtkinter.CTkButton(master=self, text='Select a Texture', cursor='hand2')
@@ -390,7 +397,11 @@ class FrameGarmentInformation(customtkinter.CTkFrame):
         self.label_picked_texture.grid(row=0, column=0)
         self.label_picked_texture_preview.grid(row=0, column=1)
         self.texture_setting.pack(pady=(15, 0))
-        self.button_select_mannequin.pack(pady=(5, 0))
+        # self.button_select_mannequin.pack(pady=(5, 0))
+        self.frame_mannequin_size.pack()
+        self.label_mannequin_size.grid(row=0, column=0)
+        self.rb1.grid(row=1, column=0, padx=(25, 5))
+        self.rb2.grid(row=1, column=1, padx=(5, 25))
         self.button_launch_editor.pack(pady=(5, 0))
 
     def update_thumbnail(self, path):
