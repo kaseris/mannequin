@@ -623,4 +623,9 @@ class ControllerTextureSelection:
         print(f'Setting {selected} as texture')
         self.model.set_selected_texture(selected)
         self.app_state.app.texture_int_value = self.model.selected_texture
-        self.window.destroy()
+        from PIL import Image, ImageTk, ImageOps
+        img = Image.open(self.app_state.app.texture_int_value)
+        img_resized = ImageOps.contain(img, (35, 35))
+        self.app_state.app.selected_texture_img = ImageTk.PhotoImage(img_resized)
+        self.app_state.app.ui.layout.frame_information.label_picked_texture_preview.configure(
+            image=self.app_state.app.selected_texture_img)

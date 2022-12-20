@@ -1,7 +1,7 @@
 import abc
 import enum
 
-from functools import partial
+from PIL import Image, ImageOps, ImageTk
 
 from app import App
 # from app_models import QueryModel
@@ -179,6 +179,12 @@ class AppStateGarmentSelected(AppState):
 
         self.app.controller_texture_selection.couple(self.app.model_selected_texture,
                                                      self.app.ui.layout.frame_information.texture_setting)
+        self.app.model_selected_texture.set_selected_texture(self.app.model_selected_texture.texture_files[0])
+        img_default = Image.open(self.app.model_selected_texture.selected_texture)
+        img_default_resized = ImageOps.contain(img_default, (35, 35))
+        self.app.selected_texture_img = ImageTk.PhotoImage(img_default_resized)
+        self.app.ui.layout.frame_information.label_picked_texture_preview.configure(
+            image=self.app.selected_texture_img)
         self.app.controller_texture_selection.bind(None, self.app.controller_texture_selection.on_press_select_texture)
 
     def update(self):

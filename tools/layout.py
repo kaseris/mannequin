@@ -352,7 +352,18 @@ class FrameGarmentInformation(customtkinter.CTkFrame):
                                                             text='',
                                                             width=200,
                                                             height=200)
+        self.frame_holder = customtkinter.CTkFrame(master=self, width=200, height=90)
 
+        self.label_picked_texture = customtkinter.CTkLabel(master=self.frame_holder,
+                                                           text_font=('Roboto', 8),
+                                                           text='Selected Texture:')
+        self.label_picked_texture_preview = customtkinter.CTkLabel(master=self.frame_holder,
+                                                                   justify=tkinter.RIGHT,
+                                                                   text_font=('Roboto', 8),
+                                                                   text='',
+                                                                   width=0, height=0)
+        self.button_select_mannequin = customtkinter.CTkButton(master=self, text='Choose a mannequin',
+                                                               cursor='hand2')
         self.button_launch_editor = customtkinter.CTkButton(master=self, text='Launch 3D Editor', cursor='hand2')
 
         self.texture_setting = customtkinter.CTkButton(master=self, text='Select a Texture', cursor='hand2')
@@ -362,7 +373,7 @@ class FrameGarmentInformation(customtkinter.CTkFrame):
         self.pack_propagate(False)
         self.label.pack(anchor=tkinter.CENTER, pady=(5, 0))
 
-        self.frame_text_placeholder.pack(pady=(40, 0))
+        self.frame_text_placeholder.pack(pady=(20, 0))
         self.frame_text_placeholder.grid_columnconfigure(0, weight=1)
         self.frame_text_placeholder.grid_columnconfigure(1, weight=3)
         self.text_name.grid(row=0, column=0, sticky=tkinter.W)
@@ -372,11 +383,15 @@ class FrameGarmentInformation(customtkinter.CTkFrame):
         for i in range(4):
             getattr(self, f'text_dummy_{i}').grid(row=i, column=1, sticky=tkinter.E)
 
-        self.frame_image_preview.pack(pady=(60, 0))
+        self.frame_image_preview.pack(pady=(30, 0))
         self.frame_image_preview.pack_propagate(False)
         self.image_garment_preview.pack(anchor=tkinter.CENTER)
-        self.button_launch_editor.pack(pady=(30, 0))
+        self.frame_holder.pack(pady=(5, 5))
+        self.label_picked_texture.grid(row=0, column=0)
+        self.label_picked_texture_preview.grid(row=0, column=1)
         self.texture_setting.pack(pady=(10, 0))
+        self.button_select_mannequin.pack(pady=(5, 0))
+        self.button_launch_editor.pack(pady=(5, 0))
 
     def update_thumbnail(self, path):
         image_path = osp.join(path, str(Path(path).name)) + '.jpg'
@@ -811,16 +826,19 @@ class WindowTextureChoose(customtkinter.CTkToplevel):
 
         for i in range(rows):
             for j in range(columns):
-                img = Image.open(data[i * 6 + j])
-                img_obj = ImageTk.PhotoImage(ImageOps.contain(img, (150, 150)))
-                button = customtkinter.CTkButton(master=self.vs_frame.interior,
-                                                 text='',
-                                                 cursor='hand2',
-                                                 image=img_obj,
-                                                 width=160,
-                                                 height=160,
-                                                 command=partial(callback_fn, data[i * 6 + j]))
-                button.grid(row=i, column=j, padx=(60 if j == 0 else 10, 10), pady=(10, 10))
+                try:
+                    img = Image.open(data[i * 6 + j])
+                    img_obj = ImageTk.PhotoImage(ImageOps.contain(img, (150, 150)))
+                    button = customtkinter.CTkButton(master=self.vs_frame.interior,
+                                                     text='',
+                                                     cursor='hand2',
+                                                     image=img_obj,
+                                                     width=160,
+                                                     height=160,
+                                                     command=partial(callback_fn, data[i * 6 + j]))
+                    button.grid(row=i, column=j, padx=(60 if j == 0 else 10, 10), pady=(10, 10))
+                except IndexError:
+                    continue
 
 
 class UI:

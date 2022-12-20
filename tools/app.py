@@ -43,6 +43,8 @@ class App:
         self.texture_int_value = None
         self.model_selected_texture = SelectedTextureModel(texture_dir=App.TEXTURES_PATH)
 
+        self.selected_texture_img = None
+
     def run(self):
         self.ui.run()
 
