@@ -794,7 +794,6 @@ class WindowAlternativeCurves(customtkinter.CTkToplevel):
         self.grid = MplFrameGrid(master=self, data_list=data,
                                  mpl_width=60, mpl_height=64, column_size=5)
         self.grid.build_grid()
-        # self.wm_transient(master=self.master)
 
 
 class WindowTextureChoose(customtkinter.CTkToplevel):
@@ -810,7 +809,6 @@ class WindowTextureChoose(customtkinter.CTkToplevel):
         columns = len(data) if len(data) < 6 else 6
         rows = (len(data) // 6) + 1
 
-        # for idx, texture_file in enumerate(data[:3]):
         for i in range(rows):
             for j in range(columns):
                 img = Image.open(data[i * 6 + j])
