@@ -181,7 +181,7 @@ class AppStateGarmentSelected(AppState):
                                                      self.app.ui.layout.frame_information.texture_setting)
         self.app.model_selected_texture.set_selected_texture(self.app.model_selected_texture.texture_files[0])
         img_default = Image.open(self.app.model_selected_texture.selected_texture)
-        img_default_resized = ImageOps.contain(img_default, (35, 35))
+        img_default_resized = ImageOps.contain(img_default, (55, 55))
         self.app.selected_texture_img = ImageTk.PhotoImage(img_default_resized)
         self.app.ui.layout.frame_information.label_picked_texture_preview.configure(
             image=self.app.selected_texture_img)

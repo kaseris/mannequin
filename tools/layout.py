@@ -345,13 +345,13 @@ class FrameGarmentInformation(customtkinter.CTkFrame):
                                                                     text_font=('Roboto', 8),
                                                                     placeholder_text=f''))
         self.img_resized = None
-        self.frame_image_preview = customtkinter.CTkFrame(master=self, width=200, height=200)
+        self.frame_image_preview = customtkinter.CTkFrame(master=self, width=185, height=185)
         self.default_img = Image.open('test_images/8.jpg')
 
         self.image_garment_preview = customtkinter.CTkLabel(master=self.frame_image_preview,
                                                             text='',
-                                                            width=200,
-                                                            height=200)
+                                                            width=180,
+                                                            height=180)
         self.frame_holder = customtkinter.CTkFrame(master=self, width=200, height=90)
 
         self.label_picked_texture = customtkinter.CTkLabel(master=self.frame_holder,
@@ -373,7 +373,7 @@ class FrameGarmentInformation(customtkinter.CTkFrame):
         self.pack_propagate(False)
         self.label.pack(anchor=tkinter.CENTER, pady=(5, 0))
 
-        self.frame_text_placeholder.pack(pady=(20, 0))
+        self.frame_text_placeholder.pack(pady=(10, 0))
         self.frame_text_placeholder.grid_columnconfigure(0, weight=1)
         self.frame_text_placeholder.grid_columnconfigure(1, weight=3)
         self.text_name.grid(row=0, column=0, sticky=tkinter.W)
@@ -383,20 +383,20 @@ class FrameGarmentInformation(customtkinter.CTkFrame):
         for i in range(4):
             getattr(self, f'text_dummy_{i}').grid(row=i, column=1, sticky=tkinter.E)
 
-        self.frame_image_preview.pack(pady=(30, 0))
+        self.frame_image_preview.pack(pady=(10, 0))
         self.frame_image_preview.pack_propagate(False)
         self.image_garment_preview.pack(anchor=tkinter.CENTER)
         self.frame_holder.pack(pady=(5, 5))
         self.label_picked_texture.grid(row=0, column=0)
         self.label_picked_texture_preview.grid(row=0, column=1)
-        self.texture_setting.pack(pady=(10, 0))
+        self.texture_setting.pack(pady=(15, 0))
         self.button_select_mannequin.pack(pady=(5, 0))
         self.button_launch_editor.pack(pady=(5, 0))
 
     def update_thumbnail(self, path):
         image_path = osp.join(path, str(Path(path).name)) + '.jpg'
         img_obj = Image.open(image_path)
-        self.img_resized = ImageTk.PhotoImage(ImageOps.contain(img_obj, (190, 190)))
+        self.img_resized = ImageTk.PhotoImage(ImageOps.contain(img_obj, (170, 170)))
         self.image_garment_preview.configure(image=self.img_resized)
         self.image_garment_preview.pack()
 
