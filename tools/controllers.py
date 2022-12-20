@@ -605,6 +605,7 @@ class ControllerTextureSelection:
         self.view = None
 
         self.app_state = app_state
+        self.window = None
 
     def couple(self, model, view):
         self.model = model
@@ -614,12 +615,12 @@ class ControllerTextureSelection:
         self.view.configure(command=callback_fn)
 
     def on_press_select_texture(self):
-        window = WindowTextureChoose(master=self.app_state.app.ui.layout.root)
-        window.bind('<Configure>', window.get_info)
-        window.build(self.model.texture_files, self.on_select)
-        window.mainloop()
+        self.window = WindowTextureChoose(master=self.app_state.app.ui.layout.root)
+        self.window.build(self.model.texture_files, self.on_select)
+        self.window.mainloop()
 
     def on_select(self, selected):
         print(f'Setting {selected} as texture')
         self.model.set_selected_texture(selected)
         self.app_state.app.texture_int_value = self.model.selected_texture
+        self.window.destroy()
