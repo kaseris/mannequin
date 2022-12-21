@@ -162,6 +162,9 @@ class Sidebar(customtkinter.CTkFrame):
                                                      text="Upload a Garment",
                                                      command=None,
                                                      cursor='hand2')
+        self.button_clear_all = customtkinter.CTkButton(master=self,
+                                                        text='Clear All',
+                                                        cursor='hand2')
         self.instructions_title = customtkinter.CTkLabel(self, text="Instructions",
                                                          text_font=("Roboto", "14"))
         self.instructions = customtkinter.CTkLabel(self,
@@ -186,6 +189,7 @@ class Sidebar(customtkinter.CTkFrame):
 
         self.label_1.pack(pady=(30, 0))
         self.button_upload.pack(pady=(30, 0))
+        self.button_clear_all.pack(pady=(5, 0))
         self.instructions_title.pack(pady=(220, 0))
         self.instructions.pack(pady=(20, 0))
         self.label_mode.pack(pady=(300, 0))
