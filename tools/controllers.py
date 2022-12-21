@@ -1,5 +1,7 @@
 import os
 import os.path as osp
+import subprocess
+import shutil
 
 from functools import partial
 from pathlib import Path
@@ -17,6 +19,7 @@ from app_models import IndividualPatternModel, QueryModel, Retrieval3DModel, Ret
 from layout import FramePatternPreview, Sidebar, ShapeSimilarityWindow, WindowAlternativeCurves, WindowTextureChoose
 from interactive_mpl import InteractiveLine
 
+from rules import rules_mannequin
 from seam import Seam
 from statemanager import AppState, AppStateEnum, AppStateGarmentSelected
 from subpath import SubPath
@@ -568,8 +571,6 @@ class Controller3DEditorLauncher:
         self.view.configure(command=callback_fn)
 
     def on_press(self):
-        import subprocess
-        import shutil
         if self.app_state.app.ui.layout.frame_information.text_dummy_3 != '':
             old_dir = os.getcwd()
 
@@ -592,10 +593,15 @@ class Controller3DEditorLauncher:
                 osp.join(self.app_state.app.DATABASE_PATH, '.temp', subcategory, model), 'seam.txt')
             self.app_state.app.subpath.export_to_file(
                 osp.join(self.app_state.app.DATABASE_PATH, '.temp', subcategory, model), 'subpath.txt')
+
+            selection = rules_mannequin[self.app_state.app.ui.layout.frame_information.size_var.get()]
+            obj_path = osp.join(self.app_state.app.EDITOR_3D_PATH, selection[0])
+            cnt_path = osp.join(self.app_state.app.EDITOR_3D_PATH, selection[1])
+
             os.chdir('/home/kaseris/Documents/iMannequin_3D_Tool_v11_venia/')
             subprocess.run([f'{osp.join(os.getcwd(), "main.out")}',
                             osp.join(self.app_state.app.DATABASE_PATH, '.temp', subcategory, model) + '/',
-                            '11', f'{self.app_state.app.texture_int_value}'])
+                            '11', f'{self.app_state.app.texture_int_value}', obj_path, cnt_path])
             os.chdir(old_dir)
         else:
             pass
