@@ -371,6 +371,7 @@ class FrameGarmentInformation(customtkinter.CTkFrame):
                                                 text='Size 1')
         self.rb2 = customtkinter.CTkRadioButton(master=self.frame_mannequin_size, value=1, variable=self.size_var,
                                                 text='Size 2')
+        self.rb1.select()
         self.button_launch_editor = customtkinter.CTkButton(master=self, text='Launch 3D Editor', cursor='hand2')
 
         self.texture_setting = customtkinter.CTkButton(master=self, text='Select a Texture', cursor='hand2')
