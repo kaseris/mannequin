@@ -9,7 +9,7 @@ rules_blouse = {'armhole': {8: ['1', '5'],
                            3: ['0', '2']}
                 }
 
-rules_mannequin = {0: ['wm2_15k.ply',
-                       'wm2_cnt.ply'],
-                   1: ['wm2_15k_m.ply',
-                       'wm2_cnt_m.ply']}
+rules_mannequin = {0: ['models/wm2_15k.ply',
+                       'models/wm2_cnt.ply'],
+                   1: ['models/wm2_15k_m.ply',
+                       'models/wm2_cnt_m.ply']}
