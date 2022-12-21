@@ -41,8 +41,8 @@ class App:
 
         self.query_kind = None
 
-        self.texture_int_value = None
         self.model_selected_texture = SelectedTextureModel(texture_dir=App.TEXTURES_PATH)
+        self.texture_int_value = self.model_selected_texture.texture_files[0]
 
         self.selected_texture_img = None
 
