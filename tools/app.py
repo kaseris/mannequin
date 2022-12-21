@@ -5,6 +5,7 @@ from layout import UI
 class App:
     DATABASE_PATH = '/home/kaseris/Documents/database'
     TEXTURES_PATH = '/home/kaseris/Documents/iMannequin_3D_Tool_v11_venia/texture'
+    EDITOR_3D_PATH = '/home/kaseris/Documents/iMannequin_3D_Tool_v11_venia'
 
     def __init__(self):
         self.ui = UI(test_shown=False)
