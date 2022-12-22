@@ -83,6 +83,7 @@ class AppStateQueryUploaded(AppState):
         self.controller_retrieval_apply = ControllerRetrievalApplyButton(self.app.query_model)
         self.app.controller_retrieved_views = ControllerRetrievedViewportViews(app_state=self)
         self.app.controller_retrieved_views3d = ControllerRetrieved3DViewportViews()
+        self.app.controller_clear = ControllerClear(app_state=self)
 
     def build(self):
         self.app.controller_query_sidebar.set_app_state(self)
@@ -115,6 +116,9 @@ class AppStateQueryUploaded(AppState):
         self.app.controller_retrieval_apply.bind(self.app.controller_retrieval_apply.on_apply)
         self.app.ui.layout.frame_watermark.label.configure(image='')
         self.app.ui.layout.frame_watermark.label.configure(text='')
+
+        self.app.controller_clear.couple(None, self.app.ui.layout.sidebar.button_clear_all)
+        self.app.controller_clear.bind(None, self.app.controller_clear.on_press)
 
     def update(self):
         self.app.ui.layout.query_image_placeholder.draw(self.app.query_model.kind, self.app.query_model.filename)
