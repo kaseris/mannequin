@@ -193,6 +193,9 @@ class ControllerQueryObjectModelUploadButton:
         else:
             self.request_state_update(False, filename, AppStateEnum.APP_INIT)
 
+        if self.opened_query:
+            self.__app_state.app.clear(False)
+
     def request_state_update(self, update_flag, filename, next_state):
         if not self.opened_query:
             self.__app_state.notify_manager(update_flag, filename=filename,
@@ -653,5 +656,5 @@ class ControllerClear:
         self.view.configure(command=callback_fn)
 
     def on_press(self):
-        self.app_state.app.clear()
+        self.app_state.app.clear(True)
 
