@@ -646,8 +646,12 @@ class ControllerClear:
         self.view = None
         self.app_state = app_state
 
+    def couple(self, model, view):
+        self.view = view
+
     def bind(self, event_type, callback_fn):
         self.view.configure(command=callback_fn)
 
     def on_press(self):
-        print('clear pressed')
+        self.app_state.app.clear()
+
