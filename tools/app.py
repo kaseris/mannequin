@@ -53,10 +53,11 @@ class App:
     def setup(self):
         pass
 
-    def clear(self):
-        if self.query_model:
-            self.query_model.clear()
-            self.ui.layout.query_image_placeholder.clear()
+    def clear(self, clear_query=False):
+        if clear_query:
+            if self.query_model:
+                self.query_model.clear()
+                self.ui.layout.query_image_placeholder.clear()
 
         if self.retrieval_model_2d:
             self.retrieval_model_2d.clear()
