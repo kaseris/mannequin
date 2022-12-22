@@ -145,7 +145,10 @@ class ControllerPatternModelPreview:
         self.app_state.app.ui.layout.frame_information.text_dummy_3.configure(placeholder_text=str(
             self.app_state.app.pat_model.ind_pat.garment_dir),
             state='normal')
-        self.app_state.app.ui.layout.frame_information.update_thumbnail(self.app_state.app.pat_model.ind_pat.garment_dir)
+        self.app_state.app.seam = Seam(self.app_state.app.pat_model.ind_pat.garment_dir)
+        self.app_state.app.subpath = SubPath(self.app_state.app.pat_model.ind_pat.garment_dir)
+        self.app_state.app.ui.layout.frame_information.update_thumbnail(
+            self.app_state.app.pat_model.ind_pat.garment_dir)
         self.app_state.app.ui.layout.frame_pattern_preview.draw_pattern(self.app_state.app.pat_model.interactive_lines)
 
 
