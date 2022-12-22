@@ -68,7 +68,10 @@ class ControllerPatternModelPreview:
 
     def on_hover(self, event):
         if event.inaxes == self.view.interactive_preview.ax:
-            self.view.interactive_preview.annot.set_visible(False)
+            if self.view.interactive_preview.annot:
+                self.view.interactive_preview.annot.set_visible(False)
+            else:
+                pass
             for interactive_line in self.model.interactive_lines:
                 cont, ind = interactive_line.line.contains(event)
                 if interactive_line.state == 1:
@@ -189,6 +192,9 @@ class ControllerQueryObjectModelUploadButton:
                 self.__app_state.app.query_kind = 'mesh'
         else:
             self.request_state_update(False, filename, AppStateEnum.APP_INIT)
+
+        if self.opened_query:
+            self.__app_state.app.clear(False)
 
     def request_state_update(self, update_flag, filename, next_state):
         if not self.opened_query:
@@ -636,3 +642,19 @@ class ControllerTextureSelection:
         self.app_state.app.selected_texture_img = ImageTk.PhotoImage(img_resized)
         self.app_state.app.ui.layout.frame_information.label_picked_texture_preview.configure(
             image=self.app_state.app.selected_texture_img)
+
+
+class ControllerClear:
+    def __init__(self, app_state: AppState):
+        self.view = None
+        self.app_state = app_state
+
+    def couple(self, model, view):
+        self.view = view
+
+    def bind(self, event_type, callback_fn):
+        self.view.configure(command=callback_fn)
+
+    def on_press(self):
+        self.app_state.app.clear(True)
+

@@ -23,6 +23,7 @@ class App:
         self.controller_relevant_view = None
         self.controller_relevant_pattern_preview = None
         self.controller_relevant_garment_info = None
+        self.controller_clear = None
 
         self.relevant_garments_model = None
         self.shape_similarity_window = None
@@ -51,6 +52,41 @@ class App:
 
     def setup(self):
         pass
+
+    def clear(self, clear_query=False):
+        if clear_query:
+            if self.query_model:
+                self.query_model.clear()
+                self.ui.layout.query_image_placeholder.clear()
+
+        if self.retrieval_model_2d:
+            self.retrieval_model_2d.clear()
+
+        if self.retrieval_model_3d:
+            self.retrieval_model_3d.clear()
+
+        for i in range(4):
+            getattr(self.ui.layout, f'retrieved_viewport_{i + 1}').clear()
+
+        if self.alt_curves_model:
+            self.alt_curves_model.reset()
+
+        # if self.app_state.app.relevant_garments_model:
+        #     self.app_state.app.relevant_garments_model.reset()
+        if self.ui.layout.frame_pattern_preview:
+            self.ui.layout.frame_pattern_preview.clear()
+
+        if self.ui.layout.frame_information:
+            if self.ui.layout.frame_information.text_dummy_0 != '':
+                self.ui.layout.frame_information.text_dummy_0.configure(placeholder_text='')
+                self.ui.layout.frame_information.text_dummy_1.configure(placeholder_text='')
+                self.ui.layout.frame_information.text_dummy_2.configure(placeholder_text='')
+                self.ui.layout.frame_information.text_dummy_3.configure(placeholder_text='')
+                self.ui.layout.frame_information.img_resized = None
+                self.ui.layout.frame_information.image_garment_preview.configure(image=None)
+
+        if self.ui.layout.frame_pattern_editor:
+            self.ui.layout.frame_pattern_editor.reset()
 
 
 if __name__ == '__main__':
