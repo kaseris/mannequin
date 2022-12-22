@@ -68,7 +68,10 @@ class ControllerPatternModelPreview:
 
     def on_hover(self, event):
         if event.inaxes == self.view.interactive_preview.ax:
-            self.view.interactive_preview.annot.set_visible(False)
+            if self.view.interactive_preview.annot:
+                self.view.interactive_preview.annot.set_visible(False)
+            else:
+                pass
             for interactive_line in self.model.interactive_lines:
                 cont, ind = interactive_line.line.contains(event)
                 if interactive_line.state == 1:
