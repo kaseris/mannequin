@@ -639,3 +639,15 @@ class ControllerTextureSelection:
         self.app_state.app.selected_texture_img = ImageTk.PhotoImage(img_resized)
         self.app_state.app.ui.layout.frame_information.label_picked_texture_preview.configure(
             image=self.app_state.app.selected_texture_img)
+
+
+class ControllerClear:
+    def __init__(self, app_state: AppState):
+        self.view = None
+        self.app_state = app_state
+
+    def bind(self, event_type, callback_fn):
+        self.view.configure(command=callback_fn)
+
+    def on_press(self):
+        print('clear pressed')
