@@ -349,13 +349,13 @@ class FrameGarmentInformation(customtkinter.CTkFrame):
                                                                     text_font=('Roboto', 8),
                                                                     placeholder_text=f''))
         self.img_resized = None
-        self.frame_image_preview = customtkinter.CTkFrame(master=self, width=185, height=185)
+        self.frame_image_preview = customtkinter.CTkFrame(master=self, width=115, height=115)
         self.default_img = Image.open('test_images/8.jpg')
 
         self.image_garment_preview = customtkinter.CTkLabel(master=self.frame_image_preview,
                                                             text='',
-                                                            width=180,
-                                                            height=180)
+                                                            width=110,
+                                                            height=110)
         self.frame_holder = customtkinter.CTkFrame(master=self, width=200, height=90)
 
         self.label_picked_texture = customtkinter.CTkLabel(master=self.frame_holder,
@@ -370,7 +370,8 @@ class FrameGarmentInformation(customtkinter.CTkFrame):
         self.size_var = tkinter.IntVar()
         self.label_mannequin_size = customtkinter.CTkLabel(master=self.frame_mannequin_size,
                                                            text='Choose a mannequin size',
-                                                           text_font=('Roboto', 8))
+                                                           text_font=('Roboto', 8),
+                                                           justify=tkinter.CENTER)
         self.rb1 = customtkinter.CTkRadioButton(master=self.frame_mannequin_size, value=0, variable=self.size_var,
                                                 text='Size 1')
         self.rb2 = customtkinter.CTkRadioButton(master=self.frame_mannequin_size, value=1, variable=self.size_var,
@@ -412,7 +413,7 @@ class FrameGarmentInformation(customtkinter.CTkFrame):
     def update_thumbnail(self, path):
         image_path = osp.join(path, str(Path(path).name)) + '.jpg'
         img_obj = Image.open(image_path)
-        self.img_resized = ImageTk.PhotoImage(ImageOps.contain(img_obj, (170, 170)))
+        self.img_resized = ImageTk.PhotoImage(ImageOps.contain(img_obj, (100, 100)))
         self.image_garment_preview.configure(image=self.img_resized)
         self.image_garment_preview.pack()
 
