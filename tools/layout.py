@@ -714,8 +714,8 @@ class FrameEditorView(customtkinter.CTkFrame):
 
     __OPTIONS_ENUM = {'front': ArmholeCollarOptions,
                       'back': ArmholeCollarOptions,
-                      'skirt front': SkirtOptions,
-                      'skirt back': SkirtOptions,
+                      'skirt front': NotAvailableOptions,
+                      'skirt back': NotAvailableOptions,
                       'collar': NotAvailableOptions,
                       'sleevel': NotAvailableOptions,
                       'sleever': NotAvailableOptions,
