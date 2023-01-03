@@ -61,9 +61,9 @@ class IndividualPatternModel:
             points = self.__ind_pat[region]
             uid = str(uuid.uuid4())
             try:
-                line = InteractiveLine([points], id=uid, label=region)
+                line = InteractiveLine([points], id=uid, label='skirt ' + region if self.category == 'skirt' else region)
             except ValueError:
-                line = InteractiveLine(points, id=uid, label=region)
+                line = InteractiveLine(points, id=uid, label='skirt ' + region if self.category == 'skirt' else region)
             self.__interactive_lines.append(line)
 
     def update(self, new_garment_dir):
@@ -90,9 +90,9 @@ class IndividualPatternModel:
                 points = self.__ind_pat[region]
                 uid = str(uuid.uuid4())
                 try:
-                    line = InteractiveLine([points], id=uid, label=region)
+                    line = InteractiveLine([points], id=uid, label='skirt ' + region if self.category == 'skirt' else region)
                 except ValueError:
-                    line = InteractiveLine(points, id=uid, label=region)
+                    line = InteractiveLine(points, id=uid, label='skirt ' + region if self.category == 'skirt' else region)
                 self.__interactive_lines.append(line)
 
     @property
@@ -292,6 +292,7 @@ class Retrieval3DModel:
 
     def notify_controller(self):
         self.__external_controller.draw()
+        self.__external_controller.on_notify()
 
 
 class RelevantGarmentsModel:
