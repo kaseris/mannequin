@@ -291,8 +291,11 @@ class ControllerRetrievedViewportViews:
 
 
 class ControllerRetrieved3DViewportViews:
-    def __init__(self):
+    def __init__(self, app_state):
         self.model: Retrieval3DModel = None
+
+        self.__app_state = app_state
+        self.needs_update_state = True
 
     def couple(self,
                model: Retrieval3DModel,
@@ -311,7 +314,9 @@ class ControllerRetrieved3DViewportViews:
             getattr(self, f'view_{idx + 1}').draw('mesh', retrieved)
 
     def on_notify(self):
-        pass
+        if self.needs_update_state:
+            self.__app_state.notify_manager()
+            self.needs_update_state = False
 
 
 class ControllerRetrievedPatternPreview:

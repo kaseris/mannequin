@@ -82,7 +82,7 @@ class AppStateQueryUploaded(AppState):
 
         self.controller_retrieval_apply = ControllerRetrievalApplyButton(self.app.query_model)
         self.app.controller_retrieved_views = ControllerRetrievedViewportViews(app_state=self)
-        self.app.controller_retrieved_views3d = ControllerRetrieved3DViewportViews()
+        self.app.controller_retrieved_views3d = ControllerRetrieved3DViewportViews(app_state=self)
         self.app.controller_clear = ControllerClear(app_state=self)
 
     def build(self):
