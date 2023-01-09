@@ -373,9 +373,13 @@ class FrameGarmentInformation(customtkinter.CTkFrame):
                                                            text_font=('Roboto', 8),
                                                            justify=tkinter.CENTER)
         self.rb1 = customtkinter.CTkRadioButton(master=self.frame_mannequin_size, value=0, variable=self.size_var,
-                                                text='Size 1')
+                                                text='Size 1', width=10, height=10)
         self.rb2 = customtkinter.CTkRadioButton(master=self.frame_mannequin_size, value=1, variable=self.size_var,
-                                                text='Size 2')
+                                                text='Size 2', width=10, height=10)
+        self.rb3 = customtkinter.CTkRadioButton(master=self.frame_mannequin_size, value=2, variable=self.size_var,
+                                                text='Size 3', width=10, height=10)
+        self.rb4 = customtkinter.CTkRadioButton(master=self.frame_mannequin_size, value=3, variable=self.size_var,
+                                                text='Size 4', width=10, height=10)
         self.rb1.select()
         self.button_launch_editor = customtkinter.CTkButton(master=self, text='Launch 3D Editor', cursor='hand2')
 
@@ -402,13 +406,15 @@ class FrameGarmentInformation(customtkinter.CTkFrame):
         self.frame_holder.pack(pady=(5, 5))
         self.label_picked_texture.grid(row=0, column=0)
         self.label_picked_texture_preview.grid(row=0, column=1)
-        self.texture_setting.pack(pady=(15, 0))
+        self.texture_setting.pack(pady=(0, 0))
         # self.button_select_mannequin.pack(pady=(5, 0))
-        self.frame_mannequin_size.pack()
-        self.label_mannequin_size.grid(row=0, column=0)
+        self.frame_mannequin_size.pack(pady=(20, 0))
+        self.label_mannequin_size.grid(row=0, column=0, columnspan=2)
         self.rb1.grid(row=1, column=0, padx=(25, 5))
         self.rb2.grid(row=1, column=1, padx=(5, 25))
-        self.button_launch_editor.pack(pady=(5, 0))
+        self.rb3.grid(row=2, column=0, padx=(25, 5))
+        self.rb4.grid(row=2, column=1, padx=(5, 25))
+        self.button_launch_editor.pack(pady=(40, 0))
 
     def update_thumbnail(self, path):
         image_path = osp.join(path, str(Path(path).name)) + '.jpg'
@@ -435,7 +441,7 @@ class FramePatternPreview(customtkinter.CTkFrame):
     def build(self):
         self.place(x=345, y=370)
         self.pack_propagate(False)
-        self.label_title.pack(pady=(7, 0))
+        self.label_title.pack(pady=(7, 0), padx=(0, 400))
         self.interactive_preview.widget.pack(side=tkinter.LEFT, padx=(20, 0))
         self.interactive_preview.draw()
 
