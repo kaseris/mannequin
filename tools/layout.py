@@ -171,9 +171,7 @@ class Sidebar(customtkinter.CTkFrame):
         self.instructions = customtkinter.CTkLabel(self,
                                                    text="\u2022 Left Click on"
                                                         " a retrieved image\n to view garmen"
-                                                        "t's information\n and its respective patterns.\n\n"
-                                                        "\u2022 Double-click on the pattern\n preview panel to view"
-                                                        " similar\n garments.",
+                                                        "t's information\n and its respective patterns.\n\n",
                                                    justify='left',
                                                    width=10)
         self.label_mode = customtkinter.CTkLabel(master=self, text="Appearance Mode:")
@@ -440,31 +438,31 @@ class FramePatternPreview(customtkinter.CTkFrame):
         self.frame = customtkinter.CTkFrame(master=self, fg_color='#454545', corner_radius=0)
         self.label_instruction = customtkinter.CTkLabel(master=self.frame, text_font=('Roboto', 10),
                                                         text=instructions.INSTRUCTIONS_PATTERN_PREVIEW_SIMILAR,
-                                                        wraplength=100,
+                                                        wraplength=120,
                                                         justify=tkinter.LEFT)
         self.label_instruction_focus = customtkinter.CTkLabel(master=self.frame, text_font=('Roboto', 10),
                                                               text=instructions.INSTRUCTIONS_PATTERN_PREVIEW_FOCUS,
-                                                              wraplength=100,
+                                                              wraplength=120,
                                                               justify=tkinter.LEFT)
         self.label_instruction_zoom = customtkinter.CTkLabel(master=self.frame, text_font=('Roboto', 10),
                                                              text=instructions.INSTRUCTIONS_PATTERN_PREVIEW_ZOOM,
-                                                             wraplength=100,
+                                                             wraplength=120,
                                                              justify=tkinter.LEFT)
         self.label_instruction_escape = customtkinter.CTkLabel(master=self.frame, text_font=('Roboto', 10),
                                                                text=instructions.INSTRUCTIONS_PATTERN_PREVIEW_ESCAPE,
-                                                               wraplength=100,
+                                                               wraplength=120,
                                                                justify=tkinter.LEFT)
         self.interactive_preview = InteractivePatternViewer(master=self, figsize=(7, 5))
 
     def build(self):
         self.place(x=345, y=370)
         self.pack_propagate(False)
-        self.label_title.pack(pady=(7, 0), padx=(0, 400))
+        self.label_title.pack(pady=(7, 0), padx=(0, 310))
         self.frame.pack(side=tkinter.LEFT, padx=(20, 0), anchor=tkinter.NW, pady=(9, 0))
         self.label_instruction.pack(pady=(20, 10))
         self.label_instruction_focus.pack(pady=(0, 10))
         self.label_instruction_zoom.pack(pady=(0, 10))
-        self.label_instruction_escape.pack(pady=(0, 103))
+        self.label_instruction_escape.pack(pady=(0, 136))
         self.interactive_preview.widget.pack(side=tkinter.LEFT, padx=(0, 0))
         self.interactive_preview.draw()
 
