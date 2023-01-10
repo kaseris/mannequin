@@ -358,6 +358,8 @@ class ControllerRetrievedPatternPreview:
             model = self.app_state.app.retrieval_model_3d
         garment_dir = model.paths[idx - 1]
         self.pat_model.update(garment_dir)
+        self.app_state.app.ui.layout.frame_pattern_editor.reset()
+        self.app_state.app.ui.layout.frame_pattern_editor.update_state(f'GARMENT_{self.pat_model.category.upper()}_SELECTED')
         self.pattern_preview.draw_pattern(self.pat_model.interactive_lines)
         self.information_view.text_dummy_0.configure(placeholder_text=str(self.pat_model.name),
                                                      state='normal')
@@ -411,6 +413,7 @@ class ControllerIndividualPatternEditor:
         self.model.set_controller(self)
 
     def on_notify(self):
+        self.view.reset()
         self.view.update_state(f'GARMENT_{self.model.category.upper()}_SELECTED')
         self.view.update_option(self.model.selected_region)
         controller = ControllerAltCurvesAppEditor(master=self.master,

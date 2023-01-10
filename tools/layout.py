@@ -452,12 +452,12 @@ class FramePatternPreview(customtkinter.CTkFrame):
                                                                text=instructions.INSTRUCTIONS_PATTERN_PREVIEW_ESCAPE,
                                                                wraplength=120,
                                                                justify=tkinter.LEFT)
-        self.interactive_preview = InteractivePatternViewer(master=self, figsize=(7, 5))
+        self.interactive_preview = InteractivePatternViewer(master=self, figsize=(7.8, 5))
 
     def build(self):
         self.place(x=345, y=370)
         self.pack_propagate(False)
-        self.label_title.pack(pady=(7, 0), padx=(0, 310))
+        self.label_title.pack(pady=(7, 0), padx=(0, 200))
         self.frame.pack(side=tkinter.LEFT, padx=(20, 0), anchor=tkinter.NW, pady=(9, 0))
         self.label_instruction.pack(pady=(20, 10))
         self.label_instruction_focus.pack(pady=(0, 10))
