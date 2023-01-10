@@ -17,6 +17,7 @@ from matplotlib.figure import Figure
 
 from PIL import Image, ImageTk, ImageOps
 
+import instructions
 from interactive_mpl import MplFrameGrid
 from query_mvc import Mesh
 from scrollview import VerticalScrolledFrame
@@ -436,13 +437,35 @@ class FramePatternPreview(customtkinter.CTkFrame):
                                                   corner_radius=corner_radius)
         self.label_title = customtkinter.CTkLabel(master=self, text='Pattern Preview',
                                                   text_font=('Roboto', 16))
-        self.interactive_preview = InteractivePatternViewer(master=self, figsize=(9, 5))
+        self.frame = customtkinter.CTkFrame(master=self, fg_color='#454545', corner_radius=0)
+        self.label_instruction = customtkinter.CTkLabel(master=self.frame, text_font=('Roboto', 10),
+                                                        text=instructions.INSTRUCTIONS_PATTERN_PREVIEW_SIMILAR,
+                                                        wraplength=100,
+                                                        justify=tkinter.LEFT)
+        self.label_instruction_focus = customtkinter.CTkLabel(master=self.frame, text_font=('Roboto', 10),
+                                                              text=instructions.INSTRUCTIONS_PATTERN_PREVIEW_FOCUS,
+                                                              wraplength=100,
+                                                              justify=tkinter.LEFT)
+        self.label_instruction_zoom = customtkinter.CTkLabel(master=self.frame, text_font=('Roboto', 10),
+                                                             text=instructions.INSTRUCTIONS_PATTERN_PREVIEW_ZOOM,
+                                                             wraplength=100,
+                                                             justify=tkinter.LEFT)
+        self.label_instruction_escape = customtkinter.CTkLabel(master=self.frame, text_font=('Roboto', 10),
+                                                               text=instructions.INSTRUCTIONS_PATTERN_PREVIEW_ESCAPE,
+                                                               wraplength=100,
+                                                               justify=tkinter.LEFT)
+        self.interactive_preview = InteractivePatternViewer(master=self, figsize=(7, 5))
 
     def build(self):
         self.place(x=345, y=370)
         self.pack_propagate(False)
         self.label_title.pack(pady=(7, 0), padx=(0, 400))
-        self.interactive_preview.widget.pack(side=tkinter.LEFT, padx=(20, 0))
+        self.frame.pack(side=tkinter.LEFT, padx=(20, 0), anchor=tkinter.NW, pady=(9, 0))
+        self.label_instruction.pack(pady=(20, 10))
+        self.label_instruction_focus.pack(pady=(0, 10))
+        self.label_instruction_zoom.pack(pady=(0, 10))
+        self.label_instruction_escape.pack(pady=(0, 103))
+        self.interactive_preview.widget.pack(side=tkinter.LEFT, padx=(0, 0))
         self.interactive_preview.draw()
 
     def draw_pattern(self, data):
