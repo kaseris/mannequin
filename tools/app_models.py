@@ -246,8 +246,8 @@ class Retrieval2DModel:
     def notify_controller(self):
         self.__external_controller.draw()
         self.__external_controller.on_notify()
-        self.__external_controller.app_state.controller_retrieved_views.set_update_flag(False)
-        self.__external_controller.app_state.controller_retrieved_views3d.set_update_flag(False)
+        self.__external_controller.app_state.app.controller_retrieved_views.set_update_flag(False)
+        self.__external_controller.app_state.app.controller_retrieved_views3d.set_update_flag(False)
 
 
 class Retrieval3DModel:
@@ -294,7 +294,9 @@ class Retrieval3DModel:
 
     def notify_controller(self):
         self.__external_controller.draw()
-        # self.__external_controller.on_notify()
+        self.__external_controller.on_notify()
+        self.__external_controller.app_state.app.controller_retrieved_views.set_update_flag(False)
+        self.__external_controller.app_state.app.controller_retrieved_views3d.set_update_flag(False)
 
 
 class RelevantGarmentsModel:
