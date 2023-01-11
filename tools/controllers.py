@@ -197,7 +197,7 @@ class ControllerQueryObjectModelUploadButton:
             self.request_state_update(False, filename, AppStateEnum.APP_INIT)
 
         if self.opened_query:
-            self.__app_state.app.clear(False)
+            self.__app_state.app.clear(clear_query=False)
 
     def request_state_update(self, update_flag, filename, next_state):
         if not self.opened_query:
@@ -289,6 +289,13 @@ class ControllerRetrievedViewportViews:
             self.__app_state.notify_manager()
             self.needs_update_state = False
 
+    def set_update_flag(self, val):
+        self.needs_update_state = val
+
+    @property
+    def app_state(self):
+        return self.__app_state
+
 
 class ControllerRetrieved3DViewportViews:
     def __init__(self, app_state):
@@ -317,6 +324,13 @@ class ControllerRetrieved3DViewportViews:
         if self.needs_update_state:
             self.__app_state.notify_manager()
             self.needs_update_state = False
+
+    def set_update_flag(self, val):
+        self.needs_update_state = val
+
+    @property
+    def app_state(self):
+        return self.__app_state
 
 
 class ControllerRetrievedPatternPreview:
