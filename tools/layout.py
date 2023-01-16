@@ -1,5 +1,7 @@
 import copy
 import os.path as osp
+import threading
+import time
 
 from functools import partial
 from pathlib import Path
@@ -106,6 +108,7 @@ class RetrievedViewportPlaceholder(customtkinter.CTkToplevel):
         self.vispy_canvas.native.pack(side=tkinter.TOP, fill=tkinter.BOTH,
                                       expand=True)
         self.vispy_view = self.vispy_canvas.central_widget.add_view(bgcolor=Layout.VISPY_CANVAS_BG_COLOR_DARK)
+        self.text = customtkinter.CTkLabel(master=self, text='Please wait...')
 
     def draw(self, kind, fname):
         self.clear()
@@ -118,6 +121,8 @@ class RetrievedViewportPlaceholder(customtkinter.CTkToplevel):
             self.vispy_view.camera.set_range()
             self.vispy_view.camera.zoom(1., (250, 250))
         else:
+
+            # self.text.pack()
             vertices, faces, _, _ = vispy.io.read_mesh(fname)
             m = Mesh(vertices=vertices, faces=faces)
             mesh = vispy.scene.visuals.Mesh(vertices=m.vertices,
@@ -125,6 +130,7 @@ class RetrievedViewportPlaceholder(customtkinter.CTkToplevel):
                                             faces=m.faces)
             self.vispy_view.add(mesh)
             self.vispy_view.camera = vispy.scene.TurntableCamera(elevation=90, azimuth=0, roll=90)
+            self.text.pack_forget()
 
     def clear(self):
         self.vispy_view.parent = None
@@ -169,11 +175,9 @@ class Sidebar(customtkinter.CTkFrame):
         self.instructions_title = customtkinter.CTkLabel(self, text="Instructions",
                                                          text_font=("Roboto", "14"))
         self.instructions = customtkinter.CTkLabel(self,
-                                                   text="\u2022 Left Click on"
-                                                        " a retrieved image\n to view garmen"
-                                                        "t's information\n and its respective patterns.\n\n",
+                                                   text=instructions.INSTRUCTIONS_UPLOAD,
                                                    justify='left',
-                                                   width=10)
+                                                   wraplength=200)
         self.label_mode = customtkinter.CTkLabel(master=self, text="Appearance Mode:")
         self.optionmenu = customtkinter.CTkOptionMenu(master=self,
                                                       values=["Light", "Dark", "System"],
@@ -278,6 +282,7 @@ class QueryImagePlaceholder(customtkinter.CTkToplevel):
         self.vispy_canvas.native.pack(side=tkinter.TOP, fill=tkinter.BOTH,
                                       expand=True)
         self.vispy_view = self.vispy_canvas.central_widget.add_view(bgcolor=Layout.VISPY_CANVAS_BG_COLOR_DARK)
+        self.text = None
 
     def dragging(self, event):
         if event.widget is self.master:
@@ -305,6 +310,8 @@ class QueryImagePlaceholder(customtkinter.CTkToplevel):
             self.vispy_view.camera.set_range()
             self.vispy_view.camera.zoom(1., (250, 250))
         else:
+            self.text = customtkinter.CTkLabel(master=self, text='Please wait...')
+            self.text.pack()
             vertices, faces, _, _ = vispy.io.read_mesh(fname)
             m = Mesh(vertices=vertices, faces=faces)
             mesh = vispy.scene.visuals.Mesh(vertices=m.vertices,
