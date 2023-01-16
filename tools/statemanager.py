@@ -5,10 +5,10 @@ from PIL import Image, ImageOps, ImageTk
 
 from app import App
 # from app_models import QueryModel
+import instructions
 from controllers import *
 from layout import QueryImagePlaceholder, FrameRetrievedPlaceholder, RetrievedViewportPlaceholder,\
     FrameGarmentInformation, FramePatternPreview, FrameEditorView
-
 
 class AppStateEnum(enum.Enum):
     APP_INIT = 0
@@ -80,12 +80,14 @@ class AppStateQueryUploaded(AppState):
         self.app.retrieval_model_2d = Retrieval2DModel(App.DATABASE_PATH)
         self.app.retrieval_model_3d = Retrieval3DModel()
 
-        self.controller_retrieval_apply = ControllerRetrievalApplyButton(self.app.query_model)
+        # self.controller_retrieval_apply = ControllerRetrievalApplyButton(model_query=self.app.query_model,
+        #                                                                  app_state=self)
         self.app.controller_retrieved_views = ControllerRetrievedViewportViews(app_state=self)
         self.app.controller_retrieved_views3d = ControllerRetrieved3DViewportViews(app_state=self)
         self.app.controller_clear = ControllerClear(app_state=self)
 
     def build(self):
+        self.app.ui.layout.sidebar.instructions.configure(text=instructions.INSTRUCTIONS_APPLY)
         self.app.controller_query_sidebar.set_app_state(self)
         self.app.ui.layout.query_image_placeholder = QueryImagePlaceholder(master=self.app.ui.layout.root)
         self.app.ui.layout.root.bind('<Configure>', self.app.ui.layout.query_image_placeholder.dragging)
@@ -144,6 +146,7 @@ class AppStateGarmentSelected(AppState):
         self.app.controller_texture_selection = ControllerTextureSelection(app_state=self)
 
     def build(self):
+        self.app.ui.layout.sidebar.instructions.configure(text=instructions.INSTRUCTIONS_SELECT)
         self.app.ui.layout.frame_information = FrameGarmentInformation(master=self.app.ui.layout.frame_watermark,
                                                                        corner_radius=9, width=327, height=553)
         self.app.ui.layout.frame_pattern_preview = FramePatternPreview(master=self.app.ui.layout.frame_watermark,
