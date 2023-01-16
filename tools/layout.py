@@ -27,6 +27,10 @@ from scrollview import VerticalScrolledFrame
 vispy.use(app='tkinter')
 
 
+def disable_event():
+    pass
+
+
 class Layout:
     VISPY_CANVAS_BG_COLOR_DARK = '#4a4949'
 
@@ -109,6 +113,7 @@ class RetrievedViewportPlaceholder(customtkinter.CTkToplevel):
                                       expand=True)
         self.vispy_view = self.vispy_canvas.central_widget.add_view(bgcolor=Layout.VISPY_CANVAS_BG_COLOR_DARK)
         self.text = customtkinter.CTkLabel(master=self, text='Please wait...')
+        self.wm_protocol('WM_DELETE_WINDOW', disable_event)
 
     def draw(self, kind, fname):
         self.clear()
@@ -283,6 +288,8 @@ class QueryImagePlaceholder(customtkinter.CTkToplevel):
                                       expand=True)
         self.vispy_view = self.vispy_canvas.central_widget.add_view(bgcolor=Layout.VISPY_CANVAS_BG_COLOR_DARK)
         self.text = None
+
+        self.wm_protocol('WM_DELETE_WINDOW', disable_event)
 
     def dragging(self, event):
         if event.widget is self.master:
