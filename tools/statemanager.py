@@ -144,6 +144,7 @@ class AppStateGarmentSelected(AppState):
         self.app.controller_relevant_garment_info = ControllerRelevantPatternFrameInformation()
         self.app.relevant_garments_model = RelevantGarmentsModel(database_path=self.app.DATABASE_PATH)
         self.app.controller_texture_selection = ControllerTextureSelection(app_state=self)
+        # self.app.controller_texture_selection_browse = ControllerTextureSelection(app_state=self)
 
     def build(self):
         self.app.ui.layout.sidebar.instructions.configure(text=instructions.INSTRUCTIONS_SELECT)
@@ -173,6 +174,7 @@ class AppStateGarmentSelected(AppState):
         self.app.controller_3d_editor_launcher = Controller3DEditorLauncher(app_state=self)
         self.app.controller_3d_editor_launcher.couple(None, self.app.ui.layout.frame_information.button_launch_editor)
         self.app.controller_3d_editor_launcher.bind(self.app.controller_3d_editor_launcher.on_press)
+        # self.app.controller_texture_selection_browse.bind(self)
 
         for i in range(4):
             _controller = getattr(self.app, f'controller_retrieved_pattern_preview_{i + 1}')

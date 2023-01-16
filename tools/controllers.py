@@ -657,9 +657,23 @@ class ControllerTextureSelection:
     def on_press_select_texture(self):
         self.window = WindowTextureChoose(master=self.app_state.app.ui.layout.root)
         self.window.build(self.model.texture_files, self.on_select)
+        self.window.button_add.configure(command=self.browse)
         self.window.mainloop()
 
     def on_select(self, selected):
+        print(f'Setting {selected} as texture')
+        self.model.set_selected_texture(selected)
+        self.app_state.app.texture_int_value = self.model.selected_texture
+        img = Image.open(self.app_state.app.texture_int_value)
+        img_resized = ImageOps.contain(img, (55, 55))
+        self.app_state.app.selected_texture_img = ImageTk.PhotoImage(img_resized)
+        self.app_state.app.ui.layout.frame_information.label_picked_texture_preview.configure(
+            image=self.app_state.app.selected_texture_img)
+
+    def browse(self):
+        selected = tkinter.filedialog.askopenfilename(title="Select file to open",
+                                                      filetypes=(("PPM File", "*.ppm"),
+                                                                 ("all files", "*.*")))
         print(f'Setting {selected} as texture')
         self.model.set_selected_texture(selected)
         self.app_state.app.texture_int_value = self.model.selected_texture

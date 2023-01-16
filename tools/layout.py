@@ -867,6 +867,9 @@ class WindowTextureChoose(customtkinter.CTkToplevel):
         super(WindowTextureChoose, self).__init__(master=master)
         self.title('Texture Picker')
         self.geometry('1218x497+636+445')
+        self.button_add = customtkinter.CTkButton(master=self, text='Choose a different texture from your files',
+                                                  cursor='hand2')
+        self.button_add.pack()
         self.vs_frame = VerticalScrolledFrame(self)
         self.vs_frame.pack(side=tkinter.BOTTOM, fill=tkinter.BOTH, expand=tkinter.TRUE)
 
