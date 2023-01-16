@@ -25,6 +25,7 @@ from statemanager import AppState, AppStateEnum, AppStateGarmentSelected
 from subpath import SubPath
 
 from utils import check_path_type
+import instructions
 
 
 class ControllerPatternModelPreview:
@@ -682,4 +683,4 @@ class ControllerClear:
 
     def on_press(self):
         self.app_state.app.clear(True)
-
+        self.app_state.app.ui.layout.sidebar.instructions.configure(text=instructions.INSTRUCTIONS_UPLOAD)
