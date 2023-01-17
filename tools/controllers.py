@@ -118,6 +118,7 @@ class ControllerPatternModelPreview:
         if event.dblclick:
             self.app_state.app.ui.layout.shape_similarity_window = ShapeSimilarityWindow(relevant)
             self.app_state.app.ui.layout.shape_similarity_window.build()
+            self.app_state.app.ui.layout.shape_similarity_window.wm_transient(master=self.app_state.app.ui.layout.root)
             self.app_state.app.controller_relevant_garment_info.couple(
                 relevant, self.app_state.app.ui.layout.shape_similarity_window,
                 self.app_state.app.ui.layout.frame_information
