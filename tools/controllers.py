@@ -659,6 +659,7 @@ class ControllerTextureSelection:
         self.window = WindowTextureChoose(master=self.app_state.app.ui.layout.root)
         self.window.build(self.model.texture_files, self.on_select)
         self.window.button_add.configure(command=self.browse)
+        self.window.wm_transient(master=self.app_state.app.ui.layout.root)
         self.window.mainloop()
 
     def on_select(self, selected):
