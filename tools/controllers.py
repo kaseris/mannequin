@@ -538,6 +538,7 @@ class ControllerAltCurvesAppEditor:
         controller = ControllerAltCurvesAltCurvesWindow(app_state=self.__app_state)
         alt_curve_window = WindowAlternativeCurves(master=self.master)
         alt_curve_window.build(model.curves)
+        alt_curve_window.wm_transient(master=self.__app_state.app.ui.layout.root)
         controller.couple(model, self.model, alt_curve_window)
         controller.bind('<Enter>', controller.on_enter)
         controller.bind('<Leave>', controller.on_leave)
