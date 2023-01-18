@@ -33,10 +33,12 @@ def disable_event():
 
 class Layout:
     VISPY_CANVAS_BG_COLOR_DARK = '#4a4949'
+    MAIN_WIN_WIDTH = 1920
+    MAIN_WIN_HEIGHT = 1080
 
     def __init__(self,
                  title='i-Mannequin',
-                 geometry='1920x1080'):
+                 geometry=f'{MAIN_WIN_WIDTH}x{MAIN_WIN_HEIGHT}'):
         self.root = None
         self.title = title
         self.geometry = geometry
@@ -177,6 +179,8 @@ class Sidebar(customtkinter.CTkFrame):
         self.button_clear_all = customtkinter.CTkButton(master=self,
                                                         text='Clear All',
                                                         cursor='hand2')
+        self.button_save = customtkinter.CTkButton(master=self, text='Save',
+                                                   cursor='hand2')
         self.instructions_title = customtkinter.CTkLabel(self, text="Instructions",
                                                          text_font=("Roboto", "14"))
         self.instructions = customtkinter.CTkLabel(self,
@@ -198,6 +202,7 @@ class Sidebar(customtkinter.CTkFrame):
         self.label_1.pack(pady=(30, 0))
         self.button_upload.pack(pady=(30, 0))
         self.button_clear_all.pack(pady=(5, 0))
+        self.button_save.pack(pady=(5, 0))
         self.instructions_title.pack(pady=(220, 0))
         self.instructions.pack(pady=(20, 0))
         self.label_mode.pack(pady=(300, 0))
