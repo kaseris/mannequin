@@ -144,6 +144,7 @@ class AppStateGarmentSelected(AppState):
         self.app.controller_relevant_garment_info = ControllerRelevantPatternFrameInformation()
         self.app.relevant_garments_model = RelevantGarmentsModel(database_path=self.app.DATABASE_PATH)
         self.app.controller_texture_selection = ControllerTextureSelection(app_state=self)
+        self.app.controller_save = ControllerSave(app_state=self)
         # self.app.controller_texture_selection_browse = ControllerTextureSelection(app_state=self)
 
     def build(self):
@@ -153,6 +154,8 @@ class AppStateGarmentSelected(AppState):
         self.app.ui.layout.frame_pattern_preview = FramePatternPreview(master=self.app.ui.layout.frame_watermark,
                                                                        corner_radius=9, width=1290, height=553)
         self.app.controller_pat_preview.couple(self.app.pat_model, self.app.ui.layout.frame_pattern_preview)
+        self.app.controller_save.couple(None, self.app.ui.layout.sidebar.button_save)
+        self.app.controller_save.bind(None, self.app.controller_save.on_press)
         self.app.ui.layout.frame_information.build()
         self.app.ui.layout.frame_pattern_preview.build()
         self.app.controller_pat_preview.bind_('pick_event', self.app.controller_pat_preview.on_pick)
