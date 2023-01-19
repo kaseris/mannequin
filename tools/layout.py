@@ -678,6 +678,8 @@ class ArmholeCollarOptions:
         self.choice_var = None
         self.last_choice = None
 
+        self.pocket_select = None
+
     def build(self):
         self.choice_var = tkinter.IntVar()
         self.rb1 = customtkinter.CTkRadioButton(master=self.master, text='Armhole', text_font=EDITOR_FONT_NORMAL,
@@ -685,6 +687,8 @@ class ArmholeCollarOptions:
         self.rb2 = customtkinter.CTkRadioButton(master=self.master, text='Collar', text_font=EDITOR_FONT_NORMAL,
                                                 variable=self.choice_var, value=1, width=15, height=15)
 
+        self.pocket_select = customtkinter.CTkButton(master=self.master, text='Select Pocket',
+                                                     text_font=EDITOR_FONT_NORMAL)
         self.select_message = customtkinter.CTkLabel(master=self.master,
                                                      text='Please select the region\n you want to change:',
                                                      text_font=EDITOR_FONT_BOLD)
@@ -705,11 +709,13 @@ class ArmholeCollarOptions:
         self.rb2.pack()
         self.button_search.pack(pady=(50, 0))
         self.button_replace.pack(pady=(10, 0))
+        self.pocket_select.pack(pady=(10, 0))
 
     def destroy(self):
         self.select_message.pack_forget()
         self.rb1.pack_forget()
         self.rb2.pack_forget()
+        self.pocket_select.pack_forget()
         self.button_search.pack_forget()
         self.button_replace.pack_forget()
         self.select_message = None
