@@ -770,3 +770,4 @@ class ControllerSave:
                         if item.endswith('.txt'):
                             shutil.copy(osp.join(temp, item),
                                         osp.join(new_garment_path, item))
+                self.app_state.app.pat_model.ind_pat.write(new_garment_path)
