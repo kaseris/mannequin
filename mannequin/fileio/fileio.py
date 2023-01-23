@@ -43,6 +43,13 @@ def read_seam_structure(garment_dir):
     return structure
 
 
+def write_array_as_ind_pat(fname, array):
+    with open(fname, 'w') as f:
+        for point in array:
+            x, y = point
+            f.write(f'{str(x)},0.0,{str(y)}')
+
+
 def save_txt(fname, obj):
     with open(fname, 'w') as f:
         for point in obj:
