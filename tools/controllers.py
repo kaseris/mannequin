@@ -744,6 +744,13 @@ class ControllerSave:
             new_garment_path = osp.join(user_directory, new_garment_name)
             os.mkdir(new_garment_path)
             print(f'new_garment_path: {new_garment_path}')
+            query_image_path = self.app_state.app.query_model.filename
+            # Copy the query image first
+            shutil.copy(query_image_path,
+                        osp.join(new_garment_path, Path(query_image_path).name))
+            # Save the .ppm file
+            shutil.copy(self.app_state.app.model_selected_texture.selected_texture,
+                        osp.join(new_garment_path, 'tex.ppm'))
             if osp.exists(osp.join(temp, 'cloth_pattern.dxf')):
                 shutil.copy(osp.join(temp, 'cloth_pattern.dxf'),
                             osp.join(new_garment_path, 'cloth_pattern.dxf'))
