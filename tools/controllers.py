@@ -722,52 +722,69 @@ class ControllerSave:
             dialog = customtkinter.CTkInputDialog(text='Please enter a name for the new garment',
                                                   title='Save garment...')
             new_garment_name = dialog.get_input()
+            new_garment_path = tkinter.filedialog.askdirectory(initialdir='/home/kaseris/Documents')
+            self.save(new_garment_name, None)
+            self.save(new_garment_name, new_garment_path)
 
-            split_path = self.app_state.app.pat_model.ind_pat.garment_dir.split(osp.sep)
-            subcategory, model = split_path[-2], split_path[-1]
+    def save(self, new_garment_name, user_directory=None):
+        split_path = self.app_state.app.pat_model.ind_pat.garment_dir.split(osp.sep)
+        subcategory, model = split_path[-2], split_path[-1]
 
-            temp = osp.join(self.app_state.app.DATABASE_PATH, '.temp', subcategory, model)
-            print(f'Temp dir: {temp}')
+        temp = osp.join(self.app_state.app.DATABASE_PATH, '.temp', subcategory, model)
+        print(f'Temp dir: {temp}')
 
-            items = os.listdir(temp)
+        items = os.listdir(temp)
 
-            # Let's create a new directory in the correct database location
+        # Let's create a new directory in the correct database location
+        if user_directory is None:
             new_garment_path = osp.join(self.app_state.app.DATABASE_PATH,
                                         self.app_state.app.pat_model.category,
                                         subcategory, new_garment_name)
-            if osp.exists(new_garment_path):
-                warning_window = customtkinter.CTkToplevel(master=self.app_state.app.ui.layout.root)
-                warning_window.title('Warning')
-                x, y = Layout.MAIN_WIN_WIDTH // 2, Layout.MAIN_WIN_HEIGHT // 2
-                warning_window.geometry(f'200x100+{x}+{y}')
-                msg = customtkinter.CTkLabel(master=warning_window,
-                                             text='This directory already exists.')
-                button_ok = customtkinter.CTkButton(master=warning_window, text='OK',
-                                                    command=warning_window.destroy,
-                                                    cursor='hand2')
-                msg.pack(pady=(10, 0))
-                button_ok.pack(pady=(5, 0))
-                warning_window.mainloop()
-            else:
-                os.mkdir(new_garment_path)
-                query_image_path = self.app_state.app.query_model.filename
-                # Copy the query image first
-                shutil.copy(query_image_path,
-                            osp.join(new_garment_path, Path(query_image_path).name))
-                if osp.exists(osp.join(temp, 'stlpart.stl')):
-                    shutil.copy(osp.join(temp, 'stlpart.stl'),
-                                osp.join(new_garment_path, 'stlpart.stl'))
+        else:
+            new_garment_path = osp.join(user_directory, new_garment_name)
+            os.mkdir(new_garment_path)
+            print(f'new_garment_path: {new_garment_path}')
+            if osp.exists(osp.join(temp, 'cloth_pattern.dxf')):
+                shutil.copy(osp.join(temp, 'cloth_pattern.dxf'),
+                            osp.join(new_garment_path, 'cloth_pattern.dxf'))
+            if osp.exists(osp.join(temp, 'stlpart.stl')):
+                shutil.copy(osp.join(temp, 'stlpart.stl'),
+                            osp.join(new_garment_path, 'stlpart.stl'))
+                return
 
-                if osp.exists(osp.join(temp, 'cloth_pattern.dxf')):
-                    shutil.copy(osp.join(temp, 'cloth_pattern.dxf'),
-                                osp.join(new_garment_path, 'cloth_pattern.dxf'))
+        if osp.exists(new_garment_path):
+            warning_window = customtkinter.CTkToplevel(master=self.app_state.app.ui.layout.root)
+            warning_window.title('Warning')
+            x, y = Layout.MAIN_WIN_WIDTH // 2, Layout.MAIN_WIN_HEIGHT // 2
+            warning_window.geometry(f'200x100+{x}+{y}')
+            msg = customtkinter.CTkLabel(master=warning_window,
+                                         text='This directory already exists.')
+            button_ok = customtkinter.CTkButton(master=warning_window, text='OK',
+                                                command=warning_window.destroy,
+                                                cursor='hand2')
+            msg.pack(pady=(10, 0))
+            button_ok.pack(pady=(5, 0))
+            warning_window.mainloop()
+        else:
+            os.mkdir(new_garment_path)
+            query_image_path = self.app_state.app.query_model.filename
+            # Copy the query image first
+            shutil.copy(query_image_path,
+                        osp.join(new_garment_path, Path(query_image_path).name))
+            if osp.exists(osp.join(temp, 'stlpart.stl')):
+                shutil.copy(osp.join(temp, 'stlpart.stl'),
+                            osp.join(new_garment_path, 'stlpart.stl'))
 
-                for item in os.listdir(temp):
-                    if osp.isdir(osp.join(temp, item)):
-                        shutil.copytree(str(osp.join(temp, item)),
-                                        str(osp.join(new_garment_path, item)))
-                    else:
-                        if item.endswith('.txt'):
-                            shutil.copy(osp.join(temp, item),
-                                        osp.join(new_garment_path, item))
-                self.app_state.app.pat_model.ind_pat.write(new_garment_path)
+            if osp.exists(osp.join(temp, 'cloth_pattern.dxf')):
+                shutil.copy(osp.join(temp, 'cloth_pattern.dxf'),
+                            osp.join(new_garment_path, 'cloth_pattern.dxf'))
+
+            for item in os.listdir(temp):
+                if osp.isdir(osp.join(temp, item)):
+                    shutil.copytree(str(osp.join(temp, item)),
+                                    str(osp.join(new_garment_path, item)))
+                else:
+                    if item.endswith('.txt'):
+                        shutil.copy(osp.join(temp, item),
+                                    osp.join(new_garment_path, item))
+            self.app_state.app.pat_model.ind_pat.write(new_garment_path)
