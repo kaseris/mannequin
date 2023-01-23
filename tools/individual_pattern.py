@@ -9,6 +9,13 @@ from mannequin.fileio import read_coords_from_txt
 from mannequin.primitives.utils import sort_xy
 
 
+def write_array_as_ind_pat(fname, array):
+    with open(fname, 'w') as f:
+        for point in array:
+            x, y = point
+            f.write(f'{str(x)},0.0,{str(y)}\n')
+
+
 class IndividualPattern:
 
     pattern_files = ['front.xyz', 'back.xyz', 'skirt back.xyz', 'skirt front.xyz', 'sleever.xyz', 'sleevel.xyz',
@@ -128,6 +135,13 @@ class IndividualPattern:
     @property
     def alternative_exists(self):
         return self.__alternative_exists
+
+    def write(self, directory):
+        for pattern_file_name in IndividualPattern.pattern_files:
+            name = pattern_file_name.split('.')[0]
+            if name in self.patterns.keys():
+                array_to_write = self.patterns[name]
+                write_array_as_ind_pat(osp.join(directory, 'individual patterns', name+'.xyz'), array_to_write)
 
 
 if __name__ == '__main__':
