@@ -1,0 +1,17 @@
+{
+  "square_pocket": [
+    ["moveto", [1.0, 0.0]],
+    ["lineto", [1.0, 1.0]],
+    ["lineto", [0.0, 1.0]],
+    ["lineto", [0.0, 0.0]],
+    ["closepoly", [1.0, 0.0]]
+  ],
+  "triangle_pocket": [
+    ["moveto", [1.0, 0.0]],
+    ["lineto", [1.0, 1.0]],
+    ["lineto", [0.0, 1.0]],
+    ["lineto", [0.0, 0.0]],
+    ["lineto", [0.5, -1.0]],
+    ["closepoly", [1.0, 0.0]]
+  ]
+}
