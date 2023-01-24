@@ -243,6 +243,9 @@ class Retrieval2DModel:
     def set_controller(self, controller):
         self.__external_controller = controller
 
+    def extract_feature(self, image):
+        return dump_single_feature(image, self.extractor)
+
     def notify_controller(self):
         self.__external_controller.draw()
         self.__external_controller.on_notify()
