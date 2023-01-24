@@ -747,7 +747,8 @@ class ControllerSave:
             query_image_path = self.app_state.app.query_model.filename
             # Copy the query image first
             shutil.copy(query_image_path,
-                        osp.join(new_garment_path, Path(query_image_path).name))
+                        osp.join(new_garment_path, new_garment_name + ".jpg"))
+
             # Save the .ppm file
             shutil.copy(self.app_state.app.model_selected_texture.selected_texture,
                         osp.join(new_garment_path, 'tex.ppm'))
@@ -777,7 +778,7 @@ class ControllerSave:
             query_image_path = self.app_state.app.query_model.filename
             # Copy the query image first
             shutil.copy(query_image_path,
-                        osp.join(new_garment_path, Path(query_image_path).name))
+                        osp.join(new_garment_path, new_garment_name + '.jpg'))
             if osp.exists(osp.join(temp, 'stlpart.stl')):
                 shutil.copy(osp.join(temp, 'stlpart.stl'),
                             osp.join(new_garment_path, 'stlpart.stl'))
@@ -795,3 +796,11 @@ class ControllerSave:
                         shutil.copy(osp.join(temp, item),
                                     osp.join(new_garment_path, item))
             self.app_state.app.pat_model.ind_pat.write(new_garment_path)
+
+            with open('/home/kaseris/Documents/database/paths/garment_paths.txt', 'a') as f:
+                s = '\n'
+                s += f'./{self.app_state.app.pat_model.category}/{subcategory}/{new_garment_name}/{new_garment_name}.jpg'
+                s += f', /{self.app_state.app.pat_model.category}/{subcategory}/{new_garment_name}/{new_garment_name}.obj'
+                s += f', {self.app_state.app.pat_model.category}'
+                s += f', {new_garment_name}'
+                f.write(s)
