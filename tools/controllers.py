@@ -795,12 +795,12 @@ class ControllerSave:
                     if item.endswith('.txt'):
                         shutil.copy(osp.join(temp, item),
                                     osp.join(new_garment_path, item))
-            self.app_state.app.pat_model.ind_pat.write(new_garment_path)
 
             with open('/home/kaseris/Documents/database/paths/garment_paths.txt', 'a') as f:
-                s = '\n'
+                s = ''
                 s += f'./{self.app_state.app.pat_model.category}/{subcategory}/{new_garment_name}/{new_garment_name}.jpg'
                 s += f', /{self.app_state.app.pat_model.category}/{subcategory}/{new_garment_name}/{new_garment_name}.obj'
                 s += f', {self.app_state.app.pat_model.category}'
                 s += f', {new_garment_name}'
+                s += '\n'
                 f.write(s)
