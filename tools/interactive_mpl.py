@@ -57,7 +57,7 @@ class MplFrameGrid:
         self.data_list = data_list
 
         self.columns = len(data_list) if len(data_list) < column_size else column_size
-        self.rows = (self.number_of_plots // column_size) + 1 if (self.number_of_plots % column_size) else 0
+        self.rows = (self.number_of_plots // column_size) + 1 # if (self.number_of_plots % column_size) else 0
 
         self.selected = np.zeros(self.number_of_plots, dtype=np.int)
 
