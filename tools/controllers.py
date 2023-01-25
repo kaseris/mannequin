@@ -804,3 +804,8 @@ class ControllerSave:
                 s += f', {new_garment_name}'
                 s += '\n'
                 f.write(s)
+
+            # Re-write the database of embeddings.
+            # subprocess.run(['mnq'])
+            subprocess.run(['python',
+                            '/home/kaseris/Documents/dev/mannequin/mannequin/retrieval2d/feature_extractor_dimis.py'])
