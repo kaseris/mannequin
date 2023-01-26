@@ -9,6 +9,7 @@ class Pocket:
     __JSON_TO_PATH = {'lineto': Path.LINETO,
                       'moveto': Path.MOVETO,
                       'closepoly': Path.CLOSEPOLY}
+    MARGIN = 40
 
     def __init__(self, pocket_type):
         self.__interactive_line = None
@@ -33,6 +34,24 @@ class Pocket:
     def update(self):
         pass
 
+    def scale(self, scale):
+        for idx, point in enumerate(self.__points):
+            # Update the internal point data
+            self.__points[idx] = [point[0] * scale, point[1] * scale]
+            # Update the path data
+        self.update_path_data()
+
+    def update_path_data(self):
+        tmp = []
+        for point in self.__points:
+            tmp.append(point)
+
+        new_path_data = []
+        for new_point, tup in zip(tmp, self.__path_data):
+            instruction, point = tup
+            new_path_data.append((instruction, new_point))
+        self.__path_data = new_path_data
+
     def remove(self):
         pass
 
@@ -48,10 +67,25 @@ class Pocket:
     def points(self):
         return np.asarray(self.__points)
 
+    @property
+    def xlim(self):
+        _points = np.asarray(self.__points)
+        left = np.min(_points[:, 0] - Pocket.MARGIN)
+        right = np.max(_points[:, 0] + Pocket.MARGIN)
+        return left, right
+
+    @property
+    def ylim(self):
+        _points = np.asarray(self.__points)
+        down = np.min(_points[:, 1] - Pocket.MARGIN)
+        up = np.max(_points[:, 1] + Pocket.MARGIN)
+        return down, up
+
 
 if __name__ == '__main__':
     pocket = Pocket('triangle_pocket')
     pocket.build()
+    pocket.scale(100.0)
     print(f'points:\n{pocket.points}')
     import matplotlib.pyplot as plt
     from image_view import PathInteractor
@@ -61,12 +95,12 @@ if __name__ == '__main__':
     codes, verts = zip(*pocket.path_data)
     path = Path(verts, codes)
     patch = PathPatch(
-        path, facecolor=None, edgecolor='black', alpha=1.0, fill=False)
+        path, facecolor=None, edgecolor='black', alpha=1.0, fill=True)
     ax.add_patch(patch)
 
     interactor = PathInteractor(patch)
     ax.set_title('drag vertices to update path')
-    ax.set_xlim(-3, 4)
-    ax.set_ylim(-3, 4)
+    ax.set_xlim(pocket.xlim)
+    ax.set_ylim(pocket.ylim)
 
     plt.show()
