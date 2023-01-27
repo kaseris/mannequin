@@ -808,3 +808,23 @@ class ControllerSave:
             # Re-write the database of embeddings.
             subprocess.run(['python',
                             '/home/kaseris/Documents/dev/mannequin/mannequin/retrieval2d/feature_extractor_dimis.py'])
+
+
+class ControllerPocketDesigner:
+    def __init__(self, app_state):
+        self.app_state = app_state
+        self.model = None
+        self.view = None
+
+    def couple(self, model, view):
+        self.model = model
+        self.view = view
+
+    def bind(self, event_type, callback_fn):
+        self.view.mpl_connect(event_type, callback_fn)
+
+    def on_draw(self, event):
+        self.background = self.view.canvas.copy_from_bbox(self.ax.bbox)
+        self.view.ax.draw_artist(self.pathpatch)
+        self.view.ax.draw_artist(self.line)
+        self.view.canvas.blit(self.ax.bbox)
