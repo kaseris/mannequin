@@ -16,6 +16,7 @@ import customtkinter
 
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
+import matplotlib.path as path
 
 from PIL import Image, ImageTk, ImageOps
 
@@ -493,6 +494,37 @@ class FramePatternPreview(customtkinter.CTkFrame):
 
     def clear(self):
         self.interactive_preview.clear()
+
+
+class WindowPocketEditor(customtkinter.CTkToplevel):
+    def __init__(self, master):
+        super(WindowPocketEditor, self).__init__(master=master)
+        self.geometry('800x600')
+        self.f = Figure()
+        self.f = Figure(figsize=(6, 4))
+        self.f.patch.set_facecolor('#525252')
+
+        self.pattern_preview = FigureCanvasTkAgg(self.f, master=self)
+        self.ax = None
+        self._ind = None
+        self.__canvas = self.f.canvas
+        self.data = None
+
+    def draw(self, data):
+        # Prepare the data to be fed into the plot
+        pass
+
+    def prepare_data(self, data):
+        codes, verts = zip(*data.path_data)
+
+
+    @property
+    def mpl_canvas(self):
+        return self.__canvas
+
+    @property
+    def widget(self):
+        return self.pattern_preview.get_tk_widget()
 
 
 class InteractivePatternViewer:
