@@ -11,7 +11,7 @@ class Pocket:
                       'curve3': Path.CURVE3,
                       'curve4': Path.CURVE4,
                       'closepoly': Path.CLOSEPOLY}
-    MARGIN = 40
+    MARGIN = 2
 
     def __init__(self, pocket_type):
         self.__interactive_line = None
@@ -32,6 +32,10 @@ class Pocket:
         for instruction, point in instructions:
             self.__path_data.append((Pocket.__JSON_TO_PATH[instruction], point))
             self.__points.append(point)
+        # We append an extra vertex to the centre of mass of the polygon. This will serve as a polygon translate
+        # anchor.
+        self.__path_data.append((Pocket.__JSON_TO_PATH['moveto'], np.mean(self.points[:-1], axis=0).tolist()))
+        self.__points.append(np.mean(self.points, axis=0).tolist())
 
     def update(self):
         pass
@@ -87,7 +91,6 @@ class Pocket:
 if __name__ == '__main__':
     pocket = Pocket('triangle_pocket')
     pocket.build()
-    pocket.scale(100.0)
     print(f'points:\n{pocket.points}')
     import matplotlib.pyplot as plt
     from image_view import PathInteractor
