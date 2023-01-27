@@ -8,6 +8,8 @@ class Pocket:
 
     __JSON_TO_PATH = {'lineto': Path.LINETO,
                       'moveto': Path.MOVETO,
+                      'curve3': Path.CURVE3,
+                      'curve4': Path.CURVE4,
                       'closepoly': Path.CLOSEPOLY}
     MARGIN = 40
 
@@ -38,7 +40,7 @@ class Pocket:
         for idx, point in enumerate(self.__points):
             # Update the internal point data
             self.__points[idx] = [point[0] * scale, point[1] * scale]
-            # Update the path data
+        # Update the path data
         self.update_path_data()
 
     def update_path_data(self):
