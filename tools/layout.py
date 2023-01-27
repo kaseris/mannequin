@@ -17,6 +17,7 @@ import customtkinter
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
 import matplotlib.path as path
+import matplotlib.patches as patches
 
 from PIL import Image, ImageTk, ImageOps
 
@@ -509,14 +510,24 @@ class WindowPocketEditor(customtkinter.CTkToplevel):
         self._ind = None
         self.__canvas = self.f.canvas
         self.data = None
+        self.patch = None
 
     def draw(self, data):
         # Prepare the data to be fed into the plot
-        pass
+        self.prepare_data(data)
+        self.ax = self.f.add_subplot(autoscale_on=False)
+        self.ax.set_facecolor('#525252')
+        self.ax.add_patch(self.patch)
+        self.patch.set_animated(True)
+        self.ax.set_xlim(data.xlim)
+        self.ax.set_ylim(data.ylim)
+
 
     def prepare_data(self, data):
         codes, verts = zip(*data.path_data)
-
+        self.data = path.Path(verts, codes)
+        self.patch = patches.PathPatch(self.data, facecolor=None, edgecolor='green', alpha=1.0,
+                                       fill=True)
 
     @property
     def mpl_canvas(self):
