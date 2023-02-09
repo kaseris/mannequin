@@ -26,7 +26,7 @@ from interactive_mpl import MplFrameGrid
 from query_mvc import Mesh
 from scrollview import VerticalScrolledFrame
 
-vispy.use(app='tkinter')
+# vispy.use(app='tkinter')
 
 
 def disable_event():
@@ -40,7 +40,7 @@ class Layout:
 
     def __init__(self,
                  title='i-Mannequin',
-                 geometry=f'{MAIN_WIN_WIDTH}x{MAIN_WIN_HEIGHT}'):
+                 geometry=f'{MAIN_WIN_WIDTH}x{MAIN_WIN_HEIGHT}+0+0'):
         self.root = None
         self.title = title
         self.geometry = geometry
@@ -66,21 +66,26 @@ class Layout:
         self.root.minsize(width=1500, height=700)
 
         self.sidebar = Sidebar(master=self.root, width=200, corner_radius=9)
-        self.frame_espa = FrameESPA(master=self.root, corner_radius=9, height=80, fg_color='#ffffff')
-        self.frame_watermark = FrameWatermark(master=self.root, corner_radius=9, width=1650, height=930)
+        self.frame_espa = FrameESPA(
+            master=self.root, corner_radius=9, height=80, fg_color='#ffffff')
+        self.frame_watermark = FrameWatermark(
+            master=self.root, corner_radius=9, width=1650, height=930)
         self.sidebar.build()
         self.frame_watermark.build()
         self.frame_espa.build()
 
     def show(self):
         if not self.shown:
-            self.frame_retrieved = FrameRetrievedPlaceholder(master=self.frame_watermark, width=1290, height=355)
+            self.frame_retrieved = FrameRetrievedPlaceholder(
+                master=self.frame_watermark, width=1290, height=355)
             self.frame_retrieved.build()
             for i in range(4):
                 setattr(self, f'retrieved_viewport_{i+1}', RetrievedViewportPlaceholder(i, '260x260',
                                                                                         master=self.root))
-            self.query_image_placeholder = QueryImagePlaceholder(master=self.root)
-            self.root.bind('<Configure>', self.query_image_placeholder.dragging)
+            self.query_image_placeholder = QueryImagePlaceholder(
+                master=self.root)
+            self.root.bind(
+                '<Configure>', self.query_image_placeholder.dragging)
             self.frame_information = FrameGarmentInformation(master=self.frame_watermark, corner_radius=9,
                                                              width=327, height=553)
             self.frame_information.build()
@@ -99,14 +104,17 @@ class Layout:
 
 
 class RetrievedViewportPlaceholder(customtkinter.CTkToplevel):
-    OFFSETS = [(680, 115), (980, 115), (1280, 115), (1580, 115)]
+    offset_x = 650
+    offset_y = 85
+    OFFSETS = [(offset_x, offset_y), (offset_x + 300, offset_y),
+               (offset_x + 600, offset_y), (offset_x+900, offset_y)]
 
-    def __init__(self, offset_index, geometry, **kwargs):
+    def __init__(self, offset_index, geom, **kwargs):
         super(RetrievedViewportPlaceholder, self).__init__(**kwargs)
-        self.geometry(geometry+f'+{RetrievedViewportPlaceholder.OFFSETS[offset_index][0]}'
-                               f'+{RetrievedViewportPlaceholder.OFFSETS[offset_index][1]}')
+        self.geometry(geom+f'+{RetrievedViewportPlaceholder.OFFSETS[offset_index][0]}'
+                      f'+{RetrievedViewportPlaceholder.OFFSETS[offset_index][1]}')
         self.__idx = offset_index + 1
-
+        self.geom = geom
         self.title(f'Retrieved Garment: {offset_index + 1}')
         self.wm_transient(self.master)
         self.drag_id = ''
@@ -115,14 +123,15 @@ class RetrievedViewportPlaceholder(customtkinter.CTkToplevel):
                                               parent=self)
         self.vispy_canvas.native.pack(side=tkinter.TOP, fill=tkinter.BOTH,
                                       expand=True)
-        self.vispy_view = self.vispy_canvas.central_widget.add_view(bgcolor=Layout.VISPY_CANVAS_BG_COLOR_DARK)
+        self.vispy_view = self.vispy_canvas.central_widget.add_view(
+            bgcolor=Layout.VISPY_CANVAS_BG_COLOR_DARK)
         self.text = customtkinter.CTkLabel(master=self, text='Please wait...')
         self.wm_protocol('WM_DELETE_WINDOW', disable_event)
 
     def draw(self, kind, fname):
-        self.clear()
+        # self.clear()
         if kind == 'image':
-            im = imread(fname)
+            im = vispy.io.imread(fname)
             im_obj = vispy.scene.visuals.Image(im, parent=self.vispy_view)
             self.vispy_view.add(im_obj)
             self.vispy_view.camera = vispy.scene.PanZoomCamera(aspect=1)
@@ -138,14 +147,16 @@ class RetrievedViewportPlaceholder(customtkinter.CTkToplevel):
                                             shading='smooth',
                                             faces=m.faces)
             self.vispy_view.add(mesh)
-            self.vispy_view.camera = vispy.scene.TurntableCamera(elevation=90, azimuth=0, roll=90)
+            self.vispy_view.camera = vispy.scene.TurntableCamera(
+                elevation=90, azimuth=0, roll=90)
             self.text.pack_forget()
 
     def clear(self):
         self.vispy_view.parent = None
-        self.vispy_view = self.vispy_canvas.central_widget.add_view(bgcolor=Layout.VISPY_CANVAS_BG_COLOR_DARK)
+        self.vispy_view = self.vispy_canvas.central_widget.add_view(
+            bgcolor=Layout.VISPY_CANVAS_BG_COLOR_DARK)
 
-    def dragging(self, event):
+    def dragging(self, i, event):
         if event.widget is self.master:
             if self.drag_id == '':
                 pass
@@ -153,8 +164,8 @@ class RetrievedViewportPlaceholder(customtkinter.CTkToplevel):
                 self.master.after_cancel(self.drag_id)
                 x = self.master.winfo_x()
                 y = self.master.winfo_y()
-                self.geometry(f'400x300+{x + QueryImagePlaceholder.TOP_LEVEL_OFFSET_X}+'
-                              f'{y + QueryImagePlaceholder.TOP_LEVEL_OFFSET_Y}')
+                self.geometry(f'{self.geom}+{x + RetrievedViewportPlaceholder.OFFSETS[i][0]}+'
+                              f'{y + RetrievedViewportPlaceholder.OFFSETS[i][1]}')
             self.drag_id = self.master.after(1000, self.stop_drag)
 
     def stop_drag(self):
@@ -170,9 +181,11 @@ class Sidebar(customtkinter.CTkFrame):
                  master,
                  width,
                  corner_radius):
-        super(Sidebar, self).__init__(master=master, width=width, corner_radius=corner_radius)
+        super(Sidebar, self).__init__(master=master,
+                                      width=width, corner_radius=corner_radius)
 
-        self.img = ImageTk.PhotoImage(Image.open('test_images/6a.png').resize((100, 100)))
+        self.img = ImageTk.PhotoImage(Image.open(
+            'test_images/6a.png').resize((100, 100)))
         self.label_1 = customtkinter.CTkLabel(master=self, image=self.img)
         self.button_upload = customtkinter.CTkButton(master=self,
                                                      text="Upload a Garment",
@@ -189,9 +202,11 @@ class Sidebar(customtkinter.CTkFrame):
                                                    text=instructions.INSTRUCTIONS_UPLOAD,
                                                    justify='left',
                                                    wraplength=200)
-        self.label_mode = customtkinter.CTkLabel(master=self, text="Appearance Mode:")
+        self.label_mode = customtkinter.CTkLabel(
+            master=self, text="Appearance Mode:")
         self.optionmenu = customtkinter.CTkOptionMenu(master=self,
-                                                      values=["Light", "Dark", "System"],
+                                                      values=[
+                                                          "Light", "Dark", "System"],
                                                       command=self.change_appearance_mode,
                                                       cursor='hand2')
         customtkinter.set_appearance_mode("Dark")
@@ -212,8 +227,8 @@ class Sidebar(customtkinter.CTkFrame):
 
     def change_appearance_mode(self, new_appearance):
         customtkinter.set_appearance_mode(new_appearance)
-        #TODO: Also change the pattern editor's frame color
-        #TODO: Set the pattern preview's facecolor
+        # TODO: Also change the pattern editor's frame color
+        # TODO: Set the pattern preview's facecolor
 
 
 class FrameESPA(customtkinter.CTkFrame):
@@ -240,7 +255,8 @@ class FrameWatermark(customtkinter.CTkFrame):
                                              corner_radius=corner_radius,
                                              width=width,
                                              height=height)
-        self.img = ImageTk.PhotoImage(Image.open('test_images/imannequin.png').convert('RGBA'))
+        self.img = ImageTk.PhotoImage(Image.open(
+            'test_images/imannequin.png').convert('RGBA'))
         self.label = customtkinter.CTkLabel(master=self, image=self.img)
 
     def build(self):
@@ -251,7 +267,8 @@ class FrameWatermark(customtkinter.CTkFrame):
 
 class FrameQueryImagePlaceholder(customtkinter.CTkFrame):
     def __init__(self, master, width, height):
-        super(FrameQueryImagePlaceholder, self).__init__(master=master, width=1000, height=900)
+        super(FrameQueryImagePlaceholder, self).__init__(
+            master=master, width=1000, height=900)
 
     def build(self):
         self.grid(row=0, column=0)
@@ -259,24 +276,28 @@ class FrameQueryImagePlaceholder(customtkinter.CTkFrame):
 
 class FrameRetrievedPlaceholder(customtkinter.CTkFrame):
     def __init__(self, master, width, height):
-        super(FrameRetrievedPlaceholder, self).__init__(master=master, width=width, height=height)
+        super(FrameRetrievedPlaceholder, self).__init__(
+            master=master, width=width, height=height)
         self.label = customtkinter.CTkLabel(master=self, text='Retrieved Garments',
                                             text_font=('Roboto', 16))
 
     def build(self):
-        self.pack(side=tkinter.RIGHT, anchor=tkinter.N, pady=(7, 0), padx=(0, 10))
+        self.pack(side=tkinter.RIGHT, anchor=tkinter.N,
+                  pady=(7, 0), padx=(0, 10))
         self.pack_propagate(False)
         self.label.pack(anchor=tkinter.CENTER, side=tkinter.TOP, pady=(7, 0))
 
 
 class QueryImagePlaceholder(customtkinter.CTkToplevel):
-    TOP_LEVEL_OFFSET_X = 285
-    TOP_LEVEL_OFFSET_Y = 70
+    TOP_LEVEL_OFFSET_X = 255
+    TOP_LEVEL_OFFSET_Y = 45
+    GEOMETRY = '310x310'
 
     def __init__(self, master):
         super(QueryImagePlaceholder, self).__init__(master=master)
         self.master = master
-        self.geometry(f"325x318+{QueryImagePlaceholder.TOP_LEVEL_OFFSET_X}+{QueryImagePlaceholder.TOP_LEVEL_OFFSET_Y}")
+        self.geometry(
+            f"{QueryImagePlaceholder.GEOMETRY}+{QueryImagePlaceholder.TOP_LEVEL_OFFSET_X}+{QueryImagePlaceholder.TOP_LEVEL_OFFSET_Y}")
         self.title('Query Image')
         self.wm_transient(master=master)
         self.drag_id = ''
@@ -285,7 +306,8 @@ class QueryImagePlaceholder(customtkinter.CTkToplevel):
 
         self.frame = customtkinter.CTkFrame(master=self)
         self.frame.pack(side=tkinter.TOP, anchor=tkinter.CENTER)
-        self.button_apply = customtkinter.CTkButton(master=self.frame, text='Apply', cursor='hand2')
+        self.button_apply = customtkinter.CTkButton(
+            master=self.frame, text='Apply', cursor='hand2')
         self.button_apply.pack()
 
         self.vispy_canvas = scene.SceneCanvas(keys='interactive',
@@ -293,7 +315,8 @@ class QueryImagePlaceholder(customtkinter.CTkToplevel):
                                               parent=self)
         self.vispy_canvas.native.pack(side=tkinter.TOP, fill=tkinter.BOTH,
                                       expand=True)
-        self.vispy_view = self.vispy_canvas.central_widget.add_view(bgcolor=Layout.VISPY_CANVAS_BG_COLOR_DARK)
+        self.vispy_view = self.vispy_canvas.central_widget.add_view(
+            bgcolor=Layout.VISPY_CANVAS_BG_COLOR_DARK)
         self.text = None
 
         self.wm_protocol('WM_DELETE_WINDOW', disable_event)
@@ -306,7 +329,7 @@ class QueryImagePlaceholder(customtkinter.CTkToplevel):
                 self.master.after_cancel(self.drag_id)
                 x = self.master.winfo_x()
                 y = self.master.winfo_y()
-                self.geometry(f'400x300+{x + QueryImagePlaceholder.TOP_LEVEL_OFFSET_X}+'
+                self.geometry(f'{QueryImagePlaceholder.GEOMETRY}+{x + QueryImagePlaceholder.TOP_LEVEL_OFFSET_X}+'
                               f'{y + QueryImagePlaceholder.TOP_LEVEL_OFFSET_Y}')
             self.drag_id = self.master.after(1000, self.stop_drag)
 
@@ -324,7 +347,8 @@ class QueryImagePlaceholder(customtkinter.CTkToplevel):
             self.vispy_view.camera.set_range()
             self.vispy_view.camera.zoom(1., (250, 250))
         else:
-            self.text = customtkinter.CTkLabel(master=self, text='Please wait...')
+            self.text = customtkinter.CTkLabel(
+                master=self, text='Please wait...')
             self.text.pack()
             vertices, faces, _, _ = vispy.io.read_mesh(fname)
             m = Mesh(vertices=vertices, faces=faces)
@@ -332,11 +356,13 @@ class QueryImagePlaceholder(customtkinter.CTkToplevel):
                                             shading='smooth',
                                             faces=m.faces)
             self.vispy_view.add(mesh)
-            self.vispy_view.camera = vispy.scene.TurntableCamera(elevation=90, azimuth=0, roll=90)
+            self.vispy_view.camera = vispy.scene.TurntableCamera(
+                elevation=90, azimuth=0, roll=90)
 
     def clear(self):
         self.vispy_view.parent = None
-        self.vispy_view = self.vispy_canvas.central_widget.add_view(bgcolor=Layout.VISPY_CANVAS_BG_COLOR_DARK)
+        self.vispy_view = self.vispy_canvas.central_widget.add_view(
+            bgcolor=Layout.VISPY_CANVAS_BG_COLOR_DARK)
 
 
 class FrameGarmentInformation(customtkinter.CTkFrame):
@@ -361,36 +387,44 @@ class FrameGarmentInformation(customtkinter.CTkFrame):
                                                       justify=tkinter.LEFT)
         self.text_pattern_path = customtkinter.CTkLabel(master=self.frame_text_placeholder,
                                                         text='Pattern Path',
-                                                        text_font=('Roboto', 8),
+                                                        text_font=(
+                                                            'Roboto', 8),
                                                         justify=tkinter.LEFT)
         for i in range(4):
             setattr(self, f'text_dummy_{i}', customtkinter.CTkEntry(master=self.frame_text_placeholder,
                                                                     justify=tkinter.RIGHT,
-                                                                    text_font=('Roboto', 8),
+                                                                    text_font=(
+                                                                        'Roboto', 8),
                                                                     placeholder_text=f''))
         self.img_resized = None
-        self.frame_image_preview = customtkinter.CTkFrame(master=self, width=115, height=115)
+        self.frame_image_preview = customtkinter.CTkFrame(
+            master=self, width=115, height=115)
         self.default_img = Image.open('test_images/8.jpg')
 
         self.image_garment_preview = customtkinter.CTkLabel(master=self.frame_image_preview,
                                                             text='',
                                                             width=110,
                                                             height=110)
-        self.frame_holder = customtkinter.CTkFrame(master=self, width=200, height=90)
+        self.frame_holder = customtkinter.CTkFrame(
+            master=self, width=200, height=90)
 
         self.label_picked_texture = customtkinter.CTkLabel(master=self.frame_holder,
-                                                           text_font=('Roboto', 8),
+                                                           text_font=(
+                                                               'Roboto', 8),
                                                            text='Selected Texture:')
         self.label_picked_texture_preview = customtkinter.CTkLabel(master=self.frame_holder,
                                                                    justify=tkinter.RIGHT,
-                                                                   text_font=('Roboto', 8),
+                                                                   text_font=(
+                                                                       'Roboto', 8),
                                                                    text='',
                                                                    width=0, height=0)
-        self.frame_mannequin_size = customtkinter.CTkFrame(master=self, width=200, height=100)
+        self.frame_mannequin_size = customtkinter.CTkFrame(
+            master=self, width=200, height=100)
         self.size_var = tkinter.IntVar()
         self.label_mannequin_size = customtkinter.CTkLabel(master=self.frame_mannequin_size,
                                                            text='Choose a mannequin size',
-                                                           text_font=('Roboto', 8),
+                                                           text_font=(
+                                                               'Roboto', 8),
                                                            justify=tkinter.CENTER)
         self.rb1 = customtkinter.CTkRadioButton(master=self.frame_mannequin_size, value=0, variable=self.size_var,
                                                 text='Size 1', width=10, height=10)
@@ -401,12 +435,15 @@ class FrameGarmentInformation(customtkinter.CTkFrame):
         self.rb4 = customtkinter.CTkRadioButton(master=self.frame_mannequin_size, value=3, variable=self.size_var,
                                                 text='Size 4', width=10, height=10)
         self.rb1.select()
-        self.button_launch_editor = customtkinter.CTkButton(master=self, text='Launch 3D Editor', cursor='hand2')
+        self.button_launch_editor = customtkinter.CTkButton(
+            master=self, text='Launch 3D Editor', cursor='hand2')
 
-        self.texture_setting = customtkinter.CTkButton(master=self, text='Select a Texture', cursor='hand2')
+        self.texture_setting = customtkinter.CTkButton(
+            master=self, text='Select a Texture', cursor='hand2')
 
     def build(self):
-        self.pack(side=tkinter.LEFT, anchor=tkinter.SW, pady=(7, 7), padx=(7, 0))
+        self.pack(side=tkinter.LEFT, anchor=tkinter.SW,
+                  pady=(7, 7), padx=(7, 0))
         self.pack_propagate(False)
         self.label.pack(anchor=tkinter.CENTER, pady=(5, 0))
 
@@ -418,7 +455,8 @@ class FrameGarmentInformation(customtkinter.CTkFrame):
         self.text_n_patterns.grid(row=2, column=0, sticky=tkinter.W)
         self.text_pattern_path.grid(row=3, column=0, sticky=tkinter.W)
         for i in range(4):
-            getattr(self, f'text_dummy_{i}').grid(row=i, column=1, sticky=tkinter.E)
+            getattr(self, f'text_dummy_{i}').grid(
+                row=i, column=1, sticky=tkinter.E)
 
         self.frame_image_preview.pack(pady=(10, 0))
         self.frame_image_preview.pack_propagate(False)
@@ -439,7 +477,8 @@ class FrameGarmentInformation(customtkinter.CTkFrame):
     def update_thumbnail(self, path):
         image_path = osp.join(path, str(Path(path).name)) + '.jpg'
         img_obj = Image.open(image_path)
-        self.img_resized = ImageTk.PhotoImage(ImageOps.contain(img_obj, (100, 100)))
+        self.img_resized = ImageTk.PhotoImage(
+            ImageOps.contain(img_obj, (100, 100)))
         self.image_garment_preview.configure(image=self.img_resized)
         self.image_garment_preview.pack()
 
@@ -456,7 +495,8 @@ class FramePatternPreview(customtkinter.CTkFrame):
                                                   corner_radius=corner_radius)
         self.label_title = customtkinter.CTkLabel(master=self, text='Pattern Preview',
                                                   text_font=('Roboto', 16))
-        self.frame = customtkinter.CTkFrame(master=self, fg_color='#454545', corner_radius=0)
+        self.frame = customtkinter.CTkFrame(
+            master=self, fg_color='#454545', corner_radius=0)
         self.label_instruction = customtkinter.CTkLabel(master=self.frame, text_font=('Roboto', 10),
                                                         text=instructions.INSTRUCTIONS_PATTERN_PREVIEW_SIMILAR,
                                                         wraplength=120,
@@ -473,13 +513,15 @@ class FramePatternPreview(customtkinter.CTkFrame):
                                                                text=instructions.INSTRUCTIONS_PATTERN_PREVIEW_ESCAPE,
                                                                wraplength=120,
                                                                justify=tkinter.LEFT)
-        self.interactive_preview = InteractivePatternViewer(master=self, figsize=(7.8, 5))
+        self.interactive_preview = InteractivePatternViewer(
+            master=self, figsize=(7.8, 5))
 
     def build(self):
         self.place(x=345, y=370)
         self.pack_propagate(False)
         self.label_title.pack(pady=(7, 0), padx=(0, 200))
-        self.frame.pack(side=tkinter.LEFT, padx=(20, 0), anchor=tkinter.NW, pady=(9, 0))
+        self.frame.pack(side=tkinter.LEFT, padx=(20, 0),
+                        anchor=tkinter.NW, pady=(9, 0))
         self.label_instruction.pack(pady=(20, 10))
         self.label_instruction_focus.pack(pady=(0, 10))
         self.label_instruction_zoom.pack(pady=(0, 10))
@@ -511,6 +553,7 @@ class WindowPocketEditor(customtkinter.CTkToplevel):
         self.__canvas = self.f.canvas
         self.data = None
         self.patch = None
+        self.line = None
 
     def draw(self, data):
         # Prepare the data to be fed into the plot
@@ -518,10 +561,13 @@ class WindowPocketEditor(customtkinter.CTkToplevel):
         self.ax = self.f.add_subplot(autoscale_on=False)
         self.ax.set_facecolor('#525252')
         self.ax.add_patch(self.patch)
+        x, y = zip(*self.patch.get_path().vertices)
+
+        self.line, = self.ax.plot(
+            x, y, marker='o', markerfacecolor='r', animated=True)
         self.patch.set_animated(True)
         self.ax.set_xlim(data.xlim)
         self.ax.set_ylim(data.ylim)
-
 
     def prepare_data(self, data):
         codes, verts = zip(*data.path_data)
@@ -573,7 +619,8 @@ class InteractivePatternViewer:
         # Need to fill in the method that takes the data from the Model interface and then draws it.
         if data is not None:
             self.f.clear()
-            self.f.subplots_adjust(top=1, bottom=0, right=1, left=0, hspace=0, wspace=0)
+            self.f.subplots_adjust(
+                top=1, bottom=0, right=1, left=0, hspace=0, wspace=0)
             self.f.tight_layout()
             self.ax = self.f.add_subplot(autoscale_on=False)
             # For now, use a hand-picked value
@@ -597,17 +644,21 @@ class InteractivePatternViewer:
             x_max = max([l.max_x for l in data])
             y_max = max([l.max_y for l in data])
 
-            self.ax.set_xlim([x_min - InteractivePatternViewer.MIN_Y, x_max + InteractivePatternViewer.MAX_X])
-            self.ax.set_ylim([y_min - InteractivePatternViewer.MIN_Y, y_max + InteractivePatternViewer.MAX_Y])
+            self.ax.set_xlim([x_min - InteractivePatternViewer.MIN_Y,
+                             x_max + InteractivePatternViewer.MAX_X])
+            self.ax.set_ylim([y_min - InteractivePatternViewer.MIN_Y,
+                             y_max + InteractivePatternViewer.MAX_Y])
             self.f.canvas.draw_idle()
         else:
             self.clear()
 
     def clear(self):
         self.f.clf()
-        self.f.subplots_adjust(top=1, bottom=0, right=1, left=0, hspace=0, wspace=0)
+        self.f.subplots_adjust(top=1, bottom=0, right=1,
+                               left=0, hspace=0, wspace=0)
         self.f.tight_layout()
-        self.ax = self.f.add_subplot(autoscale_on=False, xlim=(0, 0), ylim=(0, 0))
+        self.ax = self.f.add_subplot(
+            autoscale_on=False, xlim=(0, 0), ylim=(0, 0))
         self.ax.set_facecolor('#343638')
         self.ax.set_xticks([])
         self.ax.set_yticks([])
@@ -829,13 +880,15 @@ class FrameEditorView(customtkinter.CTkFrame):
         self.__state = 'NO_GARMENT_SELECTED'
 
     def __build_layout_from_state(self):
-        self.__widget = FrameEditorView.__STATES_ENUM[self.__state](master=self)
+        self.__widget = FrameEditorView.__STATES_ENUM[self.__state](
+            master=self)
         self.__widget.build()
 
     def __update(self, state):
         self.__state = state
         self.__clear()
-        self.__widget = FrameEditorView.__STATES_ENUM[self.__state](master=self)
+        self.__widget = FrameEditorView.__STATES_ENUM[self.__state](
+            master=self)
         self.__widget.build()
 
     def __clear(self):
@@ -862,7 +915,8 @@ class FrameEditorView(customtkinter.CTkFrame):
             self.__options_widget.destroy()
 
         if self.__state != 'NO_GARMENT_SELECTED':
-            self.__options_widget = FrameEditorView.__OPTIONS_ENUM[option](master=self)
+            self.__options_widget = FrameEditorView.__OPTIONS_ENUM[option](
+                master=self)
             self.__options_widget.build()
 
     @property
@@ -882,22 +936,27 @@ class ShapeSimilarityWindow(customtkinter.CTkToplevel):
         self.__relevant = relevant
 
     def build(self):
-        self.frame = customtkinter.CTkFrame(master=self, width=1280, height=305, corner_radius=9)
+        self.frame = customtkinter.CTkFrame(
+            master=self, width=1280, height=305, corner_radius=9)
         self.frame.pack(anchor=tkinter.CENTER)
         for i in range(4):
-            setattr(self, f'frame_info_{i + 1}', customtkinter.CTkFrame(master=self.frame))
-            getattr(self, f'frame_info_{i + 1}').grid(row=5, column=i, pady=10, padx=10)
+            setattr(self, f'frame_info_{i + 1}',
+                    customtkinter.CTkFrame(master=self.frame))
+            getattr(
+                self, f'frame_info_{i + 1}').grid(row=5, column=i, pady=10, padx=10)
             pth = self.__relevant.suggested[i]
             img_path = osp.join(pth, Path(pth).name) + '.jpg'
             img_obj = ImageOps.contain(Image.open(img_path), (250, 250))
             setattr(self, f'img_out_{i + 1}', ImageTk.PhotoImage(img_obj))
             setattr(self, f'out_img_{i + 1}', customtkinter.CTkButton(getattr(self, f'frame_info_{i + 1}'),
-                                                                      image=getattr(self, f'img_out_{i + 1}'),
+                                                                      image=getattr(
+                                                                          self, f'img_out_{i + 1}'),
                                                                       text="",
                                                                       corner_radius=5, width=265, height=265,
                                                                       fg_color="#2b2b2b",
                                                                       hover_color="#757272"))
-            getattr(self, f'out_img_{i + 1}').grid(row=5, column=0, pady=10, padx=10)
+            getattr(self, f'out_img_{i + 1}').grid(row=5,
+                                                   column=0, pady=10, padx=10)
 
     def run(self):
         self.mainloop()
@@ -932,7 +991,8 @@ class WindowTextureChoose(customtkinter.CTkToplevel):
                                                   cursor='hand2')
         self.button_add.pack()
         self.vs_frame = VerticalScrolledFrame(self)
-        self.vs_frame.pack(side=tkinter.BOTTOM, fill=tkinter.BOTH, expand=tkinter.TRUE)
+        self.vs_frame.pack(side=tkinter.BOTTOM,
+                           fill=tkinter.BOTH, expand=tkinter.TRUE)
 
     def build(self, data, callback_fn):
 
@@ -943,7 +1003,8 @@ class WindowTextureChoose(customtkinter.CTkToplevel):
             for j in range(columns):
                 try:
                     img = Image.open(data[i * 6 + j])
-                    img_obj = ImageTk.PhotoImage(ImageOps.contain(img, (150, 150)))
+                    img_obj = ImageTk.PhotoImage(
+                        ImageOps.contain(img, (150, 150)))
                     button = customtkinter.CTkButton(master=self.vs_frame.interior,
                                                      text='',
                                                      cursor='hand2',
@@ -951,13 +1012,15 @@ class WindowTextureChoose(customtkinter.CTkToplevel):
                                                      width=160,
                                                      height=160,
                                                      command=partial(callback_fn, data[i * 6 + j]))
-                    button.grid(row=i, column=j, padx=(60 if j == 0 else 10, 10), pady=(10, 10))
+                    button.grid(row=i, column=j, padx=(
+                        60 if j == 0 else 10, 10), pady=(10, 10))
                 except IndexError:
                     continue
 
 
 class UI:
     """The main user interface. All layout components will be created here."""
+
     def __init__(self, test_shown=False):
         self.layout = Layout(title='i-Mannequin')
 
