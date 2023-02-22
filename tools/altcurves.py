@@ -8,10 +8,9 @@ from fusion import get_keypoint_count, get_filename_for_bezier_points, read_bezi
     propose_intermediate_curves
 from interactive_mpl import MplFrameGrid
 from rules import rules_blouse
+import cfg
 
-
-DATABASE = '/home/kaseris/Documents/database'
-
+DATABASE = cfg.DATABASE_DIR
 
 class AltCurvesApp(customtkinter.CTkToplevel):
 
