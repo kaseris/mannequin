@@ -1,3 +1,4 @@
+import os
 import os.path as osp
 
 import uuid
@@ -5,11 +6,10 @@ import uuid
 from os import PathLike
 from pathlib import Path
 from typing import Union
+import numpy as np
 
 from individual_pattern import IndividualPattern
 from interactive_mpl import InteractiveLine
-
-from mannequin.retrieval2d.retrieval_dimis import *
 
 from fusion import get_keypoint_count, get_filename_for_bezier_points, read_bezier_points_from_txt, align_regions, \
     propose_intermediate_curves
@@ -204,17 +204,18 @@ class Retrieval2DModel:
         self.__external_controller = None
 
     def build(self):
-        self.extractor = load_test_model()
-        self.deep_feats, self.color_feats, self.labels = load_feat_db()
-        self.clf = load_kmeans_model()
+        # self.extractor = load_test_model()
+        # self.clf = load_kmeans_model()
+        # self.deep_feats, self.color_feats, self.labels = load_feat_db()
         with open(osp.join(self.database_path, 'paths/garment_paths.txt'), 'r') as _f:
             for line in _f:
                 _l = line.strip().split(', ')
-                self.__garments_path.append(osp.join(self.database_path, _l[0][2:]))
+                self.__garments_path.append(osp.join(self.database_path, _l[0][2:].replace(os.sep, '/')))
 
     def infer(self, query_img):
-        _features = dump_single_feature(query_img, self.extractor)
-        res, ind = naive_query(_features, self.deep_feats, self.color_feats, self.__garments_path, retrieval_top_n=4)
+        # _features = dump_single_feature(query_img, self.extractor)
+        # res, ind = naive_query(_features, self.deep_feats, self.color_feats, self.__garments_path, retrieval_top_n=4)
+        res, ind = infer(query_img, k=4, gallery_paths=self.__garments_path, object_type='image')
         self.update(res, ind)
 
     def update(self, res, ind):
@@ -233,6 +234,10 @@ class Retrieval2DModel:
         return self.__retrieved
 
     @property
+    def garment_paths(self):
+        return self.__garments_path
+
+    @property
     def ind(self):
         return self.__ind
 
@@ -242,9 +247,6 @@ class Retrieval2DModel:
 
     def set_controller(self, controller):
         self.__external_controller = controller
-
-    def extract_feature(self, image):
-        return dump_single_feature(image, self.extractor)
 
     def notify_controller(self):
         self.__external_controller.draw()
@@ -383,7 +385,7 @@ class AlternativeCurvesModel:
         self.__curve_to_replace = None
 
     def find_garments_based_on_choice(self):
-        category_path = osp.join(self.database, self.garment_category)
+        category_path = osp.join(self.database, self.garment_category).replace(os.sep, '/')
         list_subfolders_with_paths = [f.path for f in os.scandir(category_path) if f.is_dir()]
         l = []
         for subfolder in list_subfolders_with_paths:
