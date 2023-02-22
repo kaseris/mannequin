@@ -16,10 +16,12 @@ import customtkinter
 
 from PIL import Image, ImageTk, ImageOps
 
+from app import App
 from app_models import IndividualPatternModel, QueryModel, Retrieval3DModel, Retrieval2DModel, RelevantGarmentsModel,\
     AlternativeCurvesModel
 from layout import FramePatternPreview, Sidebar, ShapeSimilarityWindow, WindowAlternativeCurves, WindowTextureChoose
 from interactive_mpl import InteractiveLine
+from retrieval2d.retrieval_dimis import *
 
 from rules import rules_mannequin
 from seam import Seam
@@ -29,6 +31,7 @@ from subpath import SubPath
 from utils import check_path_type
 from layout import Layout
 import instructions
+import cfg
 
 
 class ControllerPatternModelPreview:
@@ -241,12 +244,14 @@ class ControllerQueryObjectQueryViewer:
 
 
 class ControllerRetrievalApplyButton:
-    def __init__(self, model_query: QueryModel):
+    def __init__(self, model_query: QueryModel,
+                 app_state):
         self.model_2d_retrieval = None
         self.model_3d_retrieval = None
         self.view = None
 
         self.model_query = model_query
+        self.app_state = app_state
 
     def couple(self, view, model2d, model3d):
         self.view = view
@@ -536,7 +541,7 @@ class ControllerAltCurvesAppEditor:
         model = AlternativeCurvesModel(region_choice=choices[_choice_var],
                                        garment_category=self.model.category,
                                        pattern_choice=self.model.selected_region,
-                                       database='/home/kaseris/Documents/database')
+                                       database=App.DATABASE_PATH)
         model.build()
         controller = ControllerAltCurvesAltCurvesWindow(app_state=self.__app_state)
         alt_curve_window = WindowAlternativeCurves(master=self.master)
@@ -635,8 +640,9 @@ class Controller3DEditorLauncher:
             obj_path = osp.join(self.app_state.app.EDITOR_3D_PATH, selection[0])
             cnt_path = osp.join(self.app_state.app.EDITOR_3D_PATH, selection[1])
 
-            os.chdir('/home/kaseris/Documents/iMannequin_3D_Tool_v11_venia/')
-            subprocess.run([f'{osp.join(os.getcwd(), "main.out")}',
+            # os.chdir('/home/kaseris/Documents/iMannequin_3D_Tool_v11_venia/')
+            os.chdir(f'{cfg.ROOT_DIR}/GarmentStudio')
+            subprocess.run([f'{osp.join(os.getcwd(), "main.exe")}',
                             osp.join(self.app_state.app.DATABASE_PATH, '.temp', subcategory, model) + '/',
                             '11', f'{self.app_state.app.texture_int_value}', obj_path, cnt_path])
             os.chdir(old_dir)
@@ -796,7 +802,7 @@ class ControllerSave:
                         shutil.copy(osp.join(temp, item),
                                     osp.join(new_garment_path, item))
 
-            with open('/home/kaseris/Documents/database/paths/garment_paths.txt', 'a') as f:
+            with open(f'{cfg.DATABASE_DIR}/paths/garment_paths.txt', 'a') as f:
                 s = ''
                 s += f'./{self.app_state.app.pat_model.category}/{subcategory}/{new_garment_name}/{new_garment_name}.jpg'
                 s += f', /{self.app_state.app.pat_model.category}/{subcategory}/{new_garment_name}/{new_garment_name}.obj'
@@ -807,7 +813,7 @@ class ControllerSave:
 
             # Re-write the database of embeddings.
             subprocess.run(['python',
-                            '/home/kaseris/Documents/dev/mannequin/mannequin/retrieval2d/feature_extractor_dimis.py'])
+                            f'{cfg.ROOT_DIR}/mannequin/retrieval2d/feature_extractor_dimis.py'])
 
 
 class ControllerPocketDesigner:
