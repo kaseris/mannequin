@@ -2,7 +2,7 @@
 
 import torch.utils.data as data
 import torch
-from mannequin.retrieval2d.config import *
+from .config import *
 import os
 from PIL import Image
 import random

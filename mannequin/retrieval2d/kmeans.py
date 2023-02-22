@@ -2,9 +2,9 @@
 
 
 from sklearn.cluster import KMeans
-from mannequin.retrieval2d.retrieval import load_feat_db
+from .retrieval import load_feat_db
 import joblib
-from mannequin.retrieval2d.config import DATASET_BASE, N_CLUSTERS, DIMIS_DATASET_BASE
+from .config import DATASET_BASE, N_CLUSTERS, DIMIS_DATASET_BASE
 import os
 
 

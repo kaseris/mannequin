@@ -1,9 +1,9 @@
 import os
-from config import *
-from utils import *
+from .config import *
+from .utils_dimis import *
 from torch.autograd import Variable
-from mannequin.retrieval2d.data import Fashion_attr_prediction, Fashion_inshop, DimisDataset
-from net import f_model, c_model, p_model
+from .data import Fashion_attr_prediction, Fashion_inshop, DimisDataset
+from .net import f_model, c_model, p_model
 
 main_model = f_model(model_path=DUMPED_MODEL).cuda(GPU_ID)
 color_model = c_model().cuda(GPU_ID)

@@ -7,10 +7,10 @@ import torch.nn as nn
 import torch.optim as optim
 from torchvision import transforms
 from torch.autograd import Variable
-from config import *
-from utils import *
-from data import Fashion_attr_prediction, Fashion_inshop
-from net import f_model
+from .config import *
+from .utils_dimis import *
+from .data import Fashion_attr_prediction, Fashion_inshop
+from .net import f_model
 
 
 data_transform_train = transforms.Compose([

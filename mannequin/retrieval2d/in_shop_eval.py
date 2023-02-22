@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
-from mannequin.retrieval2d.data import Fashion_inshop
-from mannequin.retrieval2d.retrieval import load_feat_db, get_deep_color_top_n
+from .data import Fashion_inshop
+from .retrieval import load_feat_db, get_deep_color_top_n
 import random
 
 

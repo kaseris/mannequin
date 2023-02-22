@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from mannequin.retrieval2d.config import *
+from .config import *
 import os
 import time
 import torch

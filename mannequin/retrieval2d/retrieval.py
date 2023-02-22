@@ -5,10 +5,10 @@ import sys
 import numpy as np
 from scipy.spatial.distance import cdist
 from torch.autograd import Variable
-from mannequin.retrieval2d.config import *
-from mannequin.retrieval2d.utils import *
-from mannequin.retrieval2d.data import Fashion_attr_prediction
-from mannequin.retrieval2d.net import f_model, c_model, p_model
+from .config import *
+from .utils_dimis import *
+from .data import Fashion_attr_prediction
+from .net import f_model, c_model, p_model
 import joblib
 
 

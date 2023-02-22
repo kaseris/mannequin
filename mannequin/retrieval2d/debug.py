@@ -7,7 +7,7 @@ import torch.optim as optim
 from torchvision import transforms
 from torch.autograd import Variable
 import torchvision
-from config import *
+from .config import *
 import numpy as np
 
 

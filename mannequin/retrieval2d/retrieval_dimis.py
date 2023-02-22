@@ -6,35 +6,45 @@ import os
 import sys
 
 import numpy as np
+
+from PIL import Image
 from scipy.spatial.distance import cdist
 from torch.autograd import Variable
 
-from mannequin.retrieval2d.config import *
-from mannequin.retrieval2d.utils import *
-from mannequin.retrieval2d.data import Fashion_attr_prediction
-from mannequin.retrieval2d.net import f_model, c_model, p_model
-
+from .config import *
+from .utils_dimis import *
+from .data import Fashion_attr_prediction
+from .net import f_model, c_model, p_model
 
 @timer_with_task("Loading model")
 def load_test_model():
-    if not os.path.isfile(DUMPED_MODEL) and not os.path.isfile(os.path.join(DIMIS_DATASET_BASE, "embeddings/models", DUMPED_MODEL)):
-        print("No trained model file!")
-        return
-    main_model = f_model(model_path=DUMPED_MODEL).cuda(GPU_ID)
+    path_to_model = 'C:/Users/kaseris/Documents/mannequin/database/embeddings/models/model_10_final.pth.tar'
+    # if not os.path.isfile(DUMPED_MODEL) and not os.path.isfile(os.path.join(DIMIS_DATASET_BASE, "embeddings/models", DUMPED_MODEL)):
+    # if not os.path.isfile(DUMPED_MODEL) and not os.path.isfile(path_to_model):
+    #     print("No trained model file!")
+    #     return
+    main_model = f_model(model_path=path_to_model).cuda(GPU_ID)
     color_model = c_model().cuda(GPU_ID)
     pooling_model = p_model().cuda(GPU_ID)
     extractor = FeatureExtractor(main_model, color_model, pooling_model)
+    print('Model OK')
     return extractor
 
 
 @timer_with_task("Loading feature database")
 def load_feat_db():
-    feat_all = os.path.join(DIMIS_DATASET_BASE, 'embeddings/all_feat_dimis.npy')
-    feat_list = os.path.join(DIMIS_DATASET_BASE, 'embeddings/all_feat_dimis.list')
-    color_feat = os.path.join(DIMIS_DATASET_BASE, 'embeddings/all_color_feat_dimis.npy')
-    if not os.path.isfile(feat_list) or not os.path.isfile(feat_all) or not os.path.isfile(color_feat):
-        # print("No feature db file! Please run feature_extractor.py first.")
-        return
+    # feat_all = os.path.join(DIMIS_DATASET_BASE, 'embeddings/all_feat_dimis.npy').replace('\\', '/')
+    feat_all = 'C:/Users/kaseris/Documents/mannequin/database/embeddings/all_feat_dimis.npy'
+    print(f'feat_all: {feat_all}')
+    # feat_list = os.path.join(DIMIS_DATASET_BASE, 'embeddings/all_feat_dimis.list').replace('\\', '/')
+    feat_list = 'C:/Users/kaseris/Documents/mannequin/database/embedddings/all_feat_dimis.list'
+    # color_feat = os.path.join(DIMIS_DATASET_BASE, 'embeddings/all_cings/all_feat_dimis.list'
+    color_feat = 'C:/Users/kaseris/Documents/mannequin/database/embeddings/all_color_feat_dimis.npy'
+    # if not os.path.isfile(feat_list) or not os.path.isfile(feat_all) or not os.path.isfile(color_feat):
+    #     # print("No feature db file! Please run feature_extractor.py first.")
+    #     return
+
+    print(f'SHAPES FEAT_ALL: {feat_all.shape}\nCOLOR_FEAT: {color_feat.shape}')
     deep_feats = np.load(feat_all)
     color_feats = np.load(color_feat)
     with open(feat_list) as f:
@@ -44,7 +54,8 @@ def load_feat_db():
 
 @timer_with_task("Loading feature K-means model")
 def load_kmeans_model():
-    clf_model_path = os.path.join(DIMIS_DATASET_BASE, r'embeddings/models', r'kmeans.m')
+    # clf_model_path = os.path.join(DIMIS_DATASET_BASE, 'embeddings/models', 'kmeans.m').replace(os.sep, '/')
+    clf_model_path = 'C:/Users/kaseris/Documents/mannequin/database/embeddings/models/kmeans.m'
     clf = joblib.load(clf_model_path)
     return clf
 
@@ -107,12 +118,15 @@ def dump_single_feature(img_path, extractor):
     for i in paths:
         if not os.path.isfile(i):
             continue
-        single_loader = torch.utils.data.DataLoader(
-            Fashion_attr_prediction(type="single", img_path=i, transform=data_transform_test),
-            batch_size=1, num_workers=NUM_WORKERS, pin_memory=True
-        )
-        data = list(single_loader)[0]
-        data = Variable(data).cuda(GPU_ID)
+        # single_loader = torch.utils.data.DataLoader(
+        #     Fashion_attr_prediction(type="single", img_path=i, transform=data_transform_test),
+        #     batch_size=1, pin_memory=True
+        # )
+        img = Image.open(i).convert('RGB')
+        data = data_transform_test(img)
+        # print(type(single_loader))
+        # data = list(single_loader)[0]
+        data = Variable(data).to(GPU_ID)
         deep_feat, color_feat = extractor(data)
         deep_feat = deep_feat[0].squeeze()
         color_feat = color_feat[0]
@@ -121,25 +135,25 @@ def dump_single_feature(img_path, extractor):
     return None
 
 
-def visualize(original, result, cols=1, name='naive'):
-    import matplotlib.pyplot as plt
-    import cv2
-    n_images = len(result) + 1
-    titles = ["Original"] + ["Score: {:.4f}".format(v) for k, v in result]
-    images = [original] + [k for k, v in result]
-    mod_full_path = lambda x: os.path.join(DIMIS_DATASET_BASE, x) \
-        if os.path.isfile(os.path.join(DIMIS_DATASET_BASE, x)) \
-        else os.path.join(DATASET_BASE, 'in_shop', x,)
-    images = list(map(mod_full_path, images))
-    images = list(map(lambda x: cv2.cvtColor(cv2.imread(x), cv2.COLOR_BGR2RGB), images))
-    fig = plt.figure()
-    for n, (image, title) in enumerate(zip(images, titles)):
-        a = fig.add_subplot(cols, int(np.ceil(n_images / float(cols))), n + 1)
-        plt.imshow(image)
-        plt.savefig(f"1+{name}.png")
-        a.set_title(title)
-    fig.set_size_inches(np.array(fig.get_size_inches()) * n_images * 0.25)
-    plt.show()
+# def visualize(original, result, cols=1, name='naive'):
+#     import matplotlib.pyplot as plt
+#     # import cv2
+#     n_images = len(result) + 1
+#     titles = ["Original"] + ["Score: {:.4f}".format(v) for k, v in result]
+#     images = [original] + [k for k, v in result]
+#     mod_full_path = lambda x: os.path.join(DIMIS_DATASET_BASE, x) \
+#         if os.path.isfile(os.path.join(DIMIS_DATASET_BASE, x)) \
+#         else os.path.join(DATASET_BASE, 'in_shop', x,)
+#     images = list(map(mod_full_path, images))
+#     images = list(map(lambda x: cv2.cvtColor(cv2.imread(x), cv2.COLOR_BGR2RGB), images))
+#     fig = plt.figure()
+#     for n, (image, title) in enumerate(zip(images, titles)):
+#         a = fig.add_subplot(cols, int(np.ceil(n_images / float(cols))), n + 1)
+#         plt.imshow(image)
+#         plt.savefig(f"1+{name}.png")
+#         a.set_title(title)
+#     fig.set_size_inches(np.array(fig.get_size_inches()) * n_images * 0.25)
+#     plt.show()
 
 
 if __name__ == "__main__":
@@ -165,5 +179,5 @@ if __name__ == "__main__":
 
     print("Naive query result:", result)
     print("K-Means query result:", result_kmeans)
-    visualize(example, result)
-    visualize(example, result_kmeans, name='kmeans')
+    # visualize(example, result)
+    # visualize(example, result_kmeans, name='kmeans')

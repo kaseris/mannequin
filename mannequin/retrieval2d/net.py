@@ -3,8 +3,8 @@
 import torchvision
 import torch.nn as nn
 import torch.nn.functional as F
-from mannequin.retrieval2d.config import *
-from mannequin.retrieval2d.utils import *
+from .config import *
+from .utils_dimis import *
 from torch.autograd import Variable
 
 

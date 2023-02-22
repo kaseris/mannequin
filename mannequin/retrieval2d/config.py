@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from tools import cfg
 
 GPU_ID = 0
 TRAIN_BATCH_SIZE = 32
@@ -10,14 +11,14 @@ NUM_WORKERS = 4
 LR = 0.001
 MOMENTUM = 0.5
 EPOCH = 10
-DUMPED_MODEL = "model_10_final.pth.tar"
+DUMPED_MODEL = f"{cfg.DATABASE_DIR}/embeddings/models/model_10_final.pth.tar"
 
 LOG_INTERVAL = 10
 DUMP_INTERVAL = 500
 TEST_INTERVAL = 100
 
 DATASET_BASE = r'/home/kaseris/Documents/fir/Category_and_Attribute_Prediction'
-DIMIS_DATASET_BASE = r'/home/kaseris/Documents/database'
+DIMIS_DATASET_BASE = cfg.DATABASE_DIR
 ENABLE_INSHOP_DATASET = False
 INSHOP_DATASET_PRECENT = 0.8
 IMG_SIZE = 256
