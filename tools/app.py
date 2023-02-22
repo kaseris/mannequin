@@ -1,11 +1,12 @@
 from app_models import *
 from layout import UI
-
+import cfg
 
 class App:
-    DATABASE_PATH = '/home/kaseris/Documents/database'
-    TEXTURES_PATH = '/home/kaseris/Documents/iMannequin_3D_Tool_v11_venia/texture'
-    EDITOR_3D_PATH = '/home/kaseris/Documents/iMannequin_3D_Tool_v11_venia'
+    DATABASE_PATH = cfg.DATABASE_DIR
+    # TODO:
+    TEXTURES_PATH = f'{cfg.ROOT_DIR}/GarmentStudio/texture'
+    EDITOR_3D_PATH = f'{cfg.ROOT_DIR}/GarmentStudio/'
 
     def __init__(self):
         self.ui = UI(test_shown=False)
