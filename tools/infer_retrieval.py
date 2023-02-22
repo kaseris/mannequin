@@ -11,7 +11,8 @@ from typing import Union, Any
 
 from model import PointNetCls
 
-from mannequin.retrieval2d.retrieval_dimis import *
+from retrieval2d.retrieval_dimis import *
+import cfg
 
 
 def resample_point_cloud(points, n_points):
@@ -29,7 +30,6 @@ def infer(query, k, gallery_paths, object_type='image'):
 def infer_2d(query_img: Union[str, PathLike], k, gallery_paths):
     extractor = load_test_model()
     deep_feats, color_feats, labels = load_feat_db()
-    clf = load_kmeans_model()
 
     f = dump_single_feature(query_img, extractor)
 
@@ -40,8 +40,8 @@ def infer_2d(query_img: Union[str, PathLike], k, gallery_paths):
 def infer_3d(model: Union[str, PathLike],
              n_points=2500,
              feature_transform=False,
-             model_path='/home/kaseris/Documents/pointnet.pytorch/utils/cls/cls_model_99.pth',
-             embeddings_path='/home/kaseris/Documents/database/embeddings',
+             model_path=f'{cfg.ROOT_DIR}/mannequin/retrieval3d/pointnet.pytorch/utils/cls/cls_model_99.pth',
+             embeddings_path=f'{cfg.DATABASE_DIR}/embeddings',
              retrieval_k=4) -> Any:
     pcd = o3d.io.read_triangle_mesh(model)
     pcd = np.asarray(pcd.vertices)
@@ -60,16 +60,16 @@ def infer_3d(model: Union[str, PathLike],
     model = PointNetCls(k=9,
                         feature_transform=feature_transform)
     # logging.info('Loading model')
-    state_dict = torch.load(model_path)
+    state_dict = torch.load(model_path, map_location='cuda' if torch.cuda.is_available() else 'cpu')
     model.load_state_dict(state_dict)
     # Set the model to eval mode
-    model.eval().cuda()
+    model.eval().to('cuda' if torch.cuda.is_available() else 'cpu')
 
     # logging.info(f'point_set type: {point_set}')
     # logging.info(f'point_set size: {point_set.size()}')
 
     with torch.no_grad():
-        pred, trans, trans_feat, glob_feat = model(point_set.unsqueeze(0).permute(0, 2, 1).cuda())
+        pred, trans, trans_feat, glob_feat = model(point_set.unsqueeze(0).permute(0, 2, 1).to('cuda' if torch.cuda.is_available() else 'cpu'))
 
     # logging.info(f'glob_Feat size: {glob_feat.size()}')
 
@@ -81,6 +81,10 @@ def infer_3d(model: Union[str, PathLike],
 
     with open(osp.join(embeddings_path, 'path_list.pkl'), 'rb') as f:
         paths = pickle.load(f)
+    
+
+    for idx, p in enumerate(paths):
+        paths[idx] = p.replace('C:/Users/kaseris/Documents/mannequin/database', cfg.DATABASE_DIR)
 
     gallery = torch.from_numpy(gallery)
     dists = (-1.0) * torch.cdist(glob_feat.cpu(), gallery)
