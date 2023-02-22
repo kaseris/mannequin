@@ -6,7 +6,7 @@ from functools import partial
 from PIL import Image, ImageOps, ImageTk
 
 from app import App
-# from app_models import QueryModel
+from app_models import QueryModel
 import instructions
 from controllers import *
 from layout import QueryImagePlaceholder, FrameRetrievedPlaceholder, RetrievedViewportPlaceholder,\
@@ -119,7 +119,7 @@ class AppStateQueryUploaded(AppState):
                                          partial(getattr(
                                              self.app.ui.layout, f'retrieved_viewport_{i + 1}').dragging, i),
                                          add='+')
-
+        self.app.retrieval_model_2d.build()
         self.app.controller_retrieved_views.couple(self.app.retrieval_model_2d,
                                                    [getattr(self.app.ui.layout, f'retrieved_viewport_{i + 1}') for i in
                                                     range(4)])
@@ -127,7 +127,6 @@ class AppStateQueryUploaded(AppState):
         self.app.controller_retrieved_views3d.couple(self.app.retrieval_model_3d,
                                                      [getattr(self.app.ui.layout,
                                                               f'retrieved_viewport_{i + 1}') for i in range(4)])
-        self.app.retrieval_model_2d.build()
         # self.app.controller_retrieval_apply.couple(self.app.ui.layout.query_image_placeholder.button_apply,
         #                                            self.app.retrieval_model_2d, self.app.retrieval_model_3d)
         self.app.controller_retrieval_apply.couple(self.app.ui.layout.query_image_placeholder.button_apply,
@@ -217,8 +216,7 @@ class AppStateGarmentSelected(AppState):
         # self.app.controller_texture_selection_browse.bind(self)
 
         for i in range(4):
-            _controller = getattr(
-                self.app, f'controller_retrieved_pattern_preview_{i + 1}')
+            _controller = getattr(self.app, f'controller_retrieved_pattern_preview_{i + 1}')
             _controller.couple(self.app.retrieval_model_2d, getattr(self.app.ui.layout, f'retrieved_viewport_{i + 1}'),
                                self.app.ui.layout.frame_pattern_preview, self.app.pat_model,
                                self.app.ui.layout.frame_information, self.app.relevant_garments_model,
