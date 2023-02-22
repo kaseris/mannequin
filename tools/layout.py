@@ -25,8 +25,10 @@ import instructions
 from interactive_mpl import MplFrameGrid
 from query_mvc import Mesh
 from scrollview import VerticalScrolledFrame
-
+from win32api import GetMonitorInfo, MonitorFromPoint
 # vispy.use(app='tkinter')
+monitor_info = GetMonitorInfo(MonitorFromPoint((0, 0)))
+work_area = monitor_info.get("Work")
 
 
 def disable_event():
@@ -35,12 +37,13 @@ def disable_event():
 
 class Layout:
     VISPY_CANVAS_BG_COLOR_DARK = '#4a4949'
-    MAIN_WIN_WIDTH = 1920
-    MAIN_WIN_HEIGHT = 1080
+
+    MAIN_WIN_WIDTH = work_area[2]
+    MAIN_WIN_HEIGHT = work_area[3]
 
     def __init__(self,
                  title='i-Mannequin',
-                 geometry=f'{MAIN_WIN_WIDTH}x{MAIN_WIN_HEIGHT}+0+0'):
+                 geometry=f'{MAIN_WIN_WIDTH}x{MAIN_WIN_HEIGHT}-8-5'):
         self.root = None
         self.title = title
         self.geometry = geometry
@@ -61,15 +64,18 @@ class Layout:
 
     def build(self):
         self.root = customtkinter.CTk()
+        self.root.iconbitmap('test_images/6a.ico')
         self.root.title(self.title)
         self.root.geometry(self.geometry)
-        self.root.minsize(width=1500, height=700)
-
-        self.sidebar = Sidebar(master=self.root, width=200, corner_radius=9)
+        self.root.minsize(width=Layout.MAIN_WIN_WIDTH,
+                          height=Layout.MAIN_WIN_HEIGHT)
         self.frame_espa = FrameESPA(
-            master=self.root, corner_radius=9, height=80, fg_color='#ffffff')
+            master=self.root, corner_radius=9, height=int(0.177 * Layout.MAIN_WIN_HEIGHT), fg_color='#ffffff')
+        self.sidebar = Sidebar(master=self.root, width=int(
+            0.104 * Layout.MAIN_WIN_WIDTH), corner_radius=9, height=int(.894 * Layout.MAIN_WIN_HEIGHT))
+        
         self.frame_watermark = FrameWatermark(
-            master=self.root, corner_radius=9, width=1650, height=930)
+            master=self.root, corner_radius=9, width=int(.964 * Layout.MAIN_WIN_WIDTH), height=int(.894 * Layout.MAIN_WIN_HEIGHT))
         self.sidebar.build()
         self.frame_watermark.build()
         self.frame_espa.build()
@@ -77,24 +83,25 @@ class Layout:
     def show(self):
         if not self.shown:
             self.frame_retrieved = FrameRetrievedPlaceholder(
-                master=self.frame_watermark, width=1290, height=355)
+                master=self.frame_watermark, width=(0.104 * Layout.MAIN_WIN_WIDTH), height=int(0.192 * Layout.MAIN_WIN_HEIGHT))
             self.frame_retrieved.build()
+            retrieved_viewport_size = (
+                int(0.1354 * Layout.MAIN_WIN_WIDTH), int(0.25 * Layout.MAIN_WIN_HEIGHT))
             for i in range(4):
-                setattr(self, f'retrieved_viewport_{i+1}', RetrievedViewportPlaceholder(i, '260x260',
+                setattr(self, f'retrieved_viewport_{i+1}', RetrievedViewportPlaceholder(i, f'{retrieved_viewport_size[0]}x{retrieved_viewport_size[1]}',
                                                                                         master=self.root))
             self.query_image_placeholder = QueryImagePlaceholder(
                 master=self.root)
             self.root.bind(
                 '<Configure>', self.query_image_placeholder.dragging)
             self.frame_information = FrameGarmentInformation(master=self.frame_watermark, corner_radius=9,
-                                                             width=327, height=553)
+                                                             width=int(0.17 * Layout.MAIN_WIN_WIDTH), height=int(0.532 * Layout.MAIN_WIN_HEIGHT))
             self.frame_information.build()
-
             self.frame_pattern_preview = FramePatternPreview(master=self.frame_watermark, corner_radius=9,
-                                                             width=1290, height=553)
+                                                             width=int(0.672 * Layout.MAIN_WIN_WIDTH), height=int(0.532 * Layout.MAIN_WIN_HEIGHT))
             self.frame_pattern_preview.build()
             self.frame_pattern_editor = FrameEditorView(master=self.frame_pattern_preview,
-                                                        fg_color='#343638', width=300, height=500,
+                                                        fg_color='#343638', width=int(0.157 * Layout.MAIN_WIN_WIDTH), height=int(0.481 * Layout.MAIN_WIN_HEIGHT),
                                                         bg_color='#343638')
             self.frame_pattern_editor.build()
 
@@ -104,20 +111,23 @@ class Layout:
 
 
 class RetrievedViewportPlaceholder(customtkinter.CTkToplevel):
-    offset_x = 650
-    offset_y = 85
-    OFFSETS = [(offset_x, offset_y), (offset_x + 300, offset_y),
-               (offset_x + 600, offset_y), (offset_x+900, offset_y)]
+    offset_x = int(0.32 * Layout.MAIN_WIN_WIDTH)
+    offset_y = int(0.082 * Layout.MAIN_WIN_HEIGHT)
+    gap = int(0.156 * Layout.MAIN_WIN_WIDTH)
+    OFFSETS = [(offset_x, offset_y), (offset_x + gap, offset_y),
+               (offset_x + gap * 2, offset_y), (offset_x + gap * 3, offset_y)]
 
     def __init__(self, offset_index, geom, **kwargs):
         super(RetrievedViewportPlaceholder, self).__init__(**kwargs)
-        self.geometry(geom+f'+{RetrievedViewportPlaceholder.OFFSETS[offset_index][0]}'
-                      f'+{RetrievedViewportPlaceholder.OFFSETS[offset_index][1]}')
+        self.iconbitmap('test_images/6a.ico')
+        self.geometry(
+            geom+f'+{RetrievedViewportPlaceholder.OFFSETS[offset_index][0]}+{RetrievedViewportPlaceholder.OFFSETS[offset_index][1]}')
         self.__idx = offset_index + 1
         self.geom = geom
         self.title(f'Retrieved Garment: {offset_index + 1}')
         self.wm_transient(self.master)
         self.drag_id = ''
+        self.update_idletasks()
         self.vispy_canvas = scene.SceneCanvas(keys='interactive',
                                               show=True,
                                               parent=self)
@@ -125,13 +135,12 @@ class RetrievedViewportPlaceholder(customtkinter.CTkToplevel):
                                       expand=True)
         self.vispy_view = self.vispy_canvas.central_widget.add_view(
             bgcolor=Layout.VISPY_CANVAS_BG_COLOR_DARK)
-        self.text = customtkinter.CTkLabel(master=self, text='Please wait...')
         self.wm_protocol('WM_DELETE_WINDOW', disable_event)
 
     def draw(self, kind, fname):
         # self.clear()
         if kind == 'image':
-            im = vispy.io.imread(fname)
+            im = imread(fname)
             im_obj = vispy.scene.visuals.Image(im, parent=self.vispy_view)
             self.vispy_view.add(im_obj)
             self.vispy_view.camera = vispy.scene.PanZoomCamera(aspect=1)
@@ -139,8 +148,6 @@ class RetrievedViewportPlaceholder(customtkinter.CTkToplevel):
             self.vispy_view.camera.set_range()
             self.vispy_view.camera.zoom(1., (250, 250))
         else:
-
-            # self.text.pack()
             vertices, faces, _, _ = vispy.io.read_mesh(fname)
             m = Mesh(vertices=vertices, faces=faces)
             mesh = vispy.scene.visuals.Mesh(vertices=m.vertices,
@@ -148,8 +155,8 @@ class RetrievedViewportPlaceholder(customtkinter.CTkToplevel):
                                             faces=m.faces)
             self.vispy_view.add(mesh)
             self.vispy_view.camera = vispy.scene.TurntableCamera(
-                elevation=90, azimuth=0, roll=90)
-            self.text.pack_forget()
+                elevation=90, azimuth=0, roll=0)
+            # self.text.pack_forget()
 
     def clear(self):
         self.vispy_view.parent = None
@@ -180,9 +187,11 @@ class Sidebar(customtkinter.CTkFrame):
     def __init__(self,
                  master,
                  width,
+                 height,
                  corner_radius):
         super(Sidebar, self).__init__(master=master,
-                                      width=width, corner_radius=corner_radius)
+                                      width=width, corner_radius=corner_radius,
+                                      height=height)
 
         self.img = ImageTk.PhotoImage(Image.open(
             'test_images/6a.png').resize((100, 100)))
@@ -202,31 +211,33 @@ class Sidebar(customtkinter.CTkFrame):
                                                    text=instructions.INSTRUCTIONS_UPLOAD,
                                                    justify='left',
                                                    wraplength=200)
-        self.label_mode = customtkinter.CTkLabel(
-            master=self, text="Appearance Mode:")
-        self.optionmenu = customtkinter.CTkOptionMenu(master=self,
-                                                      values=[
-                                                          "Light", "Dark", "System"],
-                                                      command=self.change_appearance_mode,
-                                                      cursor='hand2')
+        # self.label_mode = customtkinter.CTkLabel(
+        #     master=self, text="Appearance Mode:")
+        # self.optionmenu = customtkinter.CTkOptionMenu(master=self,
+        #                                               values=[
+        #                                                   "Light", "Dark", "System"],
+        #                                               command=self.change_appearance_mode,
+        #                                               cursor='hand2')
         customtkinter.set_appearance_mode("Dark")
-        self.optionmenu.set("Dark")
+        # self.optionmenu.set("Dark")
 
     def build(self):
-        self.pack(fill=tkinter.Y, side=tkinter.LEFT, expand=False, padx=(0, 5))
+        self.pack(anchor=tkinter.NE, side=tkinter.LEFT, expand=False, padx=(0, 5))
         self.pack_propagate(False)
 
         self.label_1.pack(pady=(30, 0))
-        self.button_upload.pack(pady=(30, 0))
+        self.button_upload.pack(pady=(int(0.029 * Layout.MAIN_WIN_HEIGHT), 0))
         self.button_clear_all.pack(pady=(5, 0))
         self.button_save.pack(pady=(5, 0))
-        self.instructions_title.pack(pady=(220, 0))
+        self.instructions_title.pack(
+            pady=(int(0.212 * Layout.MAIN_WIN_HEIGHT), 0))
         self.instructions.pack(pady=(20, 0))
-        self.label_mode.pack(pady=(300, 0))
-        self.optionmenu.pack(pady=(15, 0))
+        # self.label_mode.pack(pady=(int(0.288 * Layout.MAIN_WIN_HEIGHT), 0))
+        # self.optionmenu.pack(pady=(15, 0))
 
     def change_appearance_mode(self, new_appearance):
-        customtkinter.set_appearance_mode(new_appearance)
+        pass
+        # customtkinter.set_appearance_mode(new_appearance)
         # TODO: Also change the pattern editor's frame color
         # TODO: Set the pattern preview's facecolor
 
@@ -234,14 +245,14 @@ class Sidebar(customtkinter.CTkFrame):
 class FrameESPA(customtkinter.CTkFrame):
     def __init__(self, master, height, corner_radius, fg_color):
         super(FrameESPA, self).__init__(master=master, height=height, corner_radius=corner_radius,
-                                        fg_color=fg_color)
+                                        fg_color=fg_color, width=2000)
         img = Image.open('test_images/banner.png')
-        img = ImageOps.contain(img, (1800, 70))
+        img = ImageOps.contain(img, (int(0.9375 * Layout.MAIN_WIN_WIDTH), 70))
         self.img = ImageTk.PhotoImage(img)
         self.label = customtkinter.CTkLabel(master=self, image=self.img)
 
     def build(self):
-        self.pack(side=tkinter.TOP, expand=False, fill=tkinter.BOTH)
+        self.pack(fill='both', expand=False, side=tkinter.TOP)
         self.label.pack()
 
 
@@ -268,7 +279,7 @@ class FrameWatermark(customtkinter.CTkFrame):
 class FrameQueryImagePlaceholder(customtkinter.CTkFrame):
     def __init__(self, master, width, height):
         super(FrameQueryImagePlaceholder, self).__init__(
-            master=master, width=1000, height=900)
+            master=master, width=int(0.521 * Layout.MAIN_WIN_WIDTH), height=int(0.865 * Layout.MAIN_WIN_HEIGHT))
 
     def build(self):
         self.grid(row=0, column=0)
@@ -282,16 +293,16 @@ class FrameRetrievedPlaceholder(customtkinter.CTkFrame):
                                             text_font=('Roboto', 16))
 
     def build(self):
-        self.pack(side=tkinter.RIGHT, anchor=tkinter.N,
-                  pady=(7, 0), padx=(0, 10))
+        self.pack(anchor=tkinter.N, pady=(7, 0), padx=(
+            int(0.146 * Layout.MAIN_WIN_WIDTH), 10))
         self.pack_propagate(False)
         self.label.pack(anchor=tkinter.CENTER, side=tkinter.TOP, pady=(7, 0))
 
 
 class QueryImagePlaceholder(customtkinter.CTkToplevel):
-    TOP_LEVEL_OFFSET_X = 255
-    TOP_LEVEL_OFFSET_Y = 45
-    GEOMETRY = '310x310'
+    TOP_LEVEL_OFFSET_X = int(0.111 * Layout.MAIN_WIN_WIDTH)
+    TOP_LEVEL_OFFSET_Y = int(0.038 * Layout.MAIN_WIN_HEIGHT)
+    GEOMETRY = f'{int(0.169 * Layout.MAIN_WIN_WIDTH)}x{int(0.308 * Layout.MAIN_WIN_HEIGHT)}'
 
     def __init__(self, master):
         super(QueryImagePlaceholder, self).__init__(master=master)
@@ -303,6 +314,7 @@ class QueryImagePlaceholder(customtkinter.CTkToplevel):
         self.drag_id = ''
 
         self.update_idletasks()
+        self.iconbitmap('test_images/6a.ico')
 
         self.frame = customtkinter.CTkFrame(master=self)
         self.frame.pack(side=tkinter.TOP, anchor=tkinter.CENTER)
@@ -317,7 +329,6 @@ class QueryImagePlaceholder(customtkinter.CTkToplevel):
                                       expand=True)
         self.vispy_view = self.vispy_canvas.central_widget.add_view(
             bgcolor=Layout.VISPY_CANVAS_BG_COLOR_DARK)
-        self.text = None
 
         self.wm_protocol('WM_DELETE_WINDOW', disable_event)
 
@@ -347,9 +358,6 @@ class QueryImagePlaceholder(customtkinter.CTkToplevel):
             self.vispy_view.camera.set_range()
             self.vispy_view.camera.zoom(1., (250, 250))
         else:
-            self.text = customtkinter.CTkLabel(
-                master=self, text='Please wait...')
-            self.text.pack()
             vertices, faces, _, _ = vispy.io.read_mesh(fname)
             m = Mesh(vertices=vertices, faces=faces)
             mesh = vispy.scene.visuals.Mesh(vertices=m.vertices,
@@ -357,7 +365,7 @@ class QueryImagePlaceholder(customtkinter.CTkToplevel):
                                             faces=m.faces)
             self.vispy_view.add(mesh)
             self.vispy_view.camera = vispy.scene.TurntableCamera(
-                elevation=90, azimuth=0, roll=90)
+                elevation=90, azimuth=0, roll=0)
 
     def clear(self):
         self.vispy_view.parent = None
@@ -398,15 +406,16 @@ class FrameGarmentInformation(customtkinter.CTkFrame):
                                                                     placeholder_text=f''))
         self.img_resized = None
         self.frame_image_preview = customtkinter.CTkFrame(
-            master=self, width=115, height=115)
+            master=self, width=int(0.06 * Layout.MAIN_WIN_WIDTH), height=int(0.111 * Layout.MAIN_WIN_HEIGHT))
         self.default_img = Image.open('test_images/8.jpg')
 
         self.image_garment_preview = customtkinter.CTkLabel(master=self.frame_image_preview,
                                                             text='',
-                                                            width=110,
-                                                            height=110)
+                                                            width=int(
+                                                                0.06 * Layout.MAIN_WIN_WIDTH),
+                                                            height=int(0.111 * Layout.MAIN_WIN_HEIGHT))
         self.frame_holder = customtkinter.CTkFrame(
-            master=self, width=200, height=90)
+            master=self, width=int(0.104 * Layout.MAIN_WIN_WIDTH), height=int(0.0865 * Layout.MAIN_WIN_HEIGHT))
 
         self.label_picked_texture = customtkinter.CTkLabel(master=self.frame_holder,
                                                            text_font=(
@@ -419,7 +428,7 @@ class FrameGarmentInformation(customtkinter.CTkFrame):
                                                                    text='',
                                                                    width=0, height=0)
         self.frame_mannequin_size = customtkinter.CTkFrame(
-            master=self, width=200, height=100)
+            master=self, width=int(0.1042 * Layout.MAIN_WIN_WIDTH), height=int(0.096 * Layout.MAIN_WIN_HEIGHT))
         self.size_var = tkinter.IntVar()
         self.label_mannequin_size = customtkinter.CTkLabel(master=self.frame_mannequin_size,
                                                            text='Choose a mannequin size',
@@ -427,13 +436,12 @@ class FrameGarmentInformation(customtkinter.CTkFrame):
                                                                'Roboto', 8),
                                                            justify=tkinter.CENTER)
         self.rb1 = customtkinter.CTkRadioButton(master=self.frame_mannequin_size, value=0, variable=self.size_var,
-                                                text='Size 1', width=10, height=10)
+                                                text='Small', width=10, height=10)
         self.rb2 = customtkinter.CTkRadioButton(master=self.frame_mannequin_size, value=1, variable=self.size_var,
-                                                text='Size 2', width=10, height=10)
+                                                text='Medium', width=10, height=10)
         self.rb3 = customtkinter.CTkRadioButton(master=self.frame_mannequin_size, value=2, variable=self.size_var,
-                                                text='Size 3', width=10, height=10)
-        self.rb4 = customtkinter.CTkRadioButton(master=self.frame_mannequin_size, value=3, variable=self.size_var,
-                                                text='Size 4', width=10, height=10)
+                                                text='Large', width=10, height=10)
+
         self.rb1.select()
         self.button_launch_editor = customtkinter.CTkButton(
             master=self, text='Launch 3D Editor', cursor='hand2')
@@ -461,24 +469,23 @@ class FrameGarmentInformation(customtkinter.CTkFrame):
         self.frame_image_preview.pack(pady=(10, 0))
         self.frame_image_preview.pack_propagate(False)
         self.image_garment_preview.pack(anchor=tkinter.CENTER)
-        self.frame_holder.pack(pady=(5, 5))
+        self.frame_holder.pack(pady=(20, 0))
         self.label_picked_texture.grid(row=0, column=0)
         self.label_picked_texture_preview.grid(row=0, column=1)
-        self.texture_setting.pack(pady=(0, 0))
+        self.texture_setting.pack()
         # self.button_select_mannequin.pack(pady=(5, 0))
         self.frame_mannequin_size.pack(pady=(20, 0))
-        self.label_mannequin_size.grid(row=0, column=0, columnspan=2)
+        self.label_mannequin_size.grid(row=0, column=0, columnspan=3)
         self.rb1.grid(row=1, column=0, padx=(25, 5))
-        self.rb2.grid(row=1, column=1, padx=(5, 25))
-        self.rb3.grid(row=2, column=0, padx=(25, 5))
-        self.rb4.grid(row=2, column=1, padx=(5, 25))
+        self.rb2.grid(row=1, column=1, padx=(5, 5))
+        self.rb3.grid(row=1, column=2, padx=(5, 25))
         self.button_launch_editor.pack(pady=(40, 0))
 
     def update_thumbnail(self, path):
         image_path = osp.join(path, str(Path(path).name)) + '.jpg'
         img_obj = Image.open(image_path)
         self.img_resized = ImageTk.PhotoImage(
-            ImageOps.contain(img_obj, (100, 100)))
+            ImageOps.contain(img_obj, (int(0.0520 * Layout.MAIN_WIN_WIDTH), int(0.096 * Layout.MAIN_WIN_HEIGHT))))
         self.image_garment_preview.configure(image=self.img_resized)
         self.image_garment_preview.pack()
 
@@ -519,13 +526,15 @@ class FramePatternPreview(customtkinter.CTkFrame):
     def build(self):
         self.place(x=345, y=370)
         self.pack_propagate(False)
-        self.label_title.pack(pady=(7, 0), padx=(0, 200))
+        self.label_title.pack(pady=(7, 0), padx=(
+            0, int(0.104 * Layout.MAIN_WIN_WIDTH)))
         self.frame.pack(side=tkinter.LEFT, padx=(20, 0),
                         anchor=tkinter.NW, pady=(9, 0))
         self.label_instruction.pack(pady=(20, 10))
         self.label_instruction_focus.pack(pady=(0, 10))
         self.label_instruction_zoom.pack(pady=(0, 10))
-        self.label_instruction_escape.pack(pady=(0, 136))
+        self.label_instruction_escape.pack(
+            pady=(0, int(0.209 * Layout.MAIN_WIN_HEIGHT)))
         self.interactive_preview.widget.pack(side=tkinter.LEFT, padx=(0, 0))
         self.interactive_preview.draw()
 
@@ -798,10 +807,10 @@ class ArmholeCollarOptions:
             self.rb1.select()
         else:
             getattr(self, f'rb{self.last_choice+1}').select()
-        self.select_message.pack(pady=(55, 0))
+        self.select_message.pack(pady=(int(0.053 * Layout.MAIN_WIN_HEIGHT), 0))
         self.rb1.pack(pady=(10, 0))
         self.rb2.pack()
-        self.button_search.pack(pady=(50, 0))
+        self.button_search.pack(pady=(int(0.048 * Layout.MAIN_WIN_HEIGHT), 0))
         self.button_replace.pack(pady=(10, 0))
         self.pocket_select.pack(pady=(10, 0))
 
@@ -844,7 +853,7 @@ class NotAvailableOptions:
     def build(self):
         self.label = customtkinter.CTkLabel(master=self.master, text='You cannot change\nthis pattern!',
                                             **EDITOR_FONT_BOLD_NOT_AVAILABLE)
-        self.label.pack(pady=(50, 0))
+        self.label.pack(pady=(int(0.048 * Layout.MAIN_WIN_HEIGHT), 0))
 
     def destroy(self):
         self.label.pack_forget()
@@ -895,7 +904,8 @@ class FrameEditorView(customtkinter.CTkFrame):
         self.__widget.destroy()
 
     def build(self):
-        self.place(x=1500, y=415)
+        self.place(x=int(0.781 * Layout.MAIN_WIN_WIDTH),
+                   y=int(0.4 * Layout.MAIN_WIN_HEIGHT))
         self.pack_propagate(False)
         self.__widget.build()
         if self.__options_widget is not None:
@@ -931,13 +941,15 @@ class ShapeSimilarityWindow(customtkinter.CTkToplevel):
                  relevant):
         super(ShapeSimilarityWindow, self).__init__()
         self.title('Relevant Patterns')
-        self.geometry('1290x315+620+72')
+        geom = (int(0.672 * Layout.MAIN_WIN_WIDTH), int(0.302 * Layout.MAIN_WIN_HEIGHT),
+                int(0.323 * Layout.MAIN_WIN_WIDTH), int(0.0692 * Layout.MAIN_WIN_HEIGHT))
+        self.geometry(f'{geom[0]}x{geom[1]}+{geom[2]}+{geom[3]}')
         self.frame = None
         self.__relevant = relevant
 
     def build(self):
         self.frame = customtkinter.CTkFrame(
-            master=self, width=1280, height=305, corner_radius=9)
+            master=self, width=int(0.67 * Layout.MAIN_WIN_WIDTH), height=int(0.293 * Layout.MAIN_WIN_HEIGHT), corner_radius=9)
         self.frame.pack(anchor=tkinter.CENTER)
         for i in range(4):
             setattr(self, f'frame_info_{i + 1}',
@@ -946,13 +958,14 @@ class ShapeSimilarityWindow(customtkinter.CTkToplevel):
                 self, f'frame_info_{i + 1}').grid(row=5, column=i, pady=10, padx=10)
             pth = self.__relevant.suggested[i]
             img_path = osp.join(pth, Path(pth).name) + '.jpg'
-            img_obj = ImageOps.contain(Image.open(img_path), (250, 250))
+            img_obj = ImageOps.contain(Image.open(img_path), (int(
+                0.13 * Layout.MAIN_WIN_WIDTH), int(0.240 * Layout.MAIN_WIN_HEIGHT)))
             setattr(self, f'img_out_{i + 1}', ImageTk.PhotoImage(img_obj))
             setattr(self, f'out_img_{i + 1}', customtkinter.CTkButton(getattr(self, f'frame_info_{i + 1}'),
                                                                       image=getattr(
                                                                           self, f'img_out_{i + 1}'),
                                                                       text="",
-                                                                      corner_radius=5, width=265, height=265,
+                                                                      corner_radius=5, width=int(0.138 * Layout.MAIN_WIN_WIDTH), height=int(0.255 * Layout.MAIN_WIN_HEIGHT),
                                                                       fg_color="#2b2b2b",
                                                                       hover_color="#757272"))
             getattr(self, f'out_img_{i + 1}').grid(row=5,
@@ -964,8 +977,10 @@ class ShapeSimilarityWindow(customtkinter.CTkToplevel):
 
 class WindowAlternativeCurves(customtkinter.CTkToplevel):
 
-    GEOMETRY = (1218, 497)
-    OFFSET = (636, 445)
+    GEOMETRY = (int(0.635 * Layout.MAIN_WIN_WIDTH),
+                int(0.49 * Layout.MAIN_WIN_HEIGHT))
+    OFFSET = (int(0.294 * Layout.MAIN_WIN_WIDTH),
+              int(0.389 * Layout.MAIN_WIN_HEIGHT))
 
     def __init__(self, master):
         super(WindowAlternativeCurves, self).__init__(master=master)
@@ -986,7 +1001,8 @@ class WindowTextureChoose(customtkinter.CTkToplevel):
     def __init__(self, master):
         super(WindowTextureChoose, self).__init__(master=master)
         self.title('Texture Picker')
-        self.geometry('1218x497+636+445')
+        self.geometry(
+            f'{WindowAlternativeCurves.GEOMETRY[0]}x{WindowAlternativeCurves.GEOMETRY[1]}+{WindowAlternativeCurves.OFFSET[0]}+{WindowAlternativeCurves.OFFSET[1]}')
         self.button_add = customtkinter.CTkButton(master=self, text='Choose a different texture from your files',
                                                   cursor='hand2')
         self.button_add.pack()
@@ -1004,13 +1020,13 @@ class WindowTextureChoose(customtkinter.CTkToplevel):
                 try:
                     img = Image.open(data[i * 6 + j])
                     img_obj = ImageTk.PhotoImage(
-                        ImageOps.contain(img, (150, 150)))
+                        ImageOps.contain(img, (int(0.078 * Layout.MAIN_WIN_HEIGHT), int(0.144 * Layout.MAIN_WIN_HEIGHT))))
                     button = customtkinter.CTkButton(master=self.vs_frame.interior,
                                                      text='',
                                                      cursor='hand2',
                                                      image=img_obj,
-                                                     width=160,
-                                                     height=160,
+                                                     width=int(0.083 * Layout.MAIN_WIN_WIDTH),
+                                                     height=int(0.153 * Layout.MAIN_WIN_HEIGHT),
                                                      command=partial(callback_fn, data[i * 6 + j]))
                     button.grid(row=i, column=j, padx=(
                         60 if j == 0 else 10, 10), pady=(10, 10))
