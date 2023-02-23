@@ -687,7 +687,7 @@ class ArmholeCollarOptions:
         self.rb2 = customtkinter.CTkRadioButton(master=self.master, text='Collar', text_font=EDITOR_FONT_NORMAL,
                                                 variable=self.choice_var, value=1, width=15, height=15)
 
-        self.pocket_select = customtkinter.CTkButton(master=self.master, text='Select Pocket',
+        self.pocket_select = customtkinter.CTkButton(master=self.master, text='Add accessories',
                                                      text_font=EDITOR_FONT_NORMAL)
         self.select_message = customtkinter.CTkLabel(master=self.master,
                                                      text='Please select the region\n you want to change:',
