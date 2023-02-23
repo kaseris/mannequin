@@ -145,7 +145,7 @@ class AppStateGarmentSelected(AppState):
         self.app.relevant_garments_model = RelevantGarmentsModel(database_path=self.app.DATABASE_PATH)
         self.app.controller_texture_selection = ControllerTextureSelection(app_state=self)
         self.app.controller_save = ControllerSave(app_state=self)
-        # self.app.controller_texture_selection_browse = ControllerTextureSelection(app_state=self)
+        self.app.controller_accessory_editor = ControllerAccessoryEditor(app_state=self)
 
     def build(self):
         self.app.ui.layout.sidebar.instructions.configure(text=instructions.INSTRUCTIONS_SELECT)
