@@ -18,7 +18,8 @@ from PIL import Image, ImageTk, ImageOps
 
 from app_models import IndividualPatternModel, QueryModel, Retrieval3DModel, Retrieval2DModel, RelevantGarmentsModel,\
     AlternativeCurvesModel
-from layout import FramePatternPreview, Sidebar, ShapeSimilarityWindow, WindowAlternativeCurves, WindowTextureChoose
+from layout import FramePatternPreview, Sidebar, ShapeSimilarityWindow, WindowAlternativeCurves, WindowTextureChoose, \
+    WindowAccessoryEditor
 from interactive_mpl import InteractiveLine
 
 from rules import rules_mannequin
@@ -808,3 +809,19 @@ class ControllerSave:
             # Re-write the database of embeddings.
             subprocess.run(['python',
                             '/home/kaseris/Documents/dev/mannequin/mannequin/retrieval2d/feature_extractor_dimis.py'])
+
+
+class ControllerAccessoryEditor:
+
+    def __init__(self, app_state: AppState):
+        self.view = None
+        self.model = None
+        self.app_state = app_state
+
+    def couple(self, model, view):
+        self.model = model
+        self.view = view
+
+    def on_press(self):
+        win = WindowAccessoryEditor(self.app_state.app.ui.layout.root, width=1218, height=500)
+        win.mainloop()
