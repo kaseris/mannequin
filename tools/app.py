@@ -25,6 +25,7 @@ class App:
         self.controller_relevant_garment_info = None
         self.controller_clear = None
         self.controller_save = None
+        self.controller_accessory_editor = None
 
         self.relevant_garments_model = None
         self.shape_similarity_window = None
