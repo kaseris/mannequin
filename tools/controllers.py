@@ -796,18 +796,19 @@ class ControllerSave:
                         shutil.copy(osp.join(temp, item),
                                     osp.join(new_garment_path, item))
 
-            with open('/home/kaseris/Documents/database/paths/garment_paths.txt', 'a') as f:
-                s = ''
-                s += f'./{self.app_state.app.pat_model.category}/{subcategory}/{new_garment_name}/{new_garment_name}.jpg'
-                s += f', /{self.app_state.app.pat_model.category}/{subcategory}/{new_garment_name}/{new_garment_name}.obj'
-                s += f', {self.app_state.app.pat_model.category}'
-                s += f', {new_garment_name}'
-                s += '\n'
-                f.write(s)
-
-            # Re-write the database of embeddings.
-            subprocess.run(['python',
-                            '/home/kaseris/Documents/dev/mannequin/mannequin/retrieval2d/feature_extractor_dimis.py'])
+            # Sav ethe new embeddings to the user-specified location and update the embeddings database
+            # with open('/home/kaseris/Documents/database/paths/garment_paths.txt', 'a') as f:
+            #     s = ''
+            #     s += f'./{self.app_state.app.pat_model.category}/{subcategory}/{new_garment_name}/{new_garment_name}.jpg'
+            #     s += f', /{self.app_state.app.pat_model.category}/{subcategory}/{new_garment_name}/{new_garment_name}.obj'
+            #     s += f', {self.app_state.app.pat_model.category}'
+            #     s += f', {new_garment_name}'
+            #     s += '\n'
+            #     f.write(s)
+            #
+            # # Re-write the database of embeddings.
+            # subprocess.run(['python',
+            #                 '/home/kaseris/Documents/dev/mannequin/mannequin/retrieval2d/feature_extractor_dimis.py'])
 
 
 class ControllerPocketDesigner:

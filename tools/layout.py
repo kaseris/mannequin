@@ -511,6 +511,7 @@ class WindowPocketEditor(customtkinter.CTkToplevel):
         self.__canvas = self.f.canvas
         self.data = None
         self.patch = None
+        self.line = None
 
     def draw(self, data):
         # Prepare the data to be fed into the plot
@@ -518,10 +519,13 @@ class WindowPocketEditor(customtkinter.CTkToplevel):
         self.ax = self.f.add_subplot(autoscale_on=False)
         self.ax.set_facecolor('#525252')
         self.ax.add_patch(self.patch)
+        x, y = zip(*self.patch.get_path().vertices)
+
+        self.line, = self.ax.plot(
+            x, y, marker='o', markerfacecolor='r', animated=True)
         self.patch.set_animated(True)
         self.ax.set_xlim(data.xlim)
         self.ax.set_ylim(data.ylim)
-
 
     def prepare_data(self, data):
         codes, verts = zip(*data.path_data)
@@ -752,7 +756,7 @@ class ArmholeCollarOptions:
         self.rb2.pack()
         self.button_search.pack(pady=(50, 0))
         self.button_replace.pack(pady=(10, 0))
-        self.pocket_select.pack(pady=(10, 0))
+        # self.pocket_select.pack(pady=(10, 0))
 
     def destroy(self):
         self.select_message.pack_forget()
