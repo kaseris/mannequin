@@ -688,7 +688,8 @@ class ArmholeCollarOptions:
                                                 variable=self.choice_var, value=1, width=15, height=15)
 
         self.pocket_select = customtkinter.CTkButton(master=self.master, text='Add accessories',
-                                                     text_font=EDITOR_FONT_NORMAL)
+                                                     text_font=EDITOR_FONT_NORMAL,
+                                                     cursor='hand2')
         self.select_message = customtkinter.CTkLabel(master=self.master,
                                                      text='Please select the region\n you want to change:',
                                                      text_font=EDITOR_FONT_BOLD)
@@ -911,6 +912,14 @@ class WindowTextureChoose(customtkinter.CTkToplevel):
                     button.grid(row=i, column=j, padx=(60 if j == 0 else 10, 10), pady=(10, 10))
                 except IndexError:
                     continue
+
+
+class WindowAccessoryEditor(customtkinter.CTkToplevel):
+    def __init__(self, master, width, height):
+        super(WindowAccessoryEditor, self).__init__(master=master, width=width, height=height)
+
+    def build(self):
+        pass
 
 
 class UI:
