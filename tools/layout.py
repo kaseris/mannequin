@@ -16,6 +16,7 @@ import customtkinter
 
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
+from matplotlib.path import Path
 
 from PIL import Image, ImageTk, ImageOps
 
@@ -23,6 +24,9 @@ import instructions
 from interactive_mpl import MplFrameGrid
 from query_mvc import Mesh
 from scrollview import VerticalScrolledFrame
+
+from matplotlib.patches import PathPatch
+
 
 vispy.use(app='tkinter')
 
@@ -916,15 +920,21 @@ class WindowTextureChoose(customtkinter.CTkToplevel):
 
 class WindowAccessoryEditor(customtkinter.CTkToplevel):
     def __init__(self, master, width, height):
-        super(WindowAccessoryEditor, self).__init__(master=master, width=width, height=height)
+        super(WindowAccessoryEditor, self).__init__(master=master)
+        self.title('Accessory Editor')
+        self.geometry(f'{width}x{height}')
         self.f = None
         self.pattern_preview = None
         self.ax = None
         self.model = None
         self.canvas = None
+        self.pocket = None
 
-    def build(self, figsize, model):
+    def build(self, figsize, model, pocket):
         self.model = model
+        codes, verts = zip(*pocket.path_data)
+        path = Path(verts, codes)
+        patch = PathPatch(path, facecolor=None, edgecolor='black', alpha=1.0, fill=False)
         # First create the Figure object
         self.f = Figure(figsize=figsize, dpi=100)
         self.f.set_facecolor('#525252')
@@ -935,13 +945,15 @@ class WindowAccessoryEditor(customtkinter.CTkToplevel):
         # Plot the data
         m = self.model.ind_pat.patterns[self.model.selected_region]
         line, = self.ax.plot(m[:, 0], m[:, 1])
+        self.ax.add_patch(patch)
         self.ax.set_facecolor('#525252')
         # Create the Tk widget to contain the Figure instance
-        self.canvas = FigureCanvasTkAgg(self.f, master=self)  # A tk.DrawingArea.
+        self.canvas = FigureCanvasTkAgg(self.f, master=self)
         # Draw the canvas
         self.canvas.draw()
         # Pack the object
-        self.canvas.get_tk_widget().pack(side=tkinter.TOP, fill=tkinter.BOTH, expand=True)
+        self.canvas.get_tk_widget().pack(side=tkinter.LEFT, fill=tkinter.BOTH, expand=True)
+
 
 class UI:
     """The main user interface. All layout components will be created here."""
