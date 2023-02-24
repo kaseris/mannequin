@@ -927,6 +927,7 @@ class WindowAccessoryEditor(customtkinter.CTkToplevel):
         self.model = model
         # First create the Figure object
         self.f = Figure(figsize=figsize, dpi=100)
+        self.f.set_facecolor('#525252')
 
         # Then create an Axes objects
         self.ax = self.f.add_subplot()
@@ -934,6 +935,7 @@ class WindowAccessoryEditor(customtkinter.CTkToplevel):
         # Plot the data
         m = self.model.ind_pat.patterns[self.model.selected_region]
         line, = self.ax.plot(m[:, 0], m[:, 1])
+        self.ax.set_facecolor('#525252')
         # Create the Tk widget to contain the Figure instance
         self.canvas = FigureCanvasTkAgg(self.f, master=self)  # A tk.DrawingArea.
         # Draw the canvas
