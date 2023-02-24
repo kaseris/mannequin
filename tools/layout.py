@@ -917,10 +917,29 @@ class WindowTextureChoose(customtkinter.CTkToplevel):
 class WindowAccessoryEditor(customtkinter.CTkToplevel):
     def __init__(self, master, width, height):
         super(WindowAccessoryEditor, self).__init__(master=master, width=width, height=height)
+        self.f = None
+        self.pattern_preview = None
+        self.ax = None
+        self.model = None
+        self.canvas = None
 
-    def build(self):
-        pass
+    def build(self, figsize, model):
+        self.model = model
+        # First create the Figure object
+        self.f = Figure(figsize=figsize, dpi=100)
 
+        # Then create an Axes objects
+        self.ax = self.f.add_subplot()
+        self.ax.set_aspect('equal')
+        # Plot the data
+        m = self.model.ind_pat.patterns[self.model.selected_region]
+        line, = self.ax.plot(m[:, 0], m[:, 1])
+        # Create the Tk widget to contain the Figure instance
+        self.canvas = FigureCanvasTkAgg(self.f, master=self)  # A tk.DrawingArea.
+        # Draw the canvas
+        self.canvas.draw()
+        # Pack the object
+        self.canvas.get_tk_widget().pack(side=tkinter.TOP, fill=tkinter.BOTH, expand=True)
 
 class UI:
     """The main user interface. All layout components will be created here."""
