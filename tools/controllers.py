@@ -29,6 +29,7 @@ from subpath import SubPath
 
 from utils import check_path_type
 from layout import Layout
+from pocket import Pocket
 import instructions
 
 
@@ -830,7 +831,11 @@ class ControllerAccessoryEditor:
 
     def on_press(self):
         win = WindowAccessoryEditor(self.app_state.app.ui.layout.root, width=1218, height=500)
-        win.build(figsize=(3, 4), model=self.model)
+        pocket = Pocket(pocket_type='triangle_pocket')
+        pocket.build()
+        pocket.scale(100)
+        pocket.translate(1300, 200)
+        win.build(figsize=(3, 4), model=self.model, pocket=pocket)
         win.mainloop()
 
     def bind(self, callback_fn):
