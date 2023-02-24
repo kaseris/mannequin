@@ -70,6 +70,12 @@ class ControllerPatternModelPreview:
                             f'rb{self.app_state.app.editor_app_radio_button_last_choice + 1}').select()
 
         self.view.interactive_preview.f.canvas.draw_idle()
+        # Rebind the ControllerAccessoryEditor if options widget exists
+        if (self.app_state.app.ui.layout.frame_pattern_editor.options_widget is not None) and (
+        hasattr(self.app_state.app.ui.layout.frame_pattern_editor.options_widget, 'pocket_select')):
+            self.app_state.app.controller_accessory_editor.couple(self.app_state.app.pat_model,
+                                                                  self.app_state.app.ui.layout.frame_pattern_editor.options_widget.pocket_select)
+            self.app_state.app.controller_accessory_editor.bind(self.app_state.app.controller_accessory_editor.on_press)
 
     def on_hover(self, event):
         if event.inaxes == self.view.interactive_preview.ax:
@@ -824,4 +830,8 @@ class ControllerAccessoryEditor:
 
     def on_press(self):
         win = WindowAccessoryEditor(self.app_state.app.ui.layout.root, width=1218, height=500)
+        win.build(figsize=(3, 4), model=self.model)
         win.mainloop()
+
+    def bind(self, callback_fn):
+        self.view.configure(command=callback_fn)
