@@ -40,6 +40,13 @@ class Pocket:
     def update(self):
         pass
 
+    def translate(self, dx, dy):
+        for idx, point in enumerate(self.__points):
+            # Update the internal point data
+            self.__points[idx] = [point[0] + dx, point[1] + dy]
+        # Update the path data
+        self.update_path_data()
+
     def scale(self, scale):
         for idx, point in enumerate(self.__points):
             # Update the internal point data
