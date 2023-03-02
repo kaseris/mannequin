@@ -35,7 +35,7 @@ class Pocket:
         # We append an extra vertex to the centre of mass of the polygon. This will serve as a polygon translate
         # anchor.
         self.__path_data.append((Pocket.__JSON_TO_PATH['moveto'], np.mean(self.points[:-1], axis=0).tolist()))
-        self.__points.append(np.mean(self.points, axis=0).tolist())
+        self.__points.append(np.mean(self.points[:-1], axis=0).tolist())
 
     def update(self):
         pass
