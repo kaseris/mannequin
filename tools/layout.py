@@ -16,7 +16,9 @@ import customtkinter
 
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
-from matplotlib.path import Path
+from matplotlib.backend_bases import MouseButton
+from matplotlib.path import Path as MPLPath
+import numpy as np
 
 from PIL import Image, ImageTk, ImageOps
 
@@ -25,7 +27,7 @@ from interactive_mpl import MplFrameGrid
 from query_mvc import Mesh
 from scrollview import VerticalScrolledFrame
 
-from matplotlib.patches import PathPatch
+from matplotlib.patches import PathPatch as MPLPathPatch
 
 
 vispy.use(app='tkinter')
@@ -929,30 +931,89 @@ class WindowAccessoryEditor(customtkinter.CTkToplevel):
         self.model = None
         self.canvas = None
         self.pocket = None
+        self.patch = None
+        self.markers = None
+        self._ind = None
+        self.epsilon = 20**2
 
     def build(self, figsize, model, pocket):
         self.model = model
-        codes, verts = zip(*pocket.path_data)
-        path = Path(verts, codes)
-        patch = PathPatch(path, facecolor=None, edgecolor='black', alpha=1.0, fill=False)
-        # First create the Figure object
-        self.f = Figure(figsize=figsize, dpi=100)
-        self.f.set_facecolor('#525252')
-
-        # Then create an Axes objects
-        self.ax = self.f.add_subplot()
-        self.ax.set_aspect('equal')
-        # Plot the data
-        m = self.model.ind_pat.patterns[self.model.selected_region]
-        line, = self.ax.plot(m[:, 0], m[:, 1])
-        self.ax.add_patch(patch)
-        self.ax.set_facecolor('#525252')
-        # Create the Tk widget to contain the Figure instance
+        self.pocket = pocket
+        self.f = Figure(figsize=(6, 6))
+        self.ax = self.f.add_subplot(111)
         self.canvas = FigureCanvasTkAgg(self.f, master=self)
-        # Draw the canvas
+        self.canvas.get_tk_widget().pack(side=tkinter.TOP, fill=tkinter.BOTH, expand=1)
+        self.scatter = None
+        import numpy as np
+        codes, self.verts = zip(*self.pocket.path_data)
+
+        self.canvas.mpl_connect('button_press_event', self.on_button_press)
+        self.canvas.mpl_connect('button_release_event', self.on_button_release)
+        self.canvas.mpl_connect('motion_notify_event', self.on_mouse_move)
+        self.draw()
+
+    def draw(self):
+        self.ax.clear()
+        self.ax.set_aspect('equal')
+        m = self.model.ind_pat.patterns[self.model.selected_region]
+        self.ax.plot(m[:, 0], m[:, 1])
+        self.verts = list(self.verts)
+        self.markers = self.ax.scatter(np.array(self.verts)[:, 0], np.array(self.verts)[:, 1], color='r')
+        self.lines = self.ax.plot(np.array(self.verts)[:-1, 0], np.array(self.verts)[:-1, 1])
         self.canvas.draw()
-        # Pack the object
-        self.canvas.get_tk_widget().pack(side=tkinter.LEFT, fill=tkinter.BOTH, expand=True)
+
+    def on_button_press(self, event):
+        """Callback for mouse button presses."""
+        if (event.inaxes is None
+                or event.button != MouseButton.LEFT):
+            return
+        self._ind = self.get_ind_under_point(event)
+
+    def get_ind_under_point(self, event):
+        """
+        Return the index of the point closest to the event position or *None*
+        if no point is within ``self.epsilon`` to the event position.
+        """
+        # display coords
+        xy = np.asarray(self.verts)
+        # xyt = self.pathpatch.get_transform().transform(xy)
+        xt, yt = xy[:, 0], xy[:, 1]
+        d = (xt - event.xdata)**2 + (yt - event.ydata)**2
+        ind = d.argmin()
+
+        if d[ind] >= self.epsilon:
+            ind = None
+
+        print(f'ind: {ind}')
+        return ind
+
+    def on_button_release(self, event):
+        """Callback for mouse button releases."""
+        if event.button != MouseButton.LEFT:
+            return
+        self._ind = None
+
+    def on_mouse_move(self, event):
+        """Callback for mouse movements."""
+        if (self._ind is None
+                or event.inaxes is None
+                or event.button != MouseButton.LEFT):
+            return
+
+        vertices = self.verts
+        if self._ind == len(vertices) - 1:
+            last_x, last_y = vertices[self._ind]
+            dx, dy = event.xdata - last_x, event.ydata - last_y
+            for idx, v in enumerate(vertices):
+                vx, vy = v
+                vertices[idx] = vx + dx, vy + dy
+        # else:
+        #     if self._ind == 0 or self._ind == len(vertices) - 2:
+        #         vertices[0] = event.xdata, event.ydata
+        #         vertices[len(vertices) - 2] = event.xdata, event.ydata
+        #     vertices[self._ind] = event.xdata, event.ydata
+        self.verts = vertices
+        self.draw()
 
 
 class UI:
