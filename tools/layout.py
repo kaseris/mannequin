@@ -937,20 +937,19 @@ class WindowAccessoryEditor(customtkinter.CTkToplevel):
         self.background = None
         self.epsilon = 20**2
         self.max_dist = 300.0
+        self.pocketlabel = None
+        self.accessory_optionmenu = None
 
+    def build(self, figsize, model, accessory):
+        # self.place(x=150, y=150)
         self.pocketlabel = customtkinter.CTkLabel(self, text="Pockets")
         self.pocketlabel.pack(padx=20, pady=0)
+        self.accessory_optionmenu = customtkinter.CTkOptionMenu(self,
+                                                                values=accessory.available_accessories)
+        self.accessory_optionmenu.pack(padx=20, pady=0, side=tkinter.LEFT)
 
-        # Occupation combo box
-        self.pocketOptionMenu = customtkinter.CTkOptionMenu(self,
-                                                            values=["Pocket 1", "Pocket 2", "Pocket 3", "Pocket 4",
-                                                                    "Pocket 5"])
-        self.pocketOptionMenu.pack(padx=20, pady=0, side=tkinter.LEFT)
-
-    def build(self, figsize, model, pocket):
-        # self.place(x=150, y=150)
         self.model = model
-        self.pocket = pocket
+        self.pocket = accessory
         self.f = Figure(figsize=(6, 6))
         self.f.set_facecolor('#525252')
         self.ax = self.f.add_subplot(111)
