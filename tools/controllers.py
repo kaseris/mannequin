@@ -839,7 +839,7 @@ class ControllerAccessoryEditor:
         dxdy = model_center - verts
 
         pocket.translate(dxdy[-1, 0], dxdy[-1, 1])
-        win.build(figsize=(3, 4), model=self.model, pocket=pocket)
+        win.build(figsize=(3, 4), model=self.model, accessory=pocket)
         win.mainloop()
 
     def bind(self, callback_fn):
