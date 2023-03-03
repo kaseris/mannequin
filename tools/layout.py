@@ -934,17 +934,34 @@ class WindowAccessoryEditor(customtkinter.CTkToplevel):
         self.patch = None
         self.markers = None
         self._ind = None
+        self.background = None
         self.epsilon = 20**2
 
+        self.pocketlabel = customtkinter.CTkLabel(self, text="Pockets")
+        self.pocketlabel.pack(padx=20, pady=0)
+
+        # Occupation combo box
+        self.pocketOptionMenu = customtkinter.CTkOptionMenu(self,
+                                                            values=["Pocket 1", "Pocket 2", "Pocket 3", "Pocket 4",
+                                                                    "Pocket 5"])
+        self.pocketOptionMenu.pack(padx=20, pady=0, side=tkinter.LEFT)
+
     def build(self, figsize, model, pocket):
+        # self.place(x=150, y=150)
         self.model = model
         self.pocket = pocket
         self.f = Figure(figsize=(6, 6))
+        self.f.set_facecolor('#525252')
         self.ax = self.f.add_subplot(111)
+        self.ax.set_facecolor('#525252')
+        self.ax.axis('off')
+        self.ax.axis('tight')
+        self.ax.set_xticks([])
+        self.ax.set_yticks([])
+
         self.canvas = FigureCanvasTkAgg(self.f, master=self)
-        self.canvas.get_tk_widget().pack(side=tkinter.TOP, fill=tkinter.BOTH, expand=1)
+        self.canvas.get_tk_widget().pack(side=tkinter.RIGHT, fill=tkinter.BOTH, expand=1)
         self.scatter = None
-        import numpy as np
         codes, self.verts = zip(*self.pocket.path_data)
 
         self.canvas.mpl_connect('button_press_event', self.on_button_press)
@@ -960,7 +977,14 @@ class WindowAccessoryEditor(customtkinter.CTkToplevel):
         self.verts = list(self.verts)
         self.markers = self.ax.scatter(np.array(self.verts)[:, 0], np.array(self.verts)[:, 1], color='r')
         self.lines = self.ax.plot(np.array(self.verts)[:-1, 0], np.array(self.verts)[:-1, 1])
+        self.ax.axis('off')
+        # self.ax.axis('tight')
+        self.ax.set_xticks([])
+        self.ax.set_yticks([])
         self.canvas.draw()
+
+    def update_background(self):
+        self.background = self.f.canvas.copy_from_bbox(self.ax.bbox)
 
     def on_button_press(self, event):
         """Callback for mouse button presses."""
@@ -1004,14 +1028,19 @@ class WindowAccessoryEditor(customtkinter.CTkToplevel):
         if self._ind == len(vertices) - 1:
             last_x, last_y = vertices[self._ind]
             dx, dy = event.xdata - last_x, event.ydata - last_y
+            # distance_accessory_garment
+            m = self.model.ind_pat.patterns[self.model.selected_region]
+            center_garment = np.mean(m, axis=0)
+            center_accessory = vertices[-1]
+            distance = np.sqrt(
+                (center_garment[0] - (center_accessory[0] + dx)) ** 2 + (
+                            center_garment[1] - (center_accessory[1] + dy)) ** 2)
+            if distance > 500.0:
+                return
+
             for idx, v in enumerate(vertices):
                 vx, vy = v
                 vertices[idx] = vx + dx, vy + dy
-        # else:
-        #     if self._ind == 0 or self._ind == len(vertices) - 2:
-        #         vertices[0] = event.xdata, event.ydata
-        #         vertices[len(vertices) - 2] = event.xdata, event.ydata
-        #     vertices[self._ind] = event.xdata, event.ydata
         self.verts = vertices
         self.draw()
 
