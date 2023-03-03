@@ -37,8 +37,11 @@ class Pocket:
         self.__path_data.append((Pocket.__JSON_TO_PATH['moveto'], np.mean(self.points[:-1], axis=0).tolist()))
         self.__points.append(np.mean(self.points[:-1], axis=0).tolist())
 
-    def update(self):
-        pass
+    def update(self, pocket_type):
+        self.__path_data = []
+        self.__points = []
+        self.pocket_type = pocket_type
+        self.build()
 
     def translate(self, dx, dy):
         for idx, point in enumerate(self.__points):
@@ -94,11 +97,18 @@ class Pocket:
         up = np.max(_points[:, 1] + Pocket.MARGIN)
         return down, up
 
+    @property
+    def available_accessories(self):
+        with open('pockets.json', 'r') as f:
+            data = json.load(f)
+        return list(data.keys())
+
 
 if __name__ == '__main__':
     pocket = Pocket('triangle_pocket')
     pocket.build()
     print(f'points:\n{pocket.points}')
+    pocket.update('square_pocket')
     import matplotlib.pyplot as plt
     from image_view import PathInteractor
     from matplotlib.patches import PathPatch
