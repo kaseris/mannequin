@@ -936,6 +936,7 @@ class WindowAccessoryEditor(customtkinter.CTkToplevel):
         self._ind = None
         self.background = None
         self.epsilon = 20**2
+        self.max_dist = 300.0
 
         self.pocketlabel = customtkinter.CTkLabel(self, text="Pockets")
         self.pocketlabel.pack(padx=20, pady=0)
@@ -1035,7 +1036,7 @@ class WindowAccessoryEditor(customtkinter.CTkToplevel):
             distance = np.sqrt(
                 (center_garment[0] - (center_accessory[0] + dx)) ** 2 + (
                             center_garment[1] - (center_accessory[1] + dy)) ** 2)
-            if distance > 500.0:
+            if distance > self.max_dist:
                 return
 
             for idx, v in enumerate(vertices):
