@@ -834,7 +834,11 @@ class ControllerAccessoryEditor:
         pocket = Pocket(pocket_type='triangle_pocket')
         pocket.build()
         pocket.scale(100)
-        pocket.translate(1300, 200)
+        model_center = np.mean(self.model.ind_pat.patterns[self.model.selected_region], axis=0)
+        codes, verts = zip(*pocket.path_data)
+        dxdy = model_center - verts
+
+        pocket.translate(dxdy[-1, 0], dxdy[-1, 1])
         win.build(figsize=(3, 4), model=self.model, pocket=pocket)
         win.mainloop()
 
