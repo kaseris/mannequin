@@ -29,7 +29,7 @@ from subpath import SubPath
 
 from utils import check_path_type
 from layout import Layout
-from pocket import Pocket
+from accessory import Accessory
 import instructions
 
 
@@ -824,23 +824,38 @@ class ControllerAccessoryEditor:
         self.view = None
         self.model = None
         self.app_state = app_state
+        self.accessory = None
+        self.editor = None
 
     def couple(self, model, view):
         self.model = model
         self.view = view
 
     def on_press(self):
-        win = WindowAccessoryEditor(self.app_state.app.ui.layout.root, width=1218, height=500)
-        pocket = Pocket(pocket_type='triangle_pocket')
-        pocket.build()
-        pocket.scale(100)
+        self.editor = WindowAccessoryEditor(self.app_state.app.ui.layout.root, width=1218, height=500)
+        self.accessory = Accessory(pocket_type='triangle_pocket')
+        self.accessory.build()
+        self.move_accessory_to_center()
+        self.editor.build(figsize=(3, 4), model=self.model, accessory=self.accessory)
+        self.bind(self.update_accessory, self.editor.accessory_optionmenu)
+        self.editor.mainloop()
+
+    def bind(self, callback_fn, widget=None):
+        if widget is None:
+            self.view.configure(command=callback_fn)
+        else:
+            # Is it correct?????
+            widget.configure(command=callback_fn)
+
+    def update_accessory(self, choice):
+        value = self.editor.accessory_optionmenu.get()
+        self.accessory.update(value)
+        self.move_accessory_to_center()
+        self.editor.on_update()
+
+    def move_accessory_to_center(self):
+        self.accessory.scale(100)
         model_center = np.mean(self.model.ind_pat.patterns[self.model.selected_region], axis=0)
-        codes, verts = zip(*pocket.path_data)
+        codes, verts = zip(*self.accessory.path_data)
         dxdy = model_center - verts
-
-        pocket.translate(dxdy[-1, 0], dxdy[-1, 1])
-        win.build(figsize=(3, 4), model=self.model, accessory=pocket)
-        win.mainloop()
-
-    def bind(self, callback_fn):
-        self.view.configure(command=callback_fn)
+        self.accessory.translate(dxdy[-1, 0], dxdy[-1, 1])
