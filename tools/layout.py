@@ -958,7 +958,6 @@ class WindowAccessoryEditor(customtkinter.CTkToplevel):
         self.ax.axis('tight')
         self.ax.set_xticks([])
         self.ax.set_yticks([])
-
         self.canvas = FigureCanvasTkAgg(self.f, master=self)
         self.canvas.get_tk_widget().pack(side=tkinter.RIGHT, fill=tkinter.BOTH, expand=1)
         self.scatter = None
@@ -974,7 +973,6 @@ class WindowAccessoryEditor(customtkinter.CTkToplevel):
         self.ax.set_aspect('equal')
         m = self.model.ind_pat.patterns[self.model.selected_region]
         self.ax.plot(m[:, 0], m[:, 1])
-        self.verts = list(self.verts)
         self.markers = self.ax.scatter(np.array(self.verts)[:, 0], np.array(self.verts)[:, 1], color='r')
         self.lines = self.ax.plot(np.array(self.verts)[:-1, 0], np.array(self.verts)[:-1, 1])
         self.ax.axis('off')
@@ -985,6 +983,11 @@ class WindowAccessoryEditor(customtkinter.CTkToplevel):
 
     def update_background(self):
         self.background = self.f.canvas.copy_from_bbox(self.ax.bbox)
+
+    def on_update(self):
+        codes, self.verts = zip(*self.pocket.path_data)
+        self.verts = list(self.verts)
+        self.draw()
 
     def on_button_press(self, event):
         """Callback for mouse button presses."""
@@ -1008,7 +1011,6 @@ class WindowAccessoryEditor(customtkinter.CTkToplevel):
         if d[ind] >= self.epsilon:
             ind = None
 
-        print(f'ind: {ind}')
         return ind
 
     def on_button_release(self, event):
@@ -1024,7 +1026,7 @@ class WindowAccessoryEditor(customtkinter.CTkToplevel):
                 or event.button != MouseButton.LEFT):
             return
 
-        vertices = self.verts
+        vertices = list(self.verts)
         if self._ind == len(vertices) - 1:
             last_x, last_y = vertices[self._ind]
             dx, dy = event.xdata - last_x, event.ydata - last_y
