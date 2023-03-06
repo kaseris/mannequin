@@ -4,7 +4,7 @@ import numpy as np
 from matplotlib.path import Path
 
 
-class Pocket:
+class Accessory:
 
     __JSON_TO_PATH = {'lineto': Path.LINETO,
                       'moveto': Path.MOVETO,
@@ -30,11 +30,11 @@ class Pocket:
 
         instructions = pocket_data[self.pocket_type]
         for instruction, point in instructions:
-            self.__path_data.append((Pocket.__JSON_TO_PATH[instruction], point))
+            self.__path_data.append((Accessory.__JSON_TO_PATH[instruction], point))
             self.__points.append(point)
         # We append an extra vertex to the centre of mass of the polygon. This will serve as a polygon translate
         # anchor.
-        self.__path_data.append((Pocket.__JSON_TO_PATH['moveto'], np.mean(self.points[:-1], axis=0).tolist()))
+        self.__path_data.append((Accessory.__JSON_TO_PATH['moveto'], np.mean(self.points[:-1], axis=0).tolist()))
         self.__points.append(np.mean(self.points[:-1], axis=0).tolist())
 
     def update(self, pocket_type):
@@ -86,15 +86,15 @@ class Pocket:
     @property
     def xlim(self):
         _points = np.asarray(self.__points)
-        left = np.min(_points[:, 0] - Pocket.MARGIN)
-        right = np.max(_points[:, 0] + Pocket.MARGIN)
+        left = np.min(_points[:, 0] - Accessory.MARGIN)
+        right = np.max(_points[:, 0] + Accessory.MARGIN)
         return left, right
 
     @property
     def ylim(self):
         _points = np.asarray(self.__points)
-        down = np.min(_points[:, 1] - Pocket.MARGIN)
-        up = np.max(_points[:, 1] + Pocket.MARGIN)
+        down = np.min(_points[:, 1] - Accessory.MARGIN)
+        up = np.max(_points[:, 1] + Accessory.MARGIN)
         return down, up
 
     @property
@@ -105,7 +105,7 @@ class Pocket:
 
 
 if __name__ == '__main__':
-    pocket = Pocket('triangle_pocket')
+    pocket = Accessory('triangle_pocket')
     pocket.build()
     print(f'points:\n{pocket.points}')
     pocket.update('square_pocket')
