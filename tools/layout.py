@@ -935,7 +935,7 @@ class WindowAccessoryEditor(customtkinter.CTkToplevel):
         self.markers = None
         self._ind = None
         self.background = None
-        self.epsilon = 20**2
+        self.epsilon = 20
         self.max_dist = 300.0
         self.pocketlabel = None
         self.accessory_optionmenu = None
@@ -949,7 +949,7 @@ class WindowAccessoryEditor(customtkinter.CTkToplevel):
                                                                 values=accessory.available_accessories)
         self.accessory_optionmenu.pack(padx=20, pady=0, side=tkinter.LEFT)
 
-        self.scale_slider = customtkinter.CTkSlider(master=self, from_=20., to=200.)
+        self.scale_slider = customtkinter.CTkSlider(master=self, from_=1.0, to=2.0)
         self.scale_slider.pack(side=tkinter.LEFT)
         self.scale_slider.focus()
         self.model = model
@@ -1009,7 +1009,7 @@ class WindowAccessoryEditor(customtkinter.CTkToplevel):
         xy = np.asarray(self.verts)
         # xyt = self.pathpatch.get_transform().transform(xy)
         xt, yt = xy[:, 0], xy[:, 1]
-        d = (xt - event.xdata)**2 + (yt - event.ydata)**2
+        d = np.sqrt((xt - event.xdata)**2 + (yt - event.ydata)**2)
         ind = d.argmin()
 
         if d[ind] >= self.epsilon:
