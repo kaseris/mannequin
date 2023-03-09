@@ -949,7 +949,7 @@ class WindowAccessoryEditor(customtkinter.CTkToplevel):
                                                                 values=accessory.available_accessories)
         self.accessory_optionmenu.pack(padx=20, pady=0, side=tkinter.LEFT)
 
-        self.scale_slider = customtkinter.CTkSlider(master=self, from_=1.0, to=2.0)
+        self.scale_slider = customtkinter.CTkSlider(master=self, from_=4.0, to=150., number_of_steps=200)
         self.scale_slider.pack(side=tkinter.LEFT)
         self.scale_slider.focus()
         self.model = model
