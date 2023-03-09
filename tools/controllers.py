@@ -2,6 +2,7 @@ import os
 import os.path as osp
 import subprocess
 import shutil
+import time
 
 from functools import partial
 from pathlib import Path
@@ -826,6 +827,7 @@ class ControllerAccessoryEditor:
         self.app_state = app_state
         self.accessory = None
         self.editor = None
+        self.scale_prev_val = 0.0
 
     def couple(self, model, view):
         self.model = model
@@ -835,17 +837,18 @@ class ControllerAccessoryEditor:
         self.editor = WindowAccessoryEditor(self.app_state.app.ui.layout.root, width=1218, height=500)
         self.accessory = Accessory(pocket_type='triangle_pocket')
         self.accessory.build()
+        self.accessory.scale(40)
         self._move_accessory_to_center()
         self.editor.build(figsize=(3, 4), model=self.model, accessory=self.accessory)
         self.bind(self.update_accessory, self.editor.accessory_optionmenu)
         self.bind(self.on_set_scale, self.editor.scale_slider)
+        self.editor.scale_slider.set(self.accessory.scale_factor)
         self.editor.mainloop()
 
     def bind(self, callback_fn, widget=None):
         if widget is None:
             self.view.configure(command=callback_fn)
         else:
-            # Is it correct?????
             widget.configure(command=callback_fn)
 
     def update_accessory(self, choice):
@@ -855,12 +858,17 @@ class ControllerAccessoryEditor:
         self.editor.on_update()
 
     def _move_accessory_to_center(self):
-        self.accessory.scale(100)
         model_center = np.mean(self.model.ind_pat.patterns[self.model.selected_region], axis=0)
         codes, verts = zip(*self.accessory.path_data)
         dxdy = model_center - verts
         self.accessory.translate(dxdy[-1, 0], dxdy[-1, 1])
 
     def on_set_scale(self, value):
+        # dValue = value - self.scale_prev_val
         print(f'Slider value: {value}')
-
+        # self._move_accessory_to_center(scale_value=value)
+        self.accessory.scale(value)
+        self._move_accessory_to_center()
+        self.editor.on_update()
+        self.scale_prev_val = value
+        return
