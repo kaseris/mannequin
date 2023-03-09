@@ -835,9 +835,10 @@ class ControllerAccessoryEditor:
         self.editor = WindowAccessoryEditor(self.app_state.app.ui.layout.root, width=1218, height=500)
         self.accessory = Accessory(pocket_type='triangle_pocket')
         self.accessory.build()
-        self.move_accessory_to_center()
+        self._move_accessory_to_center()
         self.editor.build(figsize=(3, 4), model=self.model, accessory=self.accessory)
         self.bind(self.update_accessory, self.editor.accessory_optionmenu)
+        self.bind(self.on_set_scale, self.editor.scale_slider)
         self.editor.mainloop()
 
     def bind(self, callback_fn, widget=None):
@@ -850,12 +851,16 @@ class ControllerAccessoryEditor:
     def update_accessory(self, choice):
         value = self.editor.accessory_optionmenu.get()
         self.accessory.update(value)
-        self.move_accessory_to_center()
+        self._move_accessory_to_center()
         self.editor.on_update()
 
-    def move_accessory_to_center(self):
+    def _move_accessory_to_center(self):
         self.accessory.scale(100)
         model_center = np.mean(self.model.ind_pat.patterns[self.model.selected_region], axis=0)
         codes, verts = zip(*self.accessory.path_data)
         dxdy = model_center - verts
         self.accessory.translate(dxdy[-1, 0], dxdy[-1, 1])
+
+    def on_set_scale(self, value):
+        print(f'Slider value: {value}')
+
