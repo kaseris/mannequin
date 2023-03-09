@@ -939,6 +939,7 @@ class WindowAccessoryEditor(customtkinter.CTkToplevel):
         self.max_dist = 300.0
         self.pocketlabel = None
         self.accessory_optionmenu = None
+        self.scale_slider = None
 
     def build(self, figsize, model, accessory):
         # self.place(x=150, y=150)
@@ -948,6 +949,9 @@ class WindowAccessoryEditor(customtkinter.CTkToplevel):
                                                                 values=accessory.available_accessories)
         self.accessory_optionmenu.pack(padx=20, pady=0, side=tkinter.LEFT)
 
+        self.scale_slider = customtkinter.CTkSlider(master=self, from_=20., to=200.)
+        self.scale_slider.pack(side=tkinter.LEFT)
+        self.scale_slider.focus()
         self.model = model
         self.pocket = accessory
         self.f = Figure(figsize=(6, 6))
