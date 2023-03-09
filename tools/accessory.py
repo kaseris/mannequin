@@ -20,6 +20,9 @@ class Accessory:
         self.__scale = 1.0
         self.pocket_type = pocket_type
         self.__path_data = []
+        self.scale_factor = 1.0
+        self.__initial_points = None
+        self.__built = False
 
     def edit(self):
         pass
@@ -36,12 +39,17 @@ class Accessory:
         # anchor.
         self.__path_data.append((Accessory.__JSON_TO_PATH['moveto'], np.mean(self.points[:-1], axis=0).tolist()))
         self.__points.append(np.mean(self.points[:-1], axis=0).tolist())
+        if not self.__built:
+            self.__initial_points = self.__points.copy()
+            self.__built = True
 
     def update(self, pocket_type):
         self.__path_data = []
         self.__points = []
         self.pocket_type = pocket_type
+        self.__built = False
         self.build()
+        self.scale(self.scale_factor)
 
     def translate(self, dx, dy):
         for idx, point in enumerate(self.__points):
@@ -51,9 +59,10 @@ class Accessory:
         self.update_path_data()
 
     def scale(self, scale):
-        for idx, point in enumerate(self.__points):
+        self.scale_factor = scale
+        for idx, point in enumerate(self.__initial_points):
             # Update the internal point data
-            self.__points[idx] = [point[0] * scale, point[1] * scale]
+            self.__points[idx] = [point[0] * self.scale_factor, point[1] * self.scale_factor]
         # Update the path data
         self.update_path_data()
 
