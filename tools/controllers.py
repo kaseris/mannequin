@@ -864,9 +864,6 @@ class ControllerAccessoryEditor:
         self.accessory.translate(dxdy[-1, 0], dxdy[-1, 1])
 
     def on_set_scale(self, value):
-        # dValue = value - self.scale_prev_val
-        print(f'Slider value: {value}')
-        # self._move_accessory_to_center(scale_value=value)
         self.accessory.scale(value)
         self._move_accessory_to_center()
         self.editor.on_update()
