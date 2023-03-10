@@ -930,7 +930,7 @@ class WindowAccessoryEditor(customtkinter.CTkToplevel):
         self.ax = None
         self.model = None
         self.canvas = None
-        self.pocket = None
+        self.accessory = None
         self.patch = None
         self.markers = None
         self._ind = None
@@ -953,7 +953,7 @@ class WindowAccessoryEditor(customtkinter.CTkToplevel):
         self.scale_slider.pack(side=tkinter.LEFT)
         self.scale_slider.focus()
         self.model = model
-        self.pocket = accessory
+        self.accessory = accessory
         self.f = Figure(figsize=(6, 6))
         self.f.set_facecolor('#525252')
         self.ax = self.f.add_subplot(111)
@@ -965,7 +965,7 @@ class WindowAccessoryEditor(customtkinter.CTkToplevel):
         self.canvas = FigureCanvasTkAgg(self.f, master=self)
         self.canvas.get_tk_widget().pack(side=tkinter.RIGHT, fill=tkinter.BOTH, expand=1)
         self.scatter = None
-        codes, self.verts = zip(*self.pocket.path_data)
+        codes, self.verts = zip(*self.accessory.path_data)
 
         self.canvas.mpl_connect('button_press_event', self.on_button_press)
         self.canvas.mpl_connect('button_release_event', self.on_button_release)
@@ -989,7 +989,7 @@ class WindowAccessoryEditor(customtkinter.CTkToplevel):
         self.background = self.f.canvas.copy_from_bbox(self.ax.bbox)
 
     def on_update(self):
-        codes, self.verts = zip(*self.pocket.path_data)
+        codes, self.verts = zip(*self.accessory.path_data)
         self.verts = list(self.verts)
         self.draw()
 
