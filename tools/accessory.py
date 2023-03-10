@@ -52,10 +52,12 @@ class Accessory:
         self.scale(self.scale_factor)
 
     def translate(self, dx, dy):
+        tmp = []
         for idx, point in enumerate(self.__points):
             # Update the internal point data
-            self.__points[idx] = [point[0] + dx, point[1] + dy]
+            tmp.append([point[0] + dx, point[1] + dy])
         # Update the path data
+        self.__points = tmp
         self.update_path_data()
 
     def scale(self, scale):
