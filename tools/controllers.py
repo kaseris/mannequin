@@ -863,9 +863,16 @@ class ControllerAccessoryEditor:
         dxdy = model_center - verts
         self.accessory.translate(dxdy[-1, 0], dxdy[-1, 1])
 
+    def _move_to_previous_center(self, previous_center):
+        points = self.accessory.points
+        dxdy = previous_center - points
+        self.accessory.translate(dxdy[-1, 0], dxdy[-1, 1])
+
     def on_set_scale(self, value):
+        previous_center = self.accessory.points[-1]
         self.accessory.scale(value)
-        self._move_accessory_to_center()
+        # Move the accessory to its previous position
+        self._move_to_previous_center(previous_center=previous_center)
         self.editor.on_update()
         self.scale_prev_val = value
         return
