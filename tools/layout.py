@@ -1047,6 +1047,7 @@ class WindowAccessoryEditor(customtkinter.CTkToplevel):
             for idx, v in enumerate(vertices):
                 vx, vy = v
                 vertices[idx] = vx + dx, vy + dy
+            self.accessory.translate(dx, dy)
         self.verts = vertices
         self.draw()
 
