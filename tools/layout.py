@@ -973,6 +973,7 @@ class WindowAccessoryEditor(customtkinter.CTkToplevel):
         self.draw()
 
     def draw(self):
+        # TODO: Render pathpatches instead of plotting them as lines.
         self.ax.clear()
         self.ax.set_aspect('equal')
         m = self.model.ind_pat.patterns[self.model.selected_region]
