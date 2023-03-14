@@ -1,16 +1,17 @@
 import json
 
 import numpy as np
-from matplotlib.path import Path
+from matplotlib.path import Path as MPLPath
+from matplotlib.patches import PathPatch as MPLPathPatch
 
 
 class Accessory:
 
-    __JSON_TO_PATH = {'lineto': Path.LINETO,
-                      'moveto': Path.MOVETO,
-                      'curve3': Path.CURVE3,
-                      'curve4': Path.CURVE4,
-                      'closepoly': Path.CLOSEPOLY}
+    __JSON_TO_PATH = {'lineto': MPLPath.LINETO,
+                      'moveto': MPLPath.MOVETO,
+                      'curve3': MPLPath.CURVE3,
+                      'curve4': MPLPath.CURVE4,
+                      'closepoly': MPLPath.CLOSEPOLY}
     MARGIN = 2
 
     def __init__(self, pocket_type):
@@ -23,6 +24,8 @@ class Accessory:
         self.scale_factor = 1.0
         self.__initial_points = None
         self.__built = False
+        self.__path = None
+        self.__patch = None
 
     def edit(self):
         pass
@@ -35,10 +38,15 @@ class Accessory:
 
         instructions = pocket_data[self.pocket_type]
         for instruction, point in instructions:
-            self.__path_data.append((Accessory.__JSON_TO_PATH[instruction], point))
+            self.__path_data.append((Accessory.__JSON_TO_PATH[instruction], tuple(point)))
             self.__points.append(point)
         # We append an extra vertex to the centre of mass of the polygon. This will serve as a polygon translate
         # anchor.
+        codes, verts = zip(*self.__path_data)
+        self.__path = MPLPath(verts, codes)
+        # Leave it as is for now
+        self.__patch = MPLPathPatch(self.__path, facecolor='green', edgecolor='red', alpha=1.0, zorder=0)
+        self.__patch.set_animated(False)
         self.__path_data.append((Accessory.__JSON_TO_PATH['moveto'], np.mean(self.points[:-1], axis=0).tolist()))
         self.__points.append(np.mean(self.points[:-1], axis=0).tolist())
         if not self.__built:
@@ -116,6 +124,14 @@ class Accessory:
             data = json.load(f)
         return list(data.keys())
 
+    @property
+    def path_(self):
+        return self.__path
+
+    @property
+    def pathpatch(self):
+        return self.__patch
+
 
 if __name__ == '__main__':
     pocket = Accessory('triangle_pocket')
@@ -128,8 +144,8 @@ if __name__ == '__main__':
 
     fig, ax = plt.subplots()
     codes, verts = zip(*pocket.path_data)
-    path = Path(verts, codes)
-    patch = PathPatch(
+    path = MPLPath(verts, codes)
+    patch = MPLPathPatch(
         path, facecolor=None, edgecolor='black', alpha=1.0, fill=True)
     ax.add_patch(patch)
 
