@@ -957,6 +957,7 @@ class WindowAccessoryEditor(customtkinter.CTkToplevel):
         self.f = Figure(figsize=(6, 6))
         self.f.set_facecolor('#525252')
         self.ax = self.f.add_subplot(111)
+        # self.ax = self.accessory.pathpatch.axes
         self.ax.set_facecolor('#525252')
         self.ax.axis('off')
         self.ax.axis('tight')
@@ -976,10 +977,13 @@ class WindowAccessoryEditor(customtkinter.CTkToplevel):
         # TODO: Render pathpatches instead of plotting them as lines.
         self.ax.clear()
         self.ax.set_aspect('equal')
+        self.ax.add_patch(self.accessory.pathpatch)
         m = self.model.ind_pat.patterns[self.model.selected_region]
-        self.ax.plot(m[:, 0], m[:, 1])
-        self.markers = self.ax.scatter(np.array(self.verts)[:, 0], np.array(self.verts)[:, 1], color='r')
-        self.lines = self.ax.plot(np.array(self.verts)[:-1, 0], np.array(self.verts)[:-1, 1])
+        self.ax.plot(m[:, 0], m[:, 1], zorder=2)
+        # self.markers = self.ax.scatter(np.array(self.verts)[:, 0], np.array(self.verts)[:, 1], color='r', zorder=2)
+        # self.lines = self.ax.plot(np.array(self.verts)[:-1, 0], np.array(self.verts)[:-1, 1])
+        # self.ax.add_patch(self.accessory.pathpatch)
+        # self.ax.draw_artist(self.accessory.pathpatch)
         self.ax.axis('off')
         # self.ax.axis('tight')
         self.ax.set_xticks([])
