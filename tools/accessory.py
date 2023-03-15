@@ -31,8 +31,6 @@ class Accessory:
         pass
 
     def build(self):
-        # TODO: Upon creation, also build a PathPatch object given the codes and the verts, instead of creating it in
-        # TODO: the WindowAccessoryEditor.
         with open('pockets.json', 'r') as f:
             pocket_data = json.load(f)
 

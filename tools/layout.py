@@ -974,16 +974,14 @@ class WindowAccessoryEditor(customtkinter.CTkToplevel):
         self.draw()
 
     def draw(self):
-        # TODO: Render pathpatches instead of plotting them as lines.
         self.ax.clear()
         self.ax.set_aspect('equal')
         self.ax.add_patch(self.accessory.pathpatch)
         m = self.model.ind_pat.patterns[self.model.selected_region]
         self.ax.plot(m[:, 0], m[:, 1], zorder=2)
         self.markers = self.ax.scatter(np.array(self.verts)[:, 0], np.array(self.verts)[:, 1], color='r', zorder=2)
-        # self.lines = self.ax.plot(np.array(self.verts)[:-1, 0], np.array(self.verts)[:-1, 1])
         self.ax.axis('off')
-        # self.ax.axis('tight')
+        self.ax.axis('tight')
         self.ax.set_xticks([])
         self.ax.set_yticks([])
         self.canvas.draw()
