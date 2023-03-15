@@ -842,6 +842,7 @@ class ControllerAccessoryEditor:
         self.editor.build(figsize=(3, 4), model=self.model, accessory=self.accessory)
         self.bind(self.update_accessory, self.editor.accessory_optionmenu)
         self.bind(self.on_set_scale, self.editor.scale_slider)
+        self.bind(self.on_button_place_press, self.editor.button_place)
         self.editor.scale_slider.set(self.accessory.scale_factor)
         self.editor.mainloop()
 
@@ -876,3 +877,6 @@ class ControllerAccessoryEditor:
         self.editor.on_update()
         self.scale_prev_val = value
         return
+
+    def on_button_place_press(self):
+        print('adding the accessory to the garment pattern')
