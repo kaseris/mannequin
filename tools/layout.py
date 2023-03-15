@@ -981,7 +981,6 @@ class WindowAccessoryEditor(customtkinter.CTkToplevel):
         self.ax.plot(m[:, 0], m[:, 1], zorder=2)
         self.markers = self.ax.scatter(np.array(self.verts)[:, 0], np.array(self.verts)[:, 1], color='r', zorder=2)
         self.ax.axis('off')
-        self.ax.axis('tight')
         self.ax.set_xticks([])
         self.ax.set_yticks([])
         self.canvas.draw()
