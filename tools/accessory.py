@@ -88,9 +88,16 @@ class Accessory:
             instruction, point = tup
             new_path_data.append((instruction, new_point))
         self.__path_data = new_path_data
+        self._create_path()
 
     def remove(self):
         pass
+
+    def _create_path(self):
+        codes, verts = zip(*self.__path_data)
+        self.__path = MPLPath(verts, codes)
+        self.__patch = MPLPathPatch(self.__path, facecolor='green', edgecolor='red', alpha=1.0, zorder=0)
+        self.__patch.set_animated(False)
 
     @property
     def interactive_line(self):
