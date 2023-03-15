@@ -13,5 +13,14 @@
     ["lineto", [0.0, 0.2]],
     ["lineto", [0.5, 0.0]],
     ["closepoly", [1.0, 0.2]]
+  ],
+  "bottom_curve_pocket": [
+    ["moveto", [1.0, 0.0]],
+    ["lineto", [1.0, 1.0]],
+    ["lineto", [0.0, 1.0]],
+    ["lineto", [0.0, 0.0]],
+    ["curve3", [0.50, -0.5]],
+    ["curve3", [1.0, 0.0]],
+    ["closepoly", [1.0, 0.0]]
   ]
 }
