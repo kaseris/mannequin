@@ -940,9 +940,10 @@ class WindowAccessoryEditor(customtkinter.CTkToplevel):
         self.pocketlabel = None
         self.accessory_optionmenu = None
         self.scale_slider = None
+        self.button_place = None
 
     def build(self, figsize, model, accessory):
-        # self.place(x=150, y=150)
+        # TODO: The interface needs re-arrangement.
         self.pocketlabel = customtkinter.CTkLabel(self, text="Pockets")
         self.pocketlabel.pack(padx=20, pady=0)
         self.accessory_optionmenu = customtkinter.CTkOptionMenu(self,
@@ -952,6 +953,8 @@ class WindowAccessoryEditor(customtkinter.CTkToplevel):
         self.scale_slider = customtkinter.CTkSlider(master=self, from_=4.0, to=150., number_of_steps=200)
         self.scale_slider.pack(side=tkinter.LEFT)
         self.scale_slider.focus()
+        self.button_place = customtkinter.CTkButton(master=self, text='OK', cursor='hand2')
+        self.button_place.pack(side=tkinter.LEFT)
         self.model = model
         self.accessory = accessory
         self.f = Figure(figsize=(6, 6))
