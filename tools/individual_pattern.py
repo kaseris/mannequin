@@ -143,6 +143,9 @@ class IndividualPattern:
                 array_to_write = self.patterns[name]
                 write_array_as_ind_pat(osp.join(directory, 'individual patterns', name+'.xyz'), array_to_write)
 
+    def add_accessory(self, accessory):
+        pass
+
 
 if __name__ == '__main__':
     pass
