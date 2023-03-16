@@ -879,4 +879,24 @@ class ControllerAccessoryEditor:
         return
 
     def on_button_place_press(self):
-        print('adding the accessory to the garment pattern')
+        '''
+        1. Get the verts data from the accessory's PathPatch object.
+        2. Get the transformation matrix to scale the verts from display coordinates back to data coordinates.
+        3. Append a column of ones to the verts_
+        4. Apply the trasnformation
+        5. Create the path for the LineCollection
+        6. Add the collection to the
+        '''
+        # Get the PathPatch's shape points
+        verts_ = self.accessory.pathpatch.get_verts()
+        # Get the transformation matrix
+        tf_ = self.accessory.pathpatch.get_transform()
+        # Get the transformation matrix
+        tf_mat_ = tf_.get_matrix()
+        # First append a column of ones to the Nx2 verts_ matrix
+        verts_ = np.hstack((verts_, np.ones((len(verts_), 1))))
+        # Apply the transformation
+        verts_transformed = np.dot(tf_mat_, verts_.T).T
+        # Get rid of the ones. They are no longer needed.
+        verts_transformed = verts_transformed[:, :2]
+
