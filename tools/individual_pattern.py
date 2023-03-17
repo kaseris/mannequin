@@ -127,9 +127,10 @@ class IndividualPattern:
         self.__alternative_exists = True
 
     def __getitem__(self, item):
-        if (item not in [l.replace('.xyz', '') for l in IndividualPattern.pattern_files]) and not (
-                'alternative' in item):
-            raise KeyError(f'{item}')
+        # DEV: COMMENTING OUT THE KEY CHECK
+        # if (item not in [l.replace('.xyz', '') for l in IndividualPattern.pattern_files]) and not (
+        #         'alternative' in item):
+        #     raise KeyError(f'{item}')
         return self.__patterns[item]
 
     @property
@@ -144,7 +145,10 @@ class IndividualPattern:
                 write_array_as_ind_pat(osp.join(directory, 'individual patterns', name+'.xyz'), array_to_write)
 
     def add_accessory(self, accessory):
-        pass
+        # What should the shape of the `accessory` be?
+        for idx, curve in enumerate(accessory):
+            k = f'accessory_{idx}'
+            self.__patterns[k] = curve
 
 
 if __name__ == '__main__':
