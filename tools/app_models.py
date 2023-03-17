@@ -144,6 +144,11 @@ class IndividualPatternModel:
         self.__interactive_lines = []
         self.__build_interactive_lines()
 
+    def add_accessories(self, accessory):
+        self.__ind_pat.add_accessory(accessory)
+        self.__interactive_lines = []
+        self.__build_interactive_lines()
+
 
 class QueryModel:
     def __init__(self,
