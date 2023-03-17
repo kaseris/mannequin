@@ -896,7 +896,7 @@ class ControllerAccessoryEditor:
         # First append a column of ones to the Nx2 verts_ matrix
         verts_ = np.hstack((verts_, np.ones((len(verts_), 1))))
         # Apply the transformation
-        verts_transformed = np.dot(tf_mat_, verts_.T).T
+        verts_transformed = np.dot(np.linalg.pinv(tf_mat_), verts_.T).T
         # Get rid of the ones. They are no longer needed.
         verts_transformed = verts_transformed[:, :2]
         # Try the IndividualPatternModel interface to add the pocket as an alternative curve.
