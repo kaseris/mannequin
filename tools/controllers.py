@@ -899,4 +899,9 @@ class ControllerAccessoryEditor:
         verts_transformed = np.dot(tf_mat_, verts_.T).T
         # Get rid of the ones. They are no longer needed.
         verts_transformed = verts_transformed[:, :2]
-
+        # Try the IndividualPatternModel interface to add the pocket as an alternative curve.
+        # Spoiler alert: Doesn't work. Maybe the control passes because of the 'alternative' keyword.
+        # Need to try something else.
+        self.model.add_accessories([verts_transformed])
+        self.model.update_interactive_lines()
+        self.app_state.app.ui.layout.frame_pattern_preview.draw_pattern(self.model.interactive_lines)
