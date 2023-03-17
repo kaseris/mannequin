@@ -883,9 +883,10 @@ class ControllerAccessoryEditor:
         1. Get the verts data from the accessory's PathPatch object.
         2. Get the transformation matrix to scale the verts from display coordinates back to data coordinates.
         3. Append a column of ones to the verts_
-        4. Apply the trasnformation
-        5. Create the path for the LineCollection
-        6. Add the collection to the
+        4. Apply the inverse transformation to go from display coordinates to data coordinates.
+        5. Create the path for the LineCollection by calling an IndividualPatternModel API call to add an accessory.
+        6. Add the collection to the IndividualPatternModel
+        7. Invoke a render call to refresh the pattern preview.
         '''
         # Get the PathPatch's shape points
         verts_ = self.accessory.pathpatch.get_verts()
@@ -902,6 +903,8 @@ class ControllerAccessoryEditor:
         # Try the IndividualPatternModel interface to add the pocket as an alternative curve.
         # Spoiler alert: Doesn't work. Maybe the control passes because of the 'alternative' keyword.
         # Need to try something else.
+        # TODO: 1. Need to address the problem of KeyErrors
+        # TODO: 2. Need to remove accessories.
         self.model.add_accessories([verts_transformed])
         self.model.update_interactive_lines()
         self.app_state.app.ui.layout.frame_pattern_preview.draw_pattern(self.model.interactive_lines)
