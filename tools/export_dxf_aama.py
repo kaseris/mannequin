@@ -15,32 +15,25 @@ def extract_coordinates(dxf_path):
             coordinates.append((entity.dxf.start[0], entity.dxf.start[1], entity.dxf.start[2]))
             coordinates.append((entity.dxf.end[0], entity.dxf.end[1], entity.dxf.end[2]))
 
-    return coordinates
+    return remove_duplicate_coordinates(coordinates)
 
+def remove_duplicate_coordinates(coordinates):
+    """
+    Args:
+        coordinates: The set of coordinates, as per the output of extract_coordinates()
+    Returns:
+        The input set of coordinates, with their duplicate pairs removed
+    """
+    # Delete duplicates
+    filtered_coordinates = []
+    prev_coord = None
 
-dxf_path = "/home/aboumpakis/Desktop/DXF_convert_doulevei xwris kampiles/cloth_pattern.dxf"
-output_file_path = "/home/aboumpakis/Desktop/DXF_convert_doulevei xwris kampiles/coordinates.xyz"
+    for coord in coordinates:
+        if coord != prev_coord:
+            filtered_coordinates.append(coord)
+            prev_coord = coord
 
-# Extract the coordinates from the DXF file
-coordinates = extract_coordinates(dxf_path)
-
-# Delete duplicates
-filtered_coordinates = []
-prev_coord = None
-
-for coord in coordinates:
-    if coord != prev_coord:
-        filtered_coordinates.append(coord)
-        prev_coord = coord
-
-coordinates = filtered_coordinates
-
-# Write the coordinates to the output file
-with open(output_file_path, "w") as output_file:
-    for coordinate in coordinates:
-        x, y, z = coordinate
-        output_file.write(f"{x},0.0,{y}\n")
-
+    return filtered_coordinates
 
 def create_dxf_file(input_filename, output_filename):
     with open(input_filename, 'r') as xyz_file:
@@ -55,8 +48,6 @@ def create_dxf_file(input_filename, output_filename):
         dxf_file.write("0\nSECTION\n")
         dxf_file.write("2\nHEADER\n")
         dxf_file.write("9\n$ACADVER\n1\nAC1009\n")
-        #         dxf_file.write("9\n$EXTMIN\n10\n-100.000\n20\n-100.000\n")
-        #         dxf_file.write("9\n$EXTMAX\n10\n100.000\n20\n100.000\n")
         dxf_file.write("0\nENDSEC\n")
 
         # DXF entities section
