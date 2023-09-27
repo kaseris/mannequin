@@ -328,8 +328,7 @@ class QueryImagePlaceholder(customtkinter.CTkToplevel):
             self.vispy_view.camera.set_range()
             self.vispy_view.camera.zoom(1., (250, 250))
         else:
-            self.text = customtkinter.CTkLabel(master=self, text='Please wait...')
-            self.text.pack()
+
             vertices, faces, _, _ = vispy.io.read_mesh(fname)
             m = Mesh(vertices=vertices, faces=faces)
             mesh = vispy.scene.visuals.Mesh(vertices=m.vertices,
